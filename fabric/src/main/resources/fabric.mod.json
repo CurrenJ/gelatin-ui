@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "${mod_authors}"
+  ],
+  "contact": {
+    "homepage": "",
+    "sources": "https://github.com/CurrenJ/adaptive-ores"
+  },
+  "license": "${mod_license}",
+  "icon": "${mod_icon}",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "grill24.gelatinui.fabric.GelatinUiModFabric"
+    ],
+    "client": [
+      "grill24.gelatinui.fabric.client.GelatinUiModFabricClient"
+    ],
+    "fabric-datagen": [
+    ]
+  },
+  "mixins": [
+    "gelatinui.mixins.json"
+  ],
+  "accessWidener": "gelatinui.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.17.2",
+    "minecraft": "${mod_fabric_minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
