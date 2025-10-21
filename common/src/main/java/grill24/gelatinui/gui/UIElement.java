@@ -31,6 +31,10 @@ public abstract class UIElement implements IUIElement {
     protected float currentScale = 1.0f;
     protected float targetScale = 1.0f;
 
+    // Additional transient scale driven by animations (e.g., click bounce).
+    // Multiplied by currentScale for rendering and bounds.
+    protected float effectScale = 1.0f;
+
     // Visibility state
     protected boolean visible = true;
 
@@ -40,6 +44,9 @@ public abstract class UIElement implements IUIElement {
 
     // Animation state
     protected boolean isAnimating = false;
+
+    // Keyframe animation system (per element)
+    private final List<grill24.gelatinui.gui.animation.Animation> animations = new ArrayList<>();
 
     // Interpolation speeds (per-second)
     // Increased speeds so tests and UI see noticeable motion within a few frames.
@@ -60,7 +67,7 @@ public abstract class UIElement implements IUIElement {
             return;
         }
 
-        // First: run element-level interpolation (position/scale)
+        // First: run element-level interpolation (position/scale) and step keyframe animations
         animate(deltaTime);
 
         // Snapshot existing flags and then clear them so flags set during onUpdate are distinct
@@ -96,7 +103,8 @@ public abstract class UIElement implements IUIElement {
     }
 
     /**
-     * Interpolate position and scale towards targets. Marks dirty when values change.
+     * Interpolate position and scale towards targets, and advance keyframe animations.
+     * Marks dirty when values change.
      */
     protected void animate(float deltaTime) {
         boolean positionAnimating = false;
@@ -126,7 +134,25 @@ public abstract class UIElement implements IUIElement {
             }
         }
 
-        isAnimating = positionAnimating || scaleAnimating;
+        // Step keyframe animations (if any)
+        boolean anyKeyframeAnimating = false;
+        if (!animations.isEmpty()) {
+            // Iterate over a copy to allow removal during iteration
+            List<grill24.gelatinui.gui.animation.Animation> toRemove = new ArrayList<>();
+            for (grill24.gelatinui.gui.animation.Animation anim : new ArrayList<>(animations)) {
+                boolean alive = anim.update(Math.max(0f, deltaTime));
+                if (!alive) {
+                    toRemove.add(anim);
+                } else {
+                    anyKeyframeAnimating = true;
+                }
+            }
+            if (!toRemove.isEmpty()) {
+                animations.removeAll(toRemove);
+            }
+        }
+
+        isAnimating = positionAnimating || scaleAnimating || anyKeyframeAnimating;
     }
 
     @Override
@@ -147,7 +173,8 @@ public abstract class UIElement implements IUIElement {
 
             // translate-local-position *in parent space*
             pose.translate(position.x, position.y, 0);
-            pose.scale(currentScale, currentScale, 1.0f);
+            float combinedScale = currentScale * effectScale;
+            pose.scale(combinedScale, combinedScale, 1.0f);
 
             // render self and children under same transform so children inherit the parent's transform
             renderSelf(context);
@@ -292,10 +319,10 @@ public abstract class UIElement implements IUIElement {
     }
 
     /**
-     * Compute the global scale by multiplying up the parent chain.
+     * Compute the global scale by multiplying up the parent chain, including effectScale.
      */
     public float getGlobalScale() {
-        float s = currentScale;
+        float s = currentScale * effectScale;
         if (parent instanceof UIElement) {
             s *= ((UIElement) parent).getGlobalScale();
         }
@@ -381,6 +408,13 @@ public abstract class UIElement implements IUIElement {
         return currentScale;
     }
 
+    /**
+     * Public accessor for transient animation-based scale.
+     */
+    public float getEffectScale() {
+        return effectScale;
+    }
+
     @Override
     public boolean isVisible() {
         return visible;
@@ -396,11 +430,11 @@ public abstract class UIElement implements IUIElement {
 
     @Override
     public boolean needsUpdate() {
-        return isDirty || isAnimating;
+        return isDirty || isAnimating || !animations.isEmpty();
     }
 
     public boolean isAnimating() {
-        return isAnimating;
+        return isAnimating || !animations.isEmpty();
     }
 
     @Override
@@ -544,6 +578,69 @@ public abstract class UIElement implements IUIElement {
      */
     protected boolean onEvent(UIEvent event) {
         return false;
+    }
+
+    /**
+     * Keyframe animation helpers: manage per-element animations with optional channel exclusivity.
+     */
+    public void playAnimation(grill24.gelatinui.gui.animation.Animation animation) {
+        if (animation == null) return;
+        String channel = animation.getChannel();
+        if (channel != null) {
+            for (int i = animations.size() - 1; i >= 0; i--) {
+                grill24.gelatinui.gui.animation.Animation a = animations.get(i);
+                if (channel.equals(a.getChannel())) {
+                    a.cancel();
+                    animations.remove(i);
+                }
+            }
+        }
+        animations.add(animation);
+        isAnimating = true;
+    }
+
+    public void cancelAnimationChannel(String channel) {
+        if (channel == null) return;
+        for (int i = animations.size() - 1; i >= 0; i--) {
+            grill24.gelatinui.gui.animation.Animation a = animations.get(i);
+            if (channel.equals(a.getChannel())) {
+                a.cancel();
+                animations.remove(i);
+            }
+        }
+    }
+
+    public void clearAnimations() {
+        for (grill24.gelatinui.gui.animation.Animation a : animations) {
+            a.cancel();
+        }
+        animations.clear();
+        isAnimating = false;
+    }
+
+    /**
+     * Convenience: play a click bounce animation on the effectScale channel.
+     */
+    public void playClickBounce() {
+        java.util.List<grill24.gelatinui.gui.animation.Keyframe> keys = new java.util.ArrayList<>();
+        keys.add(new grill24.gelatinui.gui.animation.Keyframe(0.0f, 1.0f));
+        keys.add(new grill24.gelatinui.gui.animation.Keyframe(0.06f, 0.92f, grill24.gelatinui.gui.animation.Easing.EASE_OUT_CUBIC));
+        keys.add(new grill24.gelatinui.gui.animation.Keyframe(0.14f, 1.06f, grill24.gelatinui.gui.animation.Easing.EASE_OUT_BACK));
+        keys.add(new grill24.gelatinui.gui.animation.Keyframe(0.22f, 1.0f, grill24.gelatinui.gui.animation.Easing.EASE_IN_OUT_CUBIC));
+
+        grill24.gelatinui.gui.animation.FloatKeyframeAnimation anim = new grill24.gelatinui.gui.animation.FloatKeyframeAnimation(
+                "effectScale",
+                keys,
+                v -> {
+                    this.effectScale = v;
+                    markDirty(DirtyFlag.SIZE);
+                },
+                () -> {
+                    this.effectScale = 1.0f;
+                    markDirty(DirtyFlag.SIZE);
+                }
+        );
+        playAnimation(anim);
     }
 
     /**

@@ -97,9 +97,11 @@ public class SpriteButton extends SpriteRectangle {
                 return false;
             }
 
-            // Trigger pressed visual briefly
+            // Trigger pressed visual briefly and play bounce animation
             setPressed(true);
             this.pressedTimer = PRESSED_DISPLAY_TIME;
+            // New: bounce click feedback
+            this.playClickBounce();
 
             if (onClick != null) {
                 onClick.run();
