@@ -83,4 +83,11 @@ public class MinecraftRenderContext implements IRenderContext {
     public GuiGraphics getGraphics() {
         return graphics;
     }
+
+    /**
+     * Get the Font for text rendering operations.
+     */
+    public Font getFont() {
+        return font;
+    }
 }

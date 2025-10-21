@@ -3,13 +3,17 @@ package grill24.gelatinui;
 import grill24.gelatinui.gui.UI;
 import grill24.gelatinui.gui.UIEvent;
 import grill24.gelatinui.gui.components.VBox;
+import grill24.gelatinui.gui.components.HBox;
 import grill24.gelatinui.gui.components.Label;
 import grill24.gelatinui.gui.components.SpriteButton;
 import grill24.gelatinui.gui.components.SpriteProgressBar;
+import grill24.gelatinui.gui.components.ItemRenderer;
 import grill24.gelatinui.gui.minecraft.MinecraftRenderContext;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class TestScreen extends GelatinUIScreen {
     private float totalTime = 0;
@@ -51,7 +55,6 @@ public class TestScreen extends GelatinUIScreen {
         // Build inner VBox with labels
         textVBox = UI.vbox()
             .spacing(10)
-            .padding(20)
             .alignment(VBox.Alignment.CENTER);
 
         // Add labels demonstrating the new system
@@ -85,6 +88,35 @@ public class TestScreen extends GelatinUIScreen {
             .alignment(VBox.Alignment.CENTER)
             .fillWidth(true);
         outerVBox.addChild(screenTitleLabel);
+
+        // Demonstrate ItemRenderer component
+        Label itemLabel = UI.label("Item Renderers:", UI.rgb(200, 200, 255));
+        itemLabel.updateSize(tempContext);
+        outerVBox.addChild(itemLabel);
+
+        // Create a horizontal box to display multiple items
+        HBox itemBox = UI.hbox()
+                .spacing(10)
+                .alignment(HBox.Alignment.CENTER);
+
+        // Add various items to demonstrate the renderer
+        ItemRenderer diamondRenderer = UI.itemRenderer(new ItemStack(Items.DIAMOND, 1));
+        ItemRenderer goldRenderer = UI.itemRenderer(new ItemStack(Items.GOLD_INGOT, 16));
+        ItemRenderer appleRenderer = UI.itemRenderer(new ItemStack(Items.APPLE, 32));
+        ItemRenderer swordRenderer = UI.itemRenderer(new ItemStack(Items.DIAMOND_SWORD, 1));
+
+        // Add a scaled item
+        ItemRenderer scaledRenderer = UI.itemRenderer(32, 32, new ItemStack(Items.EMERALD, 64))
+                .itemScale(2.0f);
+
+        itemBox.addChild(diamondRenderer);
+        itemBox.addChild(goldRenderer);
+        itemBox.addChild(appleRenderer);
+        itemBox.addChild(swordRenderer);
+        itemBox.addChild(scaledRenderer);
+
+        outerVBox.addChild(itemBox);
+
         outerVBox.addChild(textVBox);
 
         // Create a button column using SpriteRectangle components instead of Minecraft widgets

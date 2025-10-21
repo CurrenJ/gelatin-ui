@@ -329,7 +329,7 @@ public class VBox extends UIContainer {
             }
 
             // Update offsets with scaled height
-            yOffset += scaledChildHeight + spacing;
+            yOffset += scaledChildHeight + spacing * effectiveScale;
         }
 
         layoutDirty = false;

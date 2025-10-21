@@ -188,7 +188,7 @@ public abstract class UIElement implements IUIElement {
         }
 
         if (debugShowPadding) {
-            // If this element exposes a padding measure (like VBox/HBox), draw the content box
+            // If this element exposes a padding measure (like VBox/HBox), draw the padding strips
             float pad = 0f;
             if (this instanceof grill24.gelatinui.gui.components.VBox) {
                 pad = ((grill24.gelatinui.gui.components.VBox) this).getPadding();
@@ -201,9 +201,25 @@ public abstract class UIElement implements IUIElement {
                 int cy1 = y1 + p;
                 int cx2 = x2 - p;
                 int cy2 = y2 - p;
-                if (cx2 > cx1 && cy2 > cy1) {
-                    int padColor = 0x40FF0000; // semi-transparent red
-                    context.fill(cx1, cy1, cx2, cy2, padColor);
+
+                // Draw the padding area (the strips between bounds and content)
+                int padColor = 0x60FF8800; // semi-transparent orange to distinguish from bounds
+
+                // Top padding strip
+                if (cy1 > y1) {
+                    context.fill(x1, y1, x2, cy1, padColor);
+                }
+                // Bottom padding strip
+                if (cy2 < y2) {
+                    context.fill(x1, cy2, x2, y2, padColor);
+                }
+                // Left padding strip (excluding corners already drawn)
+                if (cx1 > x1) {
+                    context.fill(x1, cy1, cx1, cy2, padColor);
+                }
+                // Right padding strip (excluding corners already drawn)
+                if (cx2 < x2) {
+                    context.fill(cx2, cy1, x2, cy2, padColor);
                 }
             }
         }

@@ -2,6 +2,7 @@ package grill24.gelatinui.gui;
 
 import grill24.gelatinui.gui.components.*;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Builder utility class for creating UI components with a fluent API.
@@ -90,6 +91,34 @@ public class UI {
      */
     public static SpriteProgressBar progressBar(float width, float height) {
         return new SpriteProgressBar(width, height);
+    }
+
+    /**
+     * Create a new ItemRenderer with default size (16x16).
+     */
+    public static ItemRenderer itemRenderer() {
+        return new ItemRenderer();
+    }
+
+    /**
+     * Create a new ItemRenderer with an ItemStack.
+     */
+    public static ItemRenderer itemRenderer(ItemStack itemStack) {
+        return new ItemRenderer(itemStack);
+    }
+
+    /**
+     * Create a new ItemRenderer with custom size.
+     */
+    public static ItemRenderer itemRenderer(float width, float height) {
+        return new ItemRenderer(width, height);
+    }
+
+    /**
+     * Create a new ItemRenderer with custom size and ItemStack.
+     */
+    public static ItemRenderer itemRenderer(float width, float height, ItemStack itemStack) {
+        return new ItemRenderer(width, height, itemStack);
     }
 
     // Color utility methods
