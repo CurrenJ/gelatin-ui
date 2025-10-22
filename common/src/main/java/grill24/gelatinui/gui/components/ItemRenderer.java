@@ -164,4 +164,10 @@ public class ItemRenderer extends UIElement {
         // Preferred size is the standard item size scaled
         return new Vector2f(16 * itemScale, 16 * itemScale);
     }
+
+    @Override
+    protected String getDefaultDebugName() {
+        String itemName = itemStack.isEmpty() ? "empty" : itemStack.getItem().toString();
+        return "ItemRenderer(item=" + itemName + ")";
+    }
 }

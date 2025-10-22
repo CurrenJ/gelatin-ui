@@ -120,6 +120,13 @@ public class SpriteRectangle extends UIElement {
     }
 
     /**
+     * Get the current text content.
+     */
+    public String getText() {
+        return text;
+    }
+
+    /**
      * Protected helper for subclasses to set pressed state.
      */
     protected void setPressed(boolean pressed) {

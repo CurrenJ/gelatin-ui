@@ -114,4 +114,10 @@ public class SpriteButton extends SpriteRectangle {
 
         return false;
     }
+
+    @Override
+    protected String getDefaultDebugName() {
+        String textContent = getText() != null && !getText().isEmpty() ? "\"" + getText().replace("\"", "\\\"") + "\"" : "empty";
+        return "SpriteButton(" + textContent + ")";
+    }
 }

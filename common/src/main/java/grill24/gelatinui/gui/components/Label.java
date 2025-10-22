@@ -136,4 +136,10 @@ public class Label extends UIElement {
     public float getCurrentScale() {
         return currentScale;
     }
+
+    @Override
+    protected String getDefaultDebugName() {
+        String textContent = text != null && !text.isEmpty() ? "\"" + text.replace("\"", "\\\"") + "\"" : "empty";
+        return "Label(" + textContent + ")";
+    }
 }

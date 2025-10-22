@@ -102,13 +102,18 @@ public class TestScreen extends GelatinUIScreen {
 
         // Add various items to demonstrate the renderer
         ItemRenderer diamondRenderer = UI.itemRenderer(new ItemStack(Items.DIAMOND, 1));
+        diamondRenderer.setDebugName("Diamond Item");
         ItemRenderer goldRenderer = UI.itemRenderer(new ItemStack(Items.GOLD_INGOT, 16));
+        goldRenderer.setDebugName("Gold Ingot Item");
         ItemRenderer appleRenderer = UI.itemRenderer(new ItemStack(Items.APPLE, 32));
+        appleRenderer.setDebugName("Apple Item");
         ItemRenderer swordRenderer = UI.itemRenderer(new ItemStack(Items.DIAMOND_SWORD, 1));
+        swordRenderer.setDebugName("Diamond Sword Item");
 
         // Add a scaled item
         ItemRenderer scaledRenderer = UI.itemRenderer(32, 32, new ItemStack(Items.EMERALD, 64))
                 .itemScale(2.0f);
+        scaledRenderer.setDebugName("Emerald Item (Scaled)");
 
         itemBox.addChild(diamondRenderer);
         itemBox.addChild(goldRenderer);
@@ -121,6 +126,7 @@ public class TestScreen extends GelatinUIScreen {
         // Add rotating item ring demo
         Label ringLabel = UI.label("Rotating Item Ring:", UI.rgb(200, 255, 200));
         ringLabel.updateSize(tempContext);
+        ringLabel.setDebugName("Ring Label");
         outerVBox.addChild(ringLabel);
 
         RotatingItemRing ring = UI.rotatingItemRing()
@@ -129,6 +135,7 @@ public class TestScreen extends GelatinUIScreen {
                 .defaultItemScale(1.0f)
                 .hoverItemScale(1.3f)
                 .selectedItemScale(1.5f);
+        ring.setDebugName("Rotating Item Ring");
         java.util.List<ItemStack> ringItems = new java.util.ArrayList<>();
         ringItems.add(new ItemStack(Items.DIAMOND));
         ringItems.add(new ItemStack(Items.GOLD_INGOT, 16));
@@ -206,6 +213,8 @@ public class TestScreen extends GelatinUIScreen {
 
         // Add buttons column to outer VBox
         outerVBox.addChild(buttonsVBox);
+//        outerVBox.maxHeight((float) uiScreen.getViewport().getHeight())
+//                .scaleToFit(true);
 
         // Add hover effects to labels
         addHoverEffects(titleLabel);

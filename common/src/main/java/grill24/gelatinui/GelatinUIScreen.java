@@ -93,6 +93,7 @@ public abstract class GelatinUIScreen extends Screen {
         // Key '8' = GLFW_KEY_8 = 56
         // Key '9' = GLFW_KEY_9 = 57
         // Key '0' = GLFW_KEY_0 = 48
+        // Key '7' = GLFW_KEY_7 = 55
         if (keyCode == 56) { // Key '8' - Toggle bounds debug
             grill24.gelatinui.gui.UIElement.toggleDebugBounds();
             return true;
@@ -101,6 +102,9 @@ public abstract class GelatinUIScreen extends Screen {
             return true;
         } else if (keyCode == 48) { // Key '0' - Toggle padding debug
             grill24.gelatinui.gui.UIElement.toggleDebugPadding();
+            return true;
+        } else if (keyCode == 55) { // Key '7' - Toggle culled elements debug
+            grill24.gelatinui.gui.UIElement.toggleDebugCulled();
             return true;
         }
 

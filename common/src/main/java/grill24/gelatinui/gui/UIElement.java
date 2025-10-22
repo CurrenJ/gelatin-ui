@@ -16,6 +16,12 @@ public abstract class UIElement implements IUIElement {
     private static boolean debugShowBounds = false;
     private static boolean debugShowGrid = false;
     private static boolean debugShowPadding = false;
+    private static boolean debugShowCulled = false;
+
+    // Debug tracking
+    private String debugName = null;
+    private static final List<String> culledElementNames = new ArrayList<>();
+    private static final List<String> renderedElementNames = new ArrayList<>();
 
     // Parent-child relationships
     protected IUIElement parent;
@@ -162,6 +168,11 @@ public abstract class UIElement implements IUIElement {
         }
 
         if (!isInViewport(viewport)) {
+            // Track culled elements for debug visualization
+            if (debugShowCulled) {
+                String elementName = debugName != null ? debugName : getDefaultDebugName();
+                trackCulledElement(elementName);
+            }
             return; // Culling: skip off-screen elements
         }
 
@@ -195,6 +206,12 @@ public abstract class UIElement implements IUIElement {
             if (debugShowBounds || debugShowGrid || debugShowPadding) {
                 renderDebugOverlays(context);
             }
+        }
+
+        // Track rendered elements for debug visualization
+        if (debugShowCulled) {
+            String elementName = debugName != null ? debugName : getDefaultDebugName();
+            trackRenderedElement(elementName);
         }
     }
 
@@ -453,6 +470,8 @@ public abstract class UIElement implements IUIElement {
             dirtyFlags.contains(DirtyFlag.SIZE) ||
             dirtyFlags.contains(DirtyFlag.LAYOUT)) {
             boundsValid = false;
+            // Invalidate children's bounds too since they depend on parent's transform
+            invalidateChildBounds();
         }
 
         // Set dirty state
@@ -463,6 +482,15 @@ public abstract class UIElement implements IUIElement {
         if ((wasClean || hadNewFlags) && parent != null) {
             onChildDirty(flags);
         }
+    }
+
+    /**
+     * Invalidate bounds of all descendants recursively.
+     * Called when this element's transform changes, which affects all child bounds.
+     */
+    protected void invalidateChildBounds() {
+        // Default: no children (leaf element)
+        // Containers will override this
     }
 
     @Override
@@ -679,6 +707,13 @@ public abstract class UIElement implements IUIElement {
     }
 
     /**
+     * Toggle debug mode to show culled elements.
+     */
+    public static void toggleDebugCulled() {
+        debugShowCulled = !debugShowCulled;
+    }
+
+    /**
      * Get current debug bounds state.
      */
     public static boolean isDebugBoundsEnabled() {
@@ -697,5 +732,82 @@ public abstract class UIElement implements IUIElement {
      */
     public static boolean isDebugPaddingEnabled() {
         return debugShowPadding;
+    }
+
+    /**
+     * Get current debug culled state.
+     */
+    public static boolean isDebugCulledEnabled() {
+        return debugShowCulled;
+    }
+
+    /**
+     * Set the debug name for this element (for debugging purposes).
+     */
+    public void setDebugName(String name) {
+        this.debugName = name;
+    }
+
+    /**
+     * Get the debug name for this element.
+     */
+    public String getDebugName() {
+        return debugName;
+    }
+
+    /**
+     * Get a default debug name for this element based on its type and properties.
+     * Subclasses can override this to provide more specific debug names.
+     */
+    protected String getDefaultDebugName() {
+        // Default implementation: use class name with position info
+        String className = this.getClass().getSimpleName();
+        return className + "@(" + (int)position.x + "," + (int)position.y + ")";
+    }
+
+    /**
+     * Get the list of names for culled elements (static, for debug visualization).
+     */
+    public static List<String> getCulledElementNames() {
+        return culledElementNames;
+    }
+
+    /**
+     * Track a culled element's name for debug visualization.
+     */
+    public static void trackCulledElement(String name) {
+        if (!culledElementNames.contains(name)) {
+            culledElementNames.add(name);
+        }
+    }
+
+    /**
+     * Clear the tracked culled elements (for debug visualization).
+     */
+    public static void clearCulledElements() {
+        culledElementNames.clear();
+    }
+
+    /**
+     * Get the list of names for rendered elements (static, for debug visualization).
+     */
+    public static List<String> getRenderedElementNames() {
+        return renderedElementNames;
+    }
+
+    /**
+     * Track a rendered element's name for debug visualization.
+     */
+    public static void trackRenderedElement(String name) {
+        if (!renderedElementNames.contains(name)) {
+            renderedElementNames.add(name);
+        }
+    }
+
+    /**
+     * Clear the tracked rendered elements (for debug visualization).
+     */
+    public static void clearRenderedElements() {
+        renderedElementNames.clear();
     }
 }

@@ -31,7 +31,10 @@ public class SpriteProgressBar extends SpriteRectangle {
     private static final int TEXTURE_SIZE = 128;
 
     // State
-    private float progress = 0f;
+    private float targetProgress = 0f;
+    private float displayedProgress = 0f;
+    private float animationSpeed = 5.0f; // higher = faster animation
+    private boolean isAnimating = false;
     private int skillLevel = 0;
 
     public SpriteProgressBar() {
@@ -50,7 +53,8 @@ public class SpriteProgressBar extends SpriteRectangle {
      * Set the progress value (0.0 to 1.0).
      */
     public SpriteProgressBar progress(float progress) {
-        this.progress = Math.max(0f, Math.min(1f, progress));
+        this.targetProgress = Math.max(0f, Math.min(1f, progress));
+        this.isAnimating = true;
         markDirty(DirtyFlag.CONTENT);
         return this;
     }
@@ -71,7 +75,7 @@ public class SpriteProgressBar extends SpriteRectangle {
      * Get the current progress value.
      */
     public float getProgress() {
-        return progress;
+        return displayedProgress;
     }
 
     /**
@@ -108,7 +112,7 @@ public class SpriteProgressBar extends SpriteRectangle {
         }
 
         // Render filled meter (progress-dependent)
-        blitProgressBarSprite(context, BAR_FILLED_METER, x, y, w, h, progress);
+        blitProgressBarSprite(context, BAR_FILLED_METER, x, y, w, h, displayedProgress);
 
         context.disableBlend();
     }
@@ -157,12 +161,25 @@ public class SpriteProgressBar extends SpriteRectangle {
 
     @Override
     protected void onUpdate(float deltaTime) {
-        // No automatic updates needed for progress bar
+        // Update displayed progress for animation
+        if (isAnimating) {
+            if (Math.abs(targetProgress - displayedProgress) < 0.01f) {
+                displayedProgress = targetProgress;
+                isAnimating = false;
+            } else {
+                displayedProgress += (targetProgress - displayedProgress) * animationSpeed * deltaTime;
+            }
+        }
     }
 
     @Override
     protected boolean onEvent(grill24.gelatinui.gui.UIEvent event) {
         // Progress bars don't respond to events by default
         return false;
+    }
+
+    @Override
+    protected String getDefaultDebugName() {
+        return "SpriteProgressBar(progress=" + String.format("%.1f", displayedProgress) + ", skill=" + skillLevel + ")";
     }
 }

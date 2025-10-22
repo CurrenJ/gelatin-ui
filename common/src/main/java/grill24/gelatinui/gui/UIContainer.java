@@ -187,6 +187,25 @@ public abstract class UIContainer extends UIElement {
         return false;
     }
 
+    @Override
+    protected void invalidateChildBounds() {
+        // Recursively invalidate bounds of all children since they depend on parent's transform
+        for (IUIElement child : children) {
+            if (child instanceof UIElement) {
+                UIElement uiChild = (UIElement) child;
+                uiChild.boundsValid = false;
+                uiChild.invalidateChildBounds(); // Recurse down the tree
+            }
+        }
+    }
+
+    @Override
+    protected void onSizeChanged() {
+        super.onSizeChanged();
+        // Invalidate layout cache on size change
+        layoutCache.invalidate();
+    }
+
     /**
      * Determine if layout cache should be invalidated based on dirty flags.
      */
@@ -218,6 +237,33 @@ public abstract class UIContainer extends UIElement {
      */
     public void forceLayout() {
         recalculateLayout();
+    }
+
+    @Override
+    public void setPosition(Vector2f position) {
+        // Only act if the position actually changed (super handles marking),
+        // but ensure layout caches are invalidated so children's global bounds are recomputed.
+        boolean changed = !this.position.equals(position);
+        super.setPosition(position);
+        if (changed) {
+            // Invalidate our layout cache since global child bounds used in bounding calculation are no longer valid
+            layoutCache.invalidate();
+
+            // Mark children as position-dirty so their cached bounds are recomputed (propagates up as needed)
+            for (IUIElement child : children) {
+                child.markDirty(DirtyFlag.POSITION);
+            }
+        }
+    }
+
+    @Override
+    public Rectangle2D getBounds() {
+        // If we or any parent is position-dirty, invalidate cached bounds to prevent stale bounds during culling
+        if (dirtyFlags.contains(DirtyFlag.POSITION)) {
+            boundsValid = false;
+            layoutCache.invalidate();
+        }
+        return super.getBounds();
     }
 
     /**
