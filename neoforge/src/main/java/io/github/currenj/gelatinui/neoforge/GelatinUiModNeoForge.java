@@ -7,10 +7,11 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraft.client.gui.screens.Screen;
 
+import io.github.currenj.gelatinui.DebugScreenRegistry;
 import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.OpenTestScreenPacket;
-import io.github.currenj.gelatinui.TestScreen;
 
 @Mod(GelatinUi.MOD_ID)
 public final class GelatinUiModNeoForge {
@@ -29,16 +30,23 @@ public final class GelatinUiModNeoForge {
     }
 
     private void handleOpenTestScreen(final OpenTestScreenPacket packet, final net.neoforged.neoforge.network.handling.IPayloadContext context) {
-        context.enqueueWork(() -> net.minecraft.client.Minecraft.getInstance().setScreen(new TestScreen()));
+        context.enqueueWork(() -> {
+            Screen screen = DebugScreenRegistry.createScreen(packet.screenId());
+            if (screen != null) {
+                net.minecraft.client.Minecraft.getInstance().setScreen(screen);
+            }
+        });
     }
 
     private void registerCommands(final RegisterCommandsEvent event) {
-        event.getDispatcher().register(net.minecraft.commands.Commands.literal("testui").executes(context -> {
-            var source = context.getSource();
-            if (source.getPlayer() != null) {
-                PacketDistributor.sendToPlayer(source.getPlayer(), new OpenTestScreenPacket());
-            }
-            return 1;
-        }));
+        for (String id : DebugScreenRegistry.getRegisteredIds()) {
+            event.getDispatcher().register(net.minecraft.commands.Commands.literal(id).executes(context -> {
+                var source = context.getSource();
+                if (source.getPlayer() != null) {
+                    PacketDistributor.sendToPlayer(source.getPlayer(), new OpenTestScreenPacket(id));
+                }
+                return 1;
+            }));
+        }
     }
 }

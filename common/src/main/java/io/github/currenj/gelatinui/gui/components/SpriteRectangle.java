@@ -102,6 +102,38 @@ public class SpriteRectangle extends UIElement {
         return this;
     }
 
+    public SpriteRectangle uv(int u, int v) {
+        if (this.sprite != null) {
+            this.sprite = new SpriteData(sprite.texture(), u, v, sprite.texW(), sprite.texH(), sprite.actualW(), sprite.actualH(), sprite.atlasW(), sprite.atlasH());
+            markDirty(DirtyFlag.CONTENT);
+        }
+        return this;
+    }
+
+    public SpriteRectangle texSize(int texW, int texH) {
+        if (this.sprite != null) {
+            this.sprite = new SpriteData(sprite.texture(), sprite.u(), sprite.v(), texW, texH, sprite.actualW(), sprite.actualH(), sprite.atlasW(), sprite.atlasH());
+            markDirty(DirtyFlag.CONTENT);
+        }
+        return this;
+    }
+
+    public SpriteRectangle actualSize(int actualW, int actualH) {
+        if (this.sprite != null) {
+            this.sprite = new SpriteData(sprite.texture(), sprite.u(), sprite.v(), sprite.texW(), sprite.texH(), actualW, actualH, sprite.atlasW(), sprite.atlasH());
+            markDirty(DirtyFlag.CONTENT);
+        }
+        return this;
+    }
+
+    public SpriteRectangle atlasSize(int atlasW, int atlasH) {
+        if (this.sprite != null) {
+            this.sprite = new SpriteData(sprite.texture(), sprite.u(), sprite.v(), sprite.texW(), sprite.texH(), sprite.actualW(), sprite.actualH(), atlasW, atlasH);
+            markDirty(DirtyFlag.CONTENT);
+        }
+        return this;
+    }
+
     public SpriteRectangle color(int color) {
         if (this.color != color) {
             this.color = color;

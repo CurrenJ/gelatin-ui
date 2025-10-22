@@ -3,9 +3,10 @@ package io.github.currenj.gelatinui.fabric.client;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 
+import io.github.currenj.gelatinui.DebugScreenRegistry;
 import io.github.currenj.gelatinui.OpenTestScreenPacket;
-import io.github.currenj.gelatinui.TestScreen;
 
 public final class GelatinUiModFabricClient implements ClientModInitializer {
     @Override
@@ -14,7 +15,12 @@ public final class GelatinUiModFabricClient implements ClientModInitializer {
 
         // Register packet receiver
         ClientPlayNetworking.registerGlobalReceiver(OpenTestScreenPacket.TYPE, (packet, context) -> {
-            context.client().execute(() -> Minecraft.getInstance().setScreen(new TestScreen()));
+            context.client().execute(() -> {
+                Screen screen = DebugScreenRegistry.createScreen(packet.screenId());
+                if (screen != null) {
+                    Minecraft.getInstance().setScreen(screen);
+                }
+            });
         });
     }
 }

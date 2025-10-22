@@ -226,7 +226,7 @@ public class HBox extends UIContainer {
                 scaledTotalWidth = padding + w;
                 first = false;
             } else {
-                scaledTotalWidth += spacing + w;
+                scaledTotalWidth += (scaleToFit ? spacing * scaleFactor : spacing) + w;
             }
             scaledMaxHeight = Math.max(scaledMaxHeight, h);
         }
@@ -331,7 +331,7 @@ public class HBox extends UIContainer {
                 }
             }
 
-            xOffset += scaledChildWidth + spacing * effectiveScale;
+            xOffset += scaledChildWidth + spacing * Math.min(effectiveScale, 1.0f);
         }
 
         layoutDirty = false;

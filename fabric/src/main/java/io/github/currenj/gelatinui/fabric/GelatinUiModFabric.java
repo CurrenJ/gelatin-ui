@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 
+import io.github.currenj.gelatinui.DebugScreenRegistry;
 import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.OpenTestScreenPacket;
 
@@ -23,15 +24,17 @@ public final class GelatinUiModFabric implements ModInitializer {
         // Register packet
         PayloadTypeRegistry.playS2C().register(OpenTestScreenPacket.TYPE, OpenTestScreenPacket.CODEC);
 
-        // Register command
+        // Register commands
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(Commands.literal("testui").executes(context -> {
-                CommandSourceStack source = context.getSource();
-                if (source.getPlayer() != null) {
-                    ServerPlayNetworking.send(source.getPlayer(), new OpenTestScreenPacket());
-                }
-                return 1;
-            }));
+            for (String id : DebugScreenRegistry.getRegisteredIds()) {
+                dispatcher.register(Commands.literal(id).executes(context -> {
+                    CommandSourceStack source = context.getSource();
+                    if (source.getPlayer() != null) {
+                        ServerPlayNetworking.send(source.getPlayer(), new OpenTestScreenPacket(id));
+                    }
+                    return 1;
+                }));
+            }
         });
     }
 }

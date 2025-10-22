@@ -226,7 +226,7 @@ public class VBox extends UIContainer {
                 scaledTotalHeight = padding + h;
                 first = false;
             } else {
-                scaledTotalHeight += spacing + h;
+                scaledTotalHeight += (scaleToFit ? spacing * scaleFactor : spacing) + h;
             }
             scaledMaxWidth = Math.max(scaledMaxWidth, w);
         }
@@ -329,7 +329,7 @@ public class VBox extends UIContainer {
             }
 
             // Update offsets with scaled height
-            yOffset += scaledChildHeight + spacing * effectiveScale;
+            yOffset += scaledChildHeight + spacing * Math.min(effectiveScale, 1.0f);
         }
 
         layoutDirty = false;

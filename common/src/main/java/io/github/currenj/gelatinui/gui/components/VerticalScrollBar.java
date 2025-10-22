@@ -47,24 +47,18 @@ public class VerticalScrollBar extends UIElement {
         int x2 = Math.max(1, (int) Math.round(size.x));
         int y2 = Math.max(1, (int) Math.round(size.y));
 
-        // Draw track
-        context.enableBlend();
-        context.fill(x1, y1, x2, y2, trackColor);
-
         // Compute thumb size and position
         float contentH = screen.getContentHeight();
         float viewH = screen.getViewHeight();
 
         if (contentH <= 0f || viewH <= 0f || contentH <= viewH) {
-            // Nothing to scroll; draw a full-size thumb
-            int tx1 = x1 + padding;
-            int tx2 = x2 - padding;
-            int ty1 = y1 + padding;
-            int ty2 = y2 - padding;
-            context.fill(tx1, ty1, tx2, ty2, hovered ? thumbHoverColor : thumbColor);
-            context.disableBlend();
+            // Nothing to scroll; hide the scrollbar
             return;
         }
+
+        // Draw track
+        context.enableBlend();
+        context.fill(x1, y1, x2, y2, trackColor);
 
         float visibleFraction = Math.min(1f, viewH / contentH);
         int trackH = y2 - y1 - padding * 2;
@@ -133,4 +127,3 @@ public class VerticalScrollBar extends UIElement {
         return barWidth;
     }
 }
-
