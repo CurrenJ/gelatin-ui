@@ -121,6 +121,13 @@ public class UI {
         return new ItemRenderer(width, height, itemStack);
     }
 
+    /**
+     * Create a rotating item ring component.
+     */
+    public static RotatingItemRing rotatingItemRing() {
+        return new RotatingItemRing();
+    }
+
     // Color utility methods
 
     /**

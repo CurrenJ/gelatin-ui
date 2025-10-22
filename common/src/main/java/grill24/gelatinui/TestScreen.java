@@ -8,6 +8,7 @@ import grill24.gelatinui.gui.components.Label;
 import grill24.gelatinui.gui.components.SpriteButton;
 import grill24.gelatinui.gui.components.SpriteProgressBar;
 import grill24.gelatinui.gui.components.ItemRenderer;
+import grill24.gelatinui.gui.components.RotatingItemRing;
 import grill24.gelatinui.gui.minecraft.MinecraftRenderContext;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -116,6 +117,30 @@ public class TestScreen extends GelatinUIScreen {
         itemBox.addChild(scaledRenderer);
 
         outerVBox.addChild(itemBox);
+
+        // Add rotating item ring demo
+        Label ringLabel = UI.label("Rotating Item Ring:", UI.rgb(200, 255, 200));
+        ringLabel.updateSize(tempContext);
+        outerVBox.addChild(ringLabel);
+
+        RotatingItemRing ring = UI.rotatingItemRing()
+                .radius(60)
+                .defaultAngularSpeed(0.8f)
+                .defaultItemScale(1.0f)
+                .hoverItemScale(1.3f)
+                .selectedItemScale(1.5f);
+        java.util.List<ItemStack> ringItems = new java.util.ArrayList<>();
+        ringItems.add(new ItemStack(Items.DIAMOND));
+        ringItems.add(new ItemStack(Items.GOLD_INGOT, 16));
+        ringItems.add(new ItemStack(Items.APPLE, 5));
+        ringItems.add(new ItemStack(Items.DIAMOND_SWORD));
+        ringItems.add(new ItemStack(Items.EMERALD, 32));
+        ringItems.add(new ItemStack(Items.IRON_INGOT, 12));
+        ring.setItems(ringItems);
+        // Give the ring some breathing room
+        ring.setPosition(new org.joml.Vector2f(0, 0));
+        ring.setSize(new org.joml.Vector2f(180, 180));
+        outerVBox.addChild(ring);
 
         outerVBox.addChild(textVBox);
 
