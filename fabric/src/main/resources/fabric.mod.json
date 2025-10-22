@@ -16,10 +16,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "grill24.gelatinui.fabric.GelatinUiModFabric"
+      "io.github.currenj.gelatinui.fabric.GelatinUiModFabric"
     ],
     "client": [
-      "grill24.gelatinui.fabric.client.GelatinUiModFabricClient"
+      "io.github.currenj.gelatinui.fabric.client.GelatinUiModFabricClient"
     ],
     "fabric-datagen": [
     ]
