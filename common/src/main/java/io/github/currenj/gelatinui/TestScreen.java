@@ -9,6 +9,7 @@ import io.github.currenj.gelatinui.gui.components.SpriteButton;
 import io.github.currenj.gelatinui.gui.components.SpriteProgressBar;
 import io.github.currenj.gelatinui.gui.components.ItemRenderer;
 import io.github.currenj.gelatinui.gui.components.RotatingItemRing;
+import io.github.currenj.gelatinui.gui.components.ItemTabs;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -47,11 +48,10 @@ public class TestScreen extends GelatinUIScreen {
         );
 
         // Create the screen-level title label and size it immediately
-        screenTitleLabel = UI.label("New UI System", UI.rgb(255, 255, 255))
+        screenTitleLabel = UI.label(tempContext, "New UI System", UI.rgb(255, 255, 255))
             .centered(true);
         // Snap scale so sizing reflects the final visual size
         screenTitleLabel.setTargetScale(1, false);
-        screenTitleLabel.updateSize(tempContext);
 
         // Build inner VBox with labels
         textVBox = UI.vbox()
@@ -59,14 +59,9 @@ public class TestScreen extends GelatinUIScreen {
             .alignment(VBox.Alignment.CENTER);
 
         // Add labels demonstrating the new system
-        titleLabel = UI.label("New GUI System", UI.rgb(255, 255, 255));
-        subtitleLabel = UI.label("With Dirty Flags & Caching", UI.rgb(200, 200, 200));
-        infoLabel = UI.label("This text is rendered efficiently!", UI.rgb(150, 255, 150));
-
-        // Update label sizes before adding to layout (best-effort)
-        titleLabel.updateSize(tempContext);
-        subtitleLabel.updateSize(tempContext);
-        infoLabel.updateSize(tempContext);
+        titleLabel = UI.label(tempContext, "New GUI System", UI.rgb(255, 255, 255));
+        subtitleLabel = UI.label(tempContext, "With Dirty Flags & Caching", UI.rgb(200, 200, 200));
+        infoLabel = UI.label(tempContext, "This text is rendered efficiently!", UI.rgb(150, 255, 150));
 
         // Add children to inner VBox
         textVBox.addChild(titleLabel);
@@ -91,8 +86,7 @@ public class TestScreen extends GelatinUIScreen {
         outerVBox.addChild(screenTitleLabel);
 
         // Demonstrate ItemRenderer component
-        Label itemLabel = UI.label("Item Renderers:", UI.rgb(200, 200, 255));
-        itemLabel.updateSize(tempContext);
+        Label itemLabel = UI.label(tempContext, "Item Renderers:", UI.rgb(200, 200, 255));
         outerVBox.addChild(itemLabel);
 
         // Create a horizontal box to display multiple items
@@ -124,8 +118,7 @@ public class TestScreen extends GelatinUIScreen {
         outerVBox.addChild(itemBox);
 
         // Add rotating item ring demo
-        Label ringLabel = UI.label("Rotating Item Ring:", UI.rgb(200, 255, 200));
-        ringLabel.updateSize(tempContext);
+        Label ringLabel = UI.label(tempContext, "Rotating Item Ring:", UI.rgb(200, 255, 200));
         ringLabel.setDebugName("Ring Label");
         outerVBox.addChild(ringLabel);
 
@@ -161,28 +154,28 @@ public class TestScreen extends GelatinUIScreen {
         // Progress control buttons
         SpriteButton increaseProgressBtn = UI.spriteButton(200, 10, UI.rgb(80, 200, 120))
                 .text("Increase Progress", UI.rgb(255, 255, 255))
-                .onClick(() -> {
+                .onClick(e -> {
                     float newProgress = Math.min(1.0f, progressBar.getProgress() + 0.1f);
                     progressBar.progress(newProgress);
                 });
 
         SpriteButton decreaseProgressBtn = UI.spriteButton(200, 10, UI.rgb(200, 80, 80))
                 .text("Decrease Progress", UI.rgb(255, 255, 255))
-                .onClick(() -> {
+                .onClick(e -> {
                     float newProgress = Math.max(0.0f, progressBar.getProgress() - 0.1f);
                     progressBar.progress(newProgress);
                 });
 
         SpriteButton increaseSkillBtn = UI.spriteButton(200, 10, UI.rgb(200, 180, 50))
                 .text("Increase Skill (+15)", UI.rgb(255, 255, 255))
-                .onClick(() -> {
+                .onClick(e -> {
                     int newSkill = Math.min(75, progressBar.getSkillLevel() + 15);
                     progressBar.skillLevel(newSkill);
                 });
 
         SpriteButton decreaseSkillBtn = UI.spriteButton(200, 10, UI.rgb(150, 100, 50))
                 .text("Decrease Skill (-15)", UI.rgb(255, 255, 255))
-                .onClick(() -> {
+                .onClick(e -> {
                     int newSkill = Math.max(0, progressBar.getSkillLevel() - 15);
                     progressBar.skillLevel(newSkill);
                 });
@@ -191,7 +184,7 @@ public class TestScreen extends GelatinUIScreen {
         SpriteButton closeBtn = UI.spriteButton(128, 10, UI.rgb(180, 50, 50))
                 .texture(ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_background.png"), 9, 9, 128, 128)
                 .text("Close", UI.rgb(255, 255, 255))
-                .onClick(this::onClose);
+                .onClick(e -> onClose());
 
         // Cycle Inner button
         SpriteButton cycleInnerBtn = UI.spriteButton(200, 10, UI.rgb(80, 120, 200))
@@ -227,7 +220,7 @@ public class TestScreen extends GelatinUIScreen {
         // Note: Traditional Minecraft widgets were replaced with SpriteRectangle-based UI elements.
     }
 
-    private void cycleAlignment() {
+    private void cycleAlignment(UIEvent e) {
         if (textVBox == null) return;
         VBox.Alignment current = textVBox.getAlignment();
         VBox.Alignment next = switch (current) {
@@ -240,7 +233,7 @@ public class TestScreen extends GelatinUIScreen {
         textVBox.markDirty(io.github.currenj.gelatinui.gui.DirtyFlag.LAYOUT);
     }
 
-    private void cycleOuterAlignment() {
+    private void cycleOuterAlignment(UIEvent e) {
         if (outerVBox == null) return;
         VBox.Alignment current = outerVBox.getAlignment();
         VBox.Alignment next = switch (current) {

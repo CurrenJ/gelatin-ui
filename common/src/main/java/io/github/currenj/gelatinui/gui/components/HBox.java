@@ -1,9 +1,6 @@
 package io.github.currenj.gelatinui.gui.components;
 
-import io.github.currenj.gelatinui.gui.DirtyFlag;
-import io.github.currenj.gelatinui.gui.IUIElement;
-import io.github.currenj.gelatinui.gui.IRenderContext;
-import io.github.currenj.gelatinui.gui.UIContainer;
+import io.github.currenj.gelatinui.gui.*;
 import org.joml.Vector2f;
 
 /**
@@ -11,7 +8,7 @@ import org.joml.Vector2f;
  * Stacks children horizontally with configurable spacing and alignment.
  * Implements efficient layout caching to avoid redundant calculations.
  */
-public class HBox extends UIContainer {
+public class HBox extends UIContainer<HBox> {
     /**
      * Vertical alignment options for children
      */
@@ -215,7 +212,7 @@ public class HBox extends UIContainer {
             if (!child.isVisible()) continue;
             Vector2f childSize = child.getSize();
             float childScale = 1.0f;
-            if (!scaleToFit && child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild) {
+            if (!scaleToFit && child instanceof UIElement<?> uiChild) {
                 childScale = uiChild.getCurrentScale();
             } else if (scaleToFit) {
                 childScale = scaleFactor;
@@ -269,14 +266,14 @@ public class HBox extends UIContainer {
             if (scaleFactor < 1.0f) {
                 for (IUIElement child : children) {
                     if (!child.isVisible()) continue;
-                    if (child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild) {
+                    if (child instanceof UIElement<?> uiChild) {
                         uiChild.scale(scaleFactor);
                     }
                 }
             } else {
                 for (IUIElement child : children) {
                     if (!child.isVisible()) continue;
-                    if (child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild) {
+                    if (child instanceof UIElement<?> uiChild) {
                         uiChild.scale(1.0f);
                     }
                 }
@@ -344,6 +341,11 @@ public class HBox extends UIContainer {
             layoutDirty = true;
         }
         super.recalculateLayout();
+    }
+
+    @Override
+    protected HBox self() {
+        return null;
     }
 
     @Override

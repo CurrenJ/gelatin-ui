@@ -21,7 +21,7 @@ import java.util.List;
  * All position and scale transitions are continuous (exponential smoothing via target positions/scales),
  * avoiding any jumps or snaps.
  */
-public class RotatingItemRing extends UIContainer {
+public class RotatingItemRing extends UIContainer<RotatingItemRing> {
     // Geometry
     private float radius = 64f;                 // ring radius in local coords
     private float defaultItemScale = 1.0f;      // base element scale for items
@@ -105,7 +105,7 @@ public class RotatingItemRing extends UIContainer {
      * Add a single item to the ring (at the end).
      */
     public RotatingItemRing addItem(ItemStack stack) {
-        ItemRenderer child = new ItemRenderer(stack);
+        ItemRenderer.ItemRendererImpl child = new ItemRenderer.ItemRendererImpl(stack);
         // Start with base scale
         child.setTargetScale(defaultItemScale, false);
         addChild(child);
@@ -314,6 +314,11 @@ public class RotatingItemRing extends UIContainer {
                 return false;
             }
         }
+    }
+
+    @Override
+    protected RotatingItemRing self() {
+        return this;
     }
 
     private int resolveDirectChildIndex(IUIElement target) {

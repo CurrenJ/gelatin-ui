@@ -9,7 +9,7 @@ import org.joml.Vector2f;
  * A simple colored rectangle component.
  * Can be used for backgrounds, borders, or simple geometric shapes.
  */
-public class Rectangle extends UIElement {
+public class Rectangle extends UIElement<Rectangle> {
     private int color;
 
     public Rectangle(float width, float height, int color) {
@@ -43,6 +43,11 @@ public class Rectangle extends UIElement {
         int y2 = (int) (position.y + size.y);
 
         context.fill(x1, y1, x2, y2, color);
+    }
+
+    @Override
+    protected Rectangle self() {
+        return this;
     }
 
     public int getColor() {

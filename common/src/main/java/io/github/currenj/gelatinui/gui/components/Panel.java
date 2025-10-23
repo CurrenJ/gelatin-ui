@@ -8,7 +8,7 @@ import io.github.currenj.gelatinui.gui.UIContainer;
  * A generic panel container with optional background.
  * Can be used as a simple grouping container or with visual styling.
  */
-public class Panel extends UIContainer {
+public class Panel extends UIContainer<Panel> {
     private int backgroundColor = 0x00000000; // Transparent by default
     private boolean drawBackground = false;
 
@@ -49,6 +49,11 @@ public class Panel extends UIContainer {
 
             context.fill(x1, y1, x2, y2, backgroundColor);
         }
+    }
+
+    @Override
+    protected Panel self() {
+        return this;
     }
 
     public int getBackgroundColor() {

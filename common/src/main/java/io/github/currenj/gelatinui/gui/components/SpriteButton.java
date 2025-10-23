@@ -9,8 +9,7 @@ import org.joml.Vector2f;
  * A clickable button based on SpriteRectangle with hover and pressed visual states.
  * Provides a convenience onClick callback.
  */
-public class SpriteButton extends SpriteRectangle {
-    private Runnable onClick = null;
+public class SpriteButton extends SpriteRectangle<SpriteButton> {
     // pressed visual timer in seconds
     private float pressedTimer = 0f;
     private static final float PRESSED_DISPLAY_TIME = 0.12f;
@@ -25,11 +24,6 @@ public class SpriteButton extends SpriteRectangle {
 
     public SpriteButton(Vector2f size, int color) {
         super(size, color);
-    }
-
-    public SpriteButton onClick(Runnable callback) {
-        this.onClick = callback;
-        return this;
     }
 
     // Provide fluent overrides so chaining from SpriteRectangle returns SpriteButton
@@ -102,10 +96,7 @@ public class SpriteButton extends SpriteRectangle {
             this.pressedTimer = PRESSED_DISPLAY_TIME;
             // New: bounce click feedback
             this.playClickBounce();
-
-            if (onClick != null) {
-                onClick.run();
-            }
+            this.onClickAction.onClick(event);
 
             // Consume the click so parents don't also trigger
             event.consume();
@@ -119,5 +110,10 @@ public class SpriteButton extends SpriteRectangle {
     protected String getDefaultDebugName() {
         String textContent = getText() != null && !getText().isEmpty() ? "\"" + getText().replace("\"", "\\\"") + "\"" : "empty";
         return "SpriteButton(" + textContent + ")";
+    }
+
+    @Override
+    protected SpriteButton self() {
+        return this;
     }
 }

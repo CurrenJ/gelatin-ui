@@ -12,7 +12,7 @@ import org.joml.Vector2f;
  * A UI component for rendering Minecraft items.
  * Displays an ItemStack with optional count overlay.
  */
-public class ItemRenderer extends UIElement {
+public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<T> {
     private ItemStack itemStack = ItemStack.EMPTY;
     private boolean showCount = true;
     private float itemScale = 1.0f;
@@ -50,34 +50,34 @@ public class ItemRenderer extends UIElement {
     /**
      * Set the ItemStack to render.
      */
-    public ItemRenderer itemStack(ItemStack itemStack) {
+    public T itemStack(ItemStack itemStack) {
         if (!ItemStack.matches(this.itemStack, itemStack)) {
             this.itemStack = itemStack;
             markDirty(DirtyFlag.CONTENT);
         }
-        return this;
+        return self();
     }
 
     /**
      * Set whether to show the item count overlay.
      */
-    public ItemRenderer showCount(boolean showCount) {
+    public T showCount(boolean showCount) {
         if (this.showCount != showCount) {
             this.showCount = showCount;
             markDirty(DirtyFlag.CONTENT);
         }
-        return this;
+        return self();
     }
 
     /**
      * Set the scale of the rendered item.
      */
-    public ItemRenderer itemScale(float scale) {
+    public T itemScale(float scale) {
         if (this.itemScale != scale) {
             this.itemScale = scale;
             markDirty(DirtyFlag.CONTENT);
         }
-        return this;
+        return self();
     }
 
     /**
@@ -169,5 +169,28 @@ public class ItemRenderer extends UIElement {
     protected String getDefaultDebugName() {
         String itemName = itemStack.isEmpty() ? "empty" : itemStack.getItem().toString();
         return "ItemRenderer(item=" + itemName + ")";
+    }
+
+    public static class ItemRendererImpl extends ItemRenderer<ItemRendererImpl> {
+        public ItemRendererImpl() {
+            super();
+        }
+
+        public ItemRendererImpl(float width, float height) {
+            super(width, height);
+        }
+
+        public ItemRendererImpl(ItemStack itemStack) {
+            super(itemStack);
+        }
+
+        public ItemRendererImpl(float width, float height, ItemStack itemStack) {
+            super(width, height, itemStack);
+        }
+
+        @Override
+        protected ItemRendererImpl self() {
+            return this;
+        }
     }
 }

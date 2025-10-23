@@ -1,9 +1,6 @@
 package io.github.currenj.gelatinui.gui.components;
 
-import io.github.currenj.gelatinui.gui.DirtyFlag;
-import io.github.currenj.gelatinui.gui.IUIElement;
-import io.github.currenj.gelatinui.gui.IRenderContext;
-import io.github.currenj.gelatinui.gui.UIContainer;
+import io.github.currenj.gelatinui.gui.*;
 import org.joml.Vector2f;
 
 /**
@@ -11,7 +8,7 @@ import org.joml.Vector2f;
  * Stacks children vertically with configurable spacing and alignment.
  * Implements efficient layout caching to avoid redundant calculations.
  */
-public class VBox extends UIContainer {
+public class VBox extends UIContainer<VBox> {
     /**
      * Horizontal alignment options for children
      */
@@ -215,7 +212,7 @@ public class VBox extends UIContainer {
             if (!child.isVisible()) continue;
             Vector2f childSize = child.getSize();
             float childScale = 1.0f;
-            if (!scaleToFit && child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild) {
+            if (!scaleToFit && child instanceof UIElement<?> uiChild) {
                 childScale = uiChild.getCurrentScale();
             } else if (scaleToFit) {
                 childScale = scaleFactor;
@@ -308,13 +305,13 @@ public class VBox extends UIContainer {
             // Set child position in local coordinates (relative to this container)
             Vector2f targetPos = new Vector2f(xOffsetLocal, yOffset);
             if (animatePositions) {
-                if (child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild) {
+                if (child instanceof UIElement<?> uiChild) {
                     uiChild.setTargetPosition(targetPos, true);
                 } else {
                     child.setPosition(targetPos);
                 }
             } else {
-                if (child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild) {
+                if (child instanceof UIElement<?> uiChild) {
                     if (uiChild.isAnimating()) {
                         Vector2f currentTarget = uiChild.getTargetPosition();
                         if (!currentTarget.equals(targetPos, 0.001f)) {
@@ -343,6 +340,11 @@ public class VBox extends UIContainer {
             layoutDirty = true;
         }
         super.recalculateLayout();
+    }
+
+    @Override
+    protected VBox self() {
+        return this;
     }
 
     @Override

@@ -10,7 +10,7 @@ import org.joml.Vector2f;
  * A rectangle that can draw a texture (sprite) or fallback to a solid color.
  * Also supports optional centered text and simple hover/pressed textures.
  */
-public class SpriteRectangle extends UIElement {
+public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIElement<T> {
     private int color = 0xFFFFFFFF;
     // Primary sprite data (may be null)
     private SpriteData sprite = null;
@@ -64,50 +64,50 @@ public class SpriteRectangle extends UIElement {
     /**
      * Primary sprite setter using the SpriteData record.
      */
-    public SpriteRectangle texture(SpriteData data) {
+    public T texture(SpriteData data) {
         this.sprite = data;
         markDirty(DirtyFlag.CONTENT);
-        return this;
+        return self();
     }
 
-    public SpriteRectangle hoverTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight) {
+    public T hoverTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight) {
         SpriteData d = new SpriteData(texture, u, v, texWidth, texHeight);
         return hoverTexture(d);
     }
 
-    public SpriteRectangle hoverTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight, int actualWidth, int actualHeight) {
+    public T hoverTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight, int actualWidth, int actualHeight) {
         SpriteData d = new SpriteData(texture, u, v, texWidth, texHeight, actualWidth, actualHeight);
         return hoverTexture(d);
     }
 
-    public SpriteRectangle hoverTexture(SpriteData data) {
+    public T hoverTexture(SpriteData data) {
         this.hoverSprite = data;
         markDirty(DirtyFlag.CONTENT);
-        return this;
+        return self();
     }
 
-    public SpriteRectangle pressedTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight) {
+    public T pressedTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight) {
         SpriteData d = new SpriteData(texture, u, v, texWidth, texHeight);
         return pressedTexture(d);
     }
 
-    public SpriteRectangle pressedTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight, int actualWidth, int actualHeight) {
+    public T pressedTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight, int actualWidth, int actualHeight) {
         SpriteData d = new SpriteData(texture, u, v, texWidth, texHeight, actualWidth, actualHeight);
         return pressedTexture(d);
     }
 
-    public SpriteRectangle pressedTexture(SpriteData data) {
+    public T pressedTexture(SpriteData data) {
         this.pressedSprite = data;
         markDirty(DirtyFlag.CONTENT);
-        return this;
+        return self();
     }
 
-    public SpriteRectangle uv(int u, int v) {
+    public T uv(int u, int v) {
         if (this.sprite != null) {
             this.sprite = new SpriteData(sprite.texture(), u, v, sprite.texW(), sprite.texH(), sprite.actualW(), sprite.actualH(), sprite.atlasW(), sprite.atlasH());
             markDirty(DirtyFlag.CONTENT);
         }
-        return this;
+        return self();
     }
 
     public SpriteRectangle texSize(int texW, int texH) {
@@ -240,6 +240,25 @@ public class SpriteRectangle extends UIElement {
             default -> {
                 return false;
             }
+        }
+    }
+
+    public static class SpriteRectangleImpl extends SpriteRectangle<SpriteRectangleImpl> {
+        public SpriteRectangleImpl(float width, float height, int color) {
+            super(width, height, color);
+        }
+
+        public SpriteRectangleImpl(float width, float height, ResourceLocation texture) {
+            super(width, height, texture);
+        }
+
+        public SpriteRectangleImpl(Vector2f size, int color) {
+            super(size, color);
+        }
+
+        @Override
+        protected SpriteRectangleImpl self() {
+            return this;
         }
     }
 }

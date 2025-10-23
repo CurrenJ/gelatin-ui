@@ -11,7 +11,7 @@ import java.util.List;
  * Base implementation of IUIElement with dirty-flag system and caching.
  * This class provides efficient update mechanisms to avoid redundant calculations.
  */
-public abstract class UIElement implements IUIElement {
+public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     // Debug rendering flags (global for all UI elements)
     private static boolean debugShowBounds = false;
     private static boolean debugShowGrid = false;
@@ -65,6 +65,35 @@ public abstract class UIElement implements IUIElement {
 
     // Event listeners
     protected List<UIEventListener> eventListeners = new ArrayList<>();
+
+    // Action handlers for common events
+    protected ClickAction onClickAction = null;
+    protected MouseEnterAction onMouseEnterAction = null;
+    protected MouseExitAction onMouseExitAction = null;
+
+    /**
+     * Functional interface for click actions.
+     */
+    @FunctionalInterface
+    public interface ClickAction {
+        void onClick(UIEvent event);
+    }
+
+    /**
+     * Functional interface for mouse enter actions.
+     */
+    @FunctionalInterface
+    public interface MouseEnterAction {
+        void onMouseEnter(UIEvent event);
+    }
+
+    /**
+     * Functional interface for mouse exit actions.
+     */
+    @FunctionalInterface
+    public interface MouseExitAction {
+        void onMouseExit(UIEvent event);
+    }
 
     @Override
     public void update(float deltaTime) {
@@ -447,7 +476,7 @@ public abstract class UIElement implements IUIElement {
 
     @Override
     public boolean needsUpdate() {
-        return isDirty || isAnimating || !animations.isEmpty();
+        return isDirty || !dirtyFlags.isEmpty() || isAnimating || !animations.isEmpty();
     }
 
     public boolean isAnimating() {
@@ -501,6 +530,9 @@ public abstract class UIElement implements IUIElement {
     @Override
     public void setParent(IUIElement parent) {
         this.parent = parent;
+        // Invalidate bounds cache since global position calculation depends on parent chain
+        boundsValid = false;
+        cachedBounds = null;
     }
 
     @Override
@@ -605,6 +637,27 @@ public abstract class UIElement implements IUIElement {
      * @return true if event was consumed
      */
     protected boolean onEvent(UIEvent event) {
+        // Dispatch to registered action handlers
+        switch (event.getType()) {
+            case CLICK:
+                if (onClickAction != null) {
+                    onClickAction.onClick(event);
+                    return true;
+                }
+                break;
+            case HOVER_ENTER:
+                if (onMouseEnterAction != null) {
+                    onMouseEnterAction.onMouseEnter(event);
+                    return true;
+                }
+                break;
+            case HOVER_EXIT:
+                if (onMouseExitAction != null) {
+                    onMouseExitAction.onMouseExit(event);
+                    return true;
+                }
+                break;
+        }
         return false;
     }
 
@@ -684,6 +737,88 @@ public abstract class UIElement implements IUIElement {
     protected void recalculateLayout() {
         // Default: no-op for leaf elements. Containers should override.
     }
+
+    // ===== Action Registration Methods =====
+
+    /**
+     * Register a click action handler for this element.
+     * This provides an easy way to respond to click events.
+     *
+     * @param action The action to execute when this element is clicked
+     * @return this element for method chaining
+     */
+    public T onClick(ClickAction action) {
+        this.onClickAction = action;
+        return self();
+    }
+
+    /**
+     * Remove the click action handler from this element.
+     *
+     * @return this element for method chaining
+     */
+    public T clearOnClick() {
+        this.onClickAction = null;
+        return self();
+    }
+
+    /**
+     * Register a mouse enter action handler for this element.
+     * This provides an easy way to respond to hover enter events.
+     *
+     * @param action The action to execute when mouse enters this element
+     * @return this element for method chaining
+     */
+    public T onMouseEnter(MouseEnterAction action) {
+        this.onMouseEnterAction = action;
+        return self();
+    }
+
+    /**
+     * Remove the mouse enter action handler from this element.
+     *
+     * @return this element for method chaining
+     */
+    public T clearOnMouseEnter() {
+        this.onMouseEnterAction = null;
+        return self();
+    }
+
+    /**
+     * Register a mouse exit action handler for this element.
+     * This provides an easy way to respond to hover exit events.
+     *
+     * @param action The action to execute when mouse exits this element
+     * @return this element for method chaining
+     */
+    public T onMouseExit(MouseExitAction action) {
+        this.onMouseExitAction = action;
+        return self();
+    }
+
+    /**
+     * Remove the mouse exit action handler from this element.
+     *
+     * @return this element for method chaining
+     */
+    public T clearOnMouseExit() {
+        this.onMouseExitAction = null;
+        return self();
+    }
+
+    /**
+     * Clear all registered action handlers (onClick, onMouseEnter, onMouseExit).
+     *
+     * @return this element for method chaining
+     */
+    public T clearAllActions() {
+        this.onClickAction = null;
+        this.onMouseEnterAction = null;
+        this.onMouseExitAction = null;
+        return self();
+    }
+
+    // ===== Debug Methods =====
 
     /**
      * Toggle debug mode to show semi-transparent bounds.
@@ -810,4 +945,6 @@ public abstract class UIElement implements IUIElement {
     public static void clearRenderedElements() {
         renderedElementNames.clear();
     }
+
+    protected abstract T self();
 }

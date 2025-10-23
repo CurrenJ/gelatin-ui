@@ -40,8 +40,8 @@ public class UI {
     /**
      * Create a new Label with text and color.
      */
-    public static Label label(String text, int color) {
-        return new Label(text, color);
+    public static Label label(IRenderContext context, String text, int color) {
+        return new Label(text, color).init(context);
     }
 
     /**
@@ -54,22 +54,22 @@ public class UI {
     /**
      * Create a new SpriteRectangle backed by a texture.
      */
-    public static SpriteRectangle spriteRectangle(float width, float height, ResourceLocation texture) {
-        return new SpriteRectangle(width, height, texture);
+    public static SpriteRectangle.SpriteRectangleImpl spriteRectangle(float width, float height, ResourceLocation texture) {
+        return new SpriteRectangle.SpriteRectangleImpl(width, height, texture);
     }
 
     /**
      * Create a new SpriteRectangle backed by a solid color.
      */
-    public static SpriteRectangle spriteRectangle(float width, float height, int color) {
-        return new SpriteRectangle(width, height, color);
+    public static SpriteRectangle.SpriteRectangleImpl spriteRectangle(float width, float height, int color) {
+        return new SpriteRectangle.SpriteRectangleImpl(width, height, color);
     }
 
     /**
      * Create a new SpriteButton backed by a texture.
      */
-    public static SpriteButton spriteButton(float width, float height, ResourceLocation texture) {
-        return new SpriteButton(width, height, texture);
+    public static SpriteRectangle.SpriteRectangleImpl spriteButton(float width, float height, ResourceLocation texture) {
+        return new SpriteRectangle.SpriteRectangleImpl(width, height, texture);
     }
 
     /**
@@ -96,29 +96,57 @@ public class UI {
     /**
      * Create a new ItemRenderer with default size (16x16).
      */
-    public static ItemRenderer itemRenderer() {
-        return new ItemRenderer();
+    public static ItemRenderer.ItemRendererImpl itemRenderer() {
+        return new ItemRenderer.ItemRendererImpl();
     }
 
     /**
      * Create a new ItemRenderer with an ItemStack.
      */
-    public static ItemRenderer itemRenderer(ItemStack itemStack) {
-        return new ItemRenderer(itemStack);
+    public static ItemRenderer.ItemRendererImpl itemRenderer(ItemStack itemStack) {
+        return new ItemRenderer.ItemRendererImpl(itemStack);
     }
 
     /**
      * Create a new ItemRenderer with custom size.
      */
-    public static ItemRenderer itemRenderer(float width, float height) {
-        return new ItemRenderer(width, height);
+    public static ItemRenderer.ItemRendererImpl itemRenderer(float width, float height) {
+        return new ItemRenderer.ItemRendererImpl(width, height);
     }
 
     /**
      * Create a new ItemRenderer with custom size and ItemStack.
      */
-    public static ItemRenderer itemRenderer(float width, float height, ItemStack itemStack) {
-        return new ItemRenderer(width, height, itemStack);
+    public static ItemRenderer.ItemRendererImpl itemRenderer(float width, float height, ItemStack itemStack) {
+        return new ItemRenderer.ItemRendererImpl(width, height, itemStack);
+    }
+
+    /**
+     * Create a new ItemButton with default size (16x16).
+     */
+    public static ItemButton itemButton() {
+        return new ItemButton();
+    }
+
+    /**
+     * Create a new ItemButton with an ItemStack.
+     */
+    public static ItemButton itemButton(ItemStack itemStack) {
+        return new ItemButton(itemStack);
+    }
+
+    /**
+     * Create a new ItemButton with custom size.
+     */
+    public static ItemButton itemButton(float width, float height) {
+        return new ItemButton(width, height);
+    }
+
+    /**
+     * Create a new ItemButton with custom size and ItemStack.
+     */
+    public static ItemButton itemButton(float width, float height, ItemStack itemStack) {
+        return new ItemButton(width, height, itemStack);
     }
 
     /**
@@ -126,6 +154,13 @@ public class UI {
      */
     public static RotatingItemRing rotatingItemRing() {
         return new RotatingItemRing();
+    }
+
+    /**
+     * Create a new ItemTabs component.
+     */
+    public static ItemTabs itemTabs() {
+        return new ItemTabs();
     }
 
     // Color utility methods

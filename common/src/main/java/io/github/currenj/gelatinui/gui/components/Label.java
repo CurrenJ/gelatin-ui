@@ -10,7 +10,7 @@ import org.joml.Vector2f;
  * A simple text label component.
  * Renders text with configurable color and automatically sizes to text dimensions.
  */
-public class Label extends UIElement {
+public class Label extends UIElement<Label> {
     private String text;
     private int color;
     private boolean centered;
@@ -18,6 +18,7 @@ public class Label extends UIElement {
     // Measured base size (unscaled) obtained via updateSize(context)
     private float baseWidth = 0f;
     private float baseHeight = 0f;
+    private boolean needsSizeUpdate = true;
 
     public Label(String text) {
         this(text, 0xFFFFFFFF, false);
@@ -31,6 +32,8 @@ public class Label extends UIElement {
         this.text = text;
         this.color = color;
         this.centered = centered;
+
+        markDirty(DirtyFlag.CONTENT, DirtyFlag.SIZE);
     }
 
     public Label text(String text) {
@@ -57,6 +60,12 @@ public class Label extends UIElement {
         return this;
     }
 
+    public Label init(IRenderContext renderContext)
+    {
+        updateSize(renderContext);
+        return this;
+    }
+
     /**
      * Delegate scale to base UIElement animation system
      */
@@ -75,12 +84,21 @@ public class Label extends UIElement {
         // When scale changes, it triggers a SIZE dirty flag.
         // The size field should hold the BASE size (unscaled) so that calculateBounds() can apply scale correctly.
         // Do nothing here - size is already set to base dimensions by updateSize().
+        needsSizeUpdate = true;
     }
 
     @Override
     protected void renderSelf(IRenderContext context) {
         if (text == null || text.isEmpty()) {
             return;
+        }
+
+        if (needsSizeUpdate) {
+            // Text size can be retrieved through font in the context, so we need to do this in the render pass when context is available.
+            // Probably should be done in update pass. When we change text, we mark SIZE dirty, which triggers onSizeChanged and marks needsSizeUpdate.
+            // Without this, changing text at runtime would not update size/bounds.
+            updateSize(context);
+            needsSizeUpdate = false;
         }
 
         // When UIElement.render has applied translation and scaling (Minecraft path), we should draw at origin.
@@ -141,5 +159,10 @@ public class Label extends UIElement {
     protected String getDefaultDebugName() {
         String textContent = text != null && !text.isEmpty() ? "\"" + text.replace("\"", "\\\"") + "\"" : "empty";
         return "Label(" + textContent + ")";
+    }
+
+    @Override
+    protected Label self() {
+        return this;
     }
 }

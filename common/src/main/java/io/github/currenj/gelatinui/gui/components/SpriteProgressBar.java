@@ -11,7 +11,7 @@ import org.joml.Vector2f;
  * A progress bar component with skill level-based visual embellishments.
  * Renders a layered sprite-based progress bar with optional decorations based on skill level.
  */
-public class SpriteProgressBar extends SpriteRectangle {
+public class SpriteProgressBar extends SpriteRectangle<SpriteProgressBar> {
     // Texture resources
     public static final ResourceLocation BAR_BACKGROUND = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_background.png");
     public static final ResourceLocation BAR_GOLD_OUTLINE = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_gold_outline.png");
@@ -182,5 +182,10 @@ public class SpriteProgressBar extends SpriteRectangle {
     @Override
     protected String getDefaultDebugName() {
         return "SpriteProgressBar(progress=" + String.format("%.1f", displayedProgress) + ", skill=" + skillLevel + ")";
+    }
+
+    @Override
+    protected SpriteProgressBar self() {
+        return this;
     }
 }

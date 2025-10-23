@@ -9,7 +9,7 @@ import java.util.*;
  * Base class for container elements that can hold children.
  * Implements efficient child management with layout caching and dirty propagation.
  */
-public abstract class UIContainer extends UIElement {
+public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T> {
     // Children collection
     protected List<IUIElement> children = new ArrayList<>();
 
@@ -82,7 +82,7 @@ public abstract class UIContainer extends UIElement {
 
     @Override
     public void update(float deltaTime) {
-        if (!needsUpdate() && !anyChildNeedsUpdate()) {
+        if (!needsUpdate()) {
             return; // Skip if container and all children are clean
         }
 
@@ -187,14 +187,17 @@ public abstract class UIContainer extends UIElement {
         return false;
     }
 
+    /**
+     * Invalidate bounds of all descendants recursively.
+     * Called when this element's transform changes, which affects all child bounds.
+     */
     @Override
     protected void invalidateChildBounds() {
-        // Recursively invalidate bounds of all children since they depend on parent's transform
         for (IUIElement child : children) {
-            if (child instanceof UIElement) {
-                UIElement uiChild = (UIElement) child;
+            if (child instanceof UIElement uiChild) {
                 uiChild.boundsValid = false;
-                uiChild.invalidateChildBounds(); // Recurse down the tree
+                uiChild.cachedBounds = null;
+                uiChild.invalidateChildBounds();
             }
         }
     }
@@ -264,6 +267,11 @@ public abstract class UIContainer extends UIElement {
             layoutCache.invalidate();
         }
         return super.getBounds();
+    }
+
+    @Override
+    public boolean needsUpdate() {
+        return super.needsUpdate() || anyChildNeedsUpdate();
     }
 
     /**

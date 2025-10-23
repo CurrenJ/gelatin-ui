@@ -11,7 +11,7 @@ import org.joml.Vector2f;
  * to jump the scroll position. This implementation intentionally keeps interaction minimal
  * (click-to-jump) to avoid adding drag state to UIScreen; it can be extended later.
  */
-public class VerticalScrollBar extends UIElement {
+public class VerticalScrollBar extends UIElement<VerticalScrollBar> {
     private final UIScreen screen;
     private int barWidth = 12;
     private int padding = 2;
@@ -115,6 +115,11 @@ public class VerticalScrollBar extends UIElement {
             }
         }
         return false;
+    }
+
+    @Override
+    protected VerticalScrollBar self() {
+        return this;
     }
 
     // Convenience: update track size when viewport changes
