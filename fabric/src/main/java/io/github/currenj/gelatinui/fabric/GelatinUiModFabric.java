@@ -26,8 +26,9 @@ public final class GelatinUiModFabric implements ModInitializer {
 
         // Register commands
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            var gelatinCommand = Commands.literal("gelatin");
             for (String id : DebugScreenRegistry.getRegisteredIds()) {
-                dispatcher.register(Commands.literal(id).executes(context -> {
+                gelatinCommand = gelatinCommand.then(Commands.literal(id).executes(context -> {
                     CommandSourceStack source = context.getSource();
                     if (source.getPlayer() != null) {
                         ServerPlayNetworking.send(source.getPlayer(), new OpenTestScreenPacket(id));
@@ -35,6 +36,7 @@ public final class GelatinUiModFabric implements ModInitializer {
                     return 1;
                 }));
             }
+            dispatcher.register(gelatinCommand);
         });
     }
 }

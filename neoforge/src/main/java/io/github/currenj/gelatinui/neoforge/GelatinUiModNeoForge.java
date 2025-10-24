@@ -39,8 +39,9 @@ public final class GelatinUiModNeoForge {
     }
 
     private void registerCommands(final RegisterCommandsEvent event) {
+        var gelatinCommand = net.minecraft.commands.Commands.literal("gelatin");
         for (String id : DebugScreenRegistry.getRegisteredIds()) {
-            event.getDispatcher().register(net.minecraft.commands.Commands.literal(id).executes(context -> {
+            gelatinCommand = gelatinCommand.then(net.minecraft.commands.Commands.literal(id).executes(context -> {
                 var source = context.getSource();
                 if (source.getPlayer() != null) {
                     PacketDistributor.sendToPlayer(source.getPlayer(), new OpenTestScreenPacket(id));
@@ -48,5 +49,6 @@ public final class GelatinUiModNeoForge {
                 return 1;
             }));
         }
+        event.getDispatcher().register(gelatinCommand);
     }
 }

@@ -62,8 +62,8 @@ public class TabsTestScreen extends GelatinUIScreen {
 
         SpriteRectangle.SpriteRectangleImpl tab1tooltip = UI.spriteRectangle(120, 20, UI.rgb(0, 100, 200))
                 .text("Shiny and valuable!", UI.rgb(255, 255, 0))
-                .autoSize(true)
-                .padding(5, 5);
+                .autoSize(true).padding(5, 5)
+                .outline(true);
 
         // Tab 2 content
         VBox tab2Content = UI.vbox().spacing(4).alignment(VBox.Alignment.CENTER);
@@ -74,8 +74,8 @@ public class TabsTestScreen extends GelatinUIScreen {
 
         SpriteRectangle.SpriteRectangleImpl tab2tooltip = UI.spriteRectangle(130, 20, UI.rgb(0, 150, 0))
                 .text("Villager currency!", UI.rgb(255, 255, 255))
-                .autoSize(true)
-                .padding(5, 5);
+                .autoSize(true).padding(5, 5)
+                .outline(true);
 
         // Tab 3 content
         VBox tab3Content = UI.vbox().spacing(4).alignment(VBox.Alignment.CENTER);
@@ -86,8 +86,8 @@ public class TabsTestScreen extends GelatinUIScreen {
 
         SpriteRectangle.SpriteRectangleImpl tab3tooltip = UI.spriteRectangle(100, 20, UI.rgb(200, 0, 0))
                 .text("Keeps the doctor away!", UI.rgb(255, 255, 255))
-                .autoSize(true)
-                .padding(5, 5);
+                .autoSize(true).padding(5, 5)
+                .outline(true);
 
         itemTabs.addTab(new ItemStack(Items.DIAMOND), tab1Content).tooltip(uiScreen, tab1tooltip);
         itemTabs.addTab(new ItemStack(Items.EMERALD), tab2Content).tooltip(uiScreen, tab2tooltip);

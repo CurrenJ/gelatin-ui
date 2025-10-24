@@ -25,6 +25,10 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
     private float paddingY = 0f;
     private boolean textChanged = false;
 
+    private boolean outline = false;
+    private int outlineColor1 = -1;
+    private int outlineColor2 = -1;
+
     protected boolean hovered = false;
     protected boolean pressed = false;
 
@@ -187,6 +191,35 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
         return self();
     }
 
+    public T outline(boolean enable) {
+        this.outline = enable;
+        markDirty(DirtyFlag.CONTENT);
+        return self();
+    }
+
+    public T outlineColors(int color1, int color2) {
+        this.outlineColor1 = color1;
+        this.outlineColor2 = color2;
+        markDirty(DirtyFlag.CONTENT);
+        return self();
+    }
+
+    private int darken(int c) {
+        int a = c & 0xFF000000;
+        int r = ((c >> 16) & 0xFF) / 2;
+        int g = ((c >> 8) & 0xFF) / 2;
+        int b = (c & 0xFF) / 2;
+        return a | (r << 16) | (g << 8) | b;
+    }
+
+    private int lighten(int c) {
+        int a = c & 0xFF000000;
+        int r = Math.min(255, ((c >> 16) & 0xFF) * 3 / 2);
+        int g = Math.min(255, ((c >> 8) & 0xFF) * 3 / 2);
+        int b = Math.min(255, (c & 0xFF) * 3 / 2);
+        return a | (r << 16) | (g << 8) | b;
+    }
+
     /**
      * Protected helper for subclasses to set pressed state.
      */
@@ -218,6 +251,21 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
         int y1 = 0;
         int w = (int) Math.ceil(size.x);
         int h = (int) Math.ceil(size.y);
+
+        if (outline) {
+            int c1 = outlineColor1 == -1 ? darken(color) : outlineColor1;
+            int c2 = outlineColor2 == -1 ? lighten(color) : outlineColor2;
+            // outer border
+            context.fill(-1, -1, w + 1, 0, c1); // top
+            context.fill(-1, h, w + 1, h + 1, c1); // bottom
+            context.fill(-1, 0, 0, h, c1); // left
+            context.fill(w, 0, w + 1, h, c1); // right
+            // inner border
+            context.fill(0, 0, w, 1, c2); // top
+            context.fill(0, h - 1, w, h, c2); // bottom
+            context.fill(0, 1, 1, h - 1, c2); // left
+            context.fill(w - 1, 1, w, h - 1, c2); // right
+        }
 
         SpriteData chosen = null;
         if (pressed && pressedSprite != null) {
