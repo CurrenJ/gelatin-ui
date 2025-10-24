@@ -96,7 +96,9 @@ public class SpriteButton extends SpriteRectangle<SpriteButton> {
             this.pressedTimer = PRESSED_DISPLAY_TIME;
             // New: bounce click feedback
             this.playClickBounce();
-            this.onClickAction.onClick(event);
+            if (this.onClickAction != null) {
+                this.onClickAction.onClick(event);
+            }
 
             // Consume the click so parents don't also trigger
             event.consume();

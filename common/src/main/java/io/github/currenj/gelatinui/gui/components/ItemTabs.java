@@ -45,7 +45,7 @@ public class ItemTabs extends VBox {
 
         // Create a simple SpriteButton (20x20 colored rectangle with number)
         UIElement<?> btn;
-        if (icon.isEmpty()) {
+        if (icon == null || icon.isEmpty()) {
             btn = new SpriteButton(20, 20, NORMAL_COLOR)
                     .text(String.valueOf(index + 1), 0xFFFFFFFF);
         } else {
