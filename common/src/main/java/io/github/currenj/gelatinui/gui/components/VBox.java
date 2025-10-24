@@ -45,7 +45,7 @@ public class VBox extends UIContainer<VBox> {
     private boolean layoutDirty = true;
 
     // When true, position changes during the next layout pass will animate instead of snapping
-    private boolean animatePositions = false;
+    protected boolean animatePositions = false;
 
     public VBox() {
         this.size.set(0, 0);

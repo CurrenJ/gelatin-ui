@@ -97,12 +97,15 @@ public class ItemTabs extends VBox {
         // Ensure the new content recalculates its layout in the new context
         currentContent.markDirty(DirtyFlag.LAYOUT);
 
+        // Animate layout changes, don't snap
+        this.animatePositions = true;
+        markDirty(DirtyFlag.LAYOUT);
+
         // Notify listener
         if (onSelectionChanged != null) {
             onSelectionChanged.accept(selectedIndex);
         }
 
-        markDirty(DirtyFlag.LAYOUT, DirtyFlag.CONTENT);
         return this;
     }
 

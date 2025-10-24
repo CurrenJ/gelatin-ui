@@ -131,13 +131,16 @@ public class UIScreen {
      * Update the UI tree.
      */
     public void update(float deltaTime) {
+        // Apply global time control (timescale and pause/step logic)
+        float adjustedDeltaTime = UITimeControl.processDeltaTime(deltaTime);
+
         // Process any pending hover transitions that were deferred due to cooldown
         processPendingHover();
 
         if (root != null) {
-            root.update(deltaTime);
+            root.update(adjustedDeltaTime);
             // update scrollbar as well
-            vscroll.update(deltaTime);
+            vscroll.update(adjustedDeltaTime);
 
             // After root update/layout, optionally auto-center the root element
             if (autoCenterRoot) {

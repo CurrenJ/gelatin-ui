@@ -6,9 +6,23 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class GelatinUIScreen extends Screen {
     protected UIScreen uiScreen;
     private long lastFrameTimeNanos = 0L;
+
+    // Global click listeners for elements that need to respond to clicks anywhere
+    private final List<GlobalClickListener> globalClickListeners = new ArrayList<>();
+
+    /**
+     * Functional interface for global click listeners.
+     */
+    @FunctionalInterface
+    public interface GlobalClickListener {
+        void onGlobalClick(double mouseX, double mouseY, int button);
+    }
 
     protected GelatinUIScreen(Component title) {
         super(title);
@@ -48,6 +62,30 @@ public abstract class GelatinUIScreen extends Screen {
             uiScreen.onMouseMove(mouseX, mouseY);
             uiScreen.update(0f);
             uiScreen.render(renderContext);
+
+            // Render time control status if not at default settings
+            renderTimeControlStatus(guiGraphics);
+        }
+    }
+
+    /**
+     * Render time control status overlay when pause or timescale is active.
+     */
+    protected void renderTimeControlStatus(GuiGraphics guiGraphics) {
+        if (io.github.currenj.gelatinui.gui.UITimeControl.isPaused() ||
+            Math.abs(io.github.currenj.gelatinui.gui.UITimeControl.getTimescale() - 1.0f) > 0.01f) {
+
+            String status = io.github.currenj.gelatinui.gui.UITimeControl.getStatusString();
+            int textWidth = this.font.width(status);
+            int x = this.width - textWidth - 10;
+            int y = this.height - 20;
+
+            // Draw semi-transparent background
+            guiGraphics.fill(x - 5, y - 2, x + textWidth + 5, y + 10, 0xC0000000);
+
+            // Draw text in yellow if paused, white if just timescaled
+            int color = io.github.currenj.gelatinui.gui.UITimeControl.isPaused() ? 0xFFFFFF00 : 0xFFFFFFFF;
+            guiGraphics.drawString(this.font, status, x, y, color, false);
         }
     }
 
@@ -60,6 +98,9 @@ public abstract class GelatinUIScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Notify global click listeners first
+        notifyGlobalClickListeners(mouseX, mouseY, button);
+
         if (uiScreen != null) {
             uiScreen.onMouseMove((int) mouseX, (int) mouseY);
             if (uiScreen.onMouseClick((int) mouseX, (int) mouseY, button)) {
@@ -94,6 +135,14 @@ public abstract class GelatinUIScreen extends Screen {
         // Key '9' = GLFW_KEY_9 = 57
         // Key '0' = GLFW_KEY_0 = 48
         // Key '7' = GLFW_KEY_7 = 55
+        // Key '6' = GLFW_KEY_6 = 54
+        // Key '5' = GLFW_KEY_5 = 53
+        // Key '4' = GLFW_KEY_4 = 52
+        // Key 'P' = GLFW_KEY_P = 80
+        // Key 'N' = GLFW_KEY_N = 78
+        // Key '[' = GLFW_KEY_LEFT_BRACKET = 91
+        // Key ']' = GLFW_KEY_RIGHT_BRACKET = 93
+
         if (keyCode == 56) { // Key '8' - Toggle bounds debug
             io.github.currenj.gelatinui.gui.UIElement.toggleDebugBounds();
             return true;
@@ -108,6 +157,67 @@ public abstract class GelatinUIScreen extends Screen {
             return true;
         }
 
+        // Time control keys
+        else if (keyCode == 80) { // Key 'P' - Toggle pause
+            io.github.currenj.gelatinui.gui.UITimeControl.togglePause();
+            return true;
+        } else if (keyCode == 78) { // Key 'N' - Step forward (when paused)
+            if (io.github.currenj.gelatinui.gui.UITimeControl.isPaused()) {
+                io.github.currenj.gelatinui.gui.UITimeControl.step();
+            }
+            return true;
+        } else if (keyCode == 91) { // Key '[' - Decrease timescale
+            float currentScale = io.github.currenj.gelatinui.gui.UITimeControl.getTimescale();
+            float newScale = Math.max(0.1f, currentScale - 0.1f);
+            io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(newScale);
+            return true;
+        } else if (keyCode == 93) { // Key ']' - Increase timescale
+            float currentScale = io.github.currenj.gelatinui.gui.UITimeControl.getTimescale();
+            float newScale = Math.min(5.0f, currentScale + 0.1f);
+            io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(newScale);
+            return true;
+        } else if (keyCode == 52) { // Key '4' - Reset timescale to 1.0
+            io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(1.0f);
+            return true;
+        } else if (keyCode == 53) { // Key '5' - Set timescale to 0.5x (slow motion)
+            io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(0.5f);
+            return true;
+        } else if (keyCode == 54) { // Key '6' - Set timescale to 2.0x (fast forward)
+            io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(2.0f);
+            return true;
+        }
+
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    /**
+     * Add a global click listener to this screen.
+     *
+     * @param listener The listener to add.
+     */
+    public void addGlobalClickListener(GlobalClickListener listener) {
+        this.globalClickListeners.add(listener);
+    }
+
+    /**
+     * Remove a global click listener from this screen.
+     *
+     * @param listener The listener to remove.
+     */
+    public void removeGlobalClickListener(GlobalClickListener listener) {
+        this.globalClickListeners.remove(listener);
+    }
+
+    /**
+     * Notify all global click listeners of a click event.
+     *
+     * @param mouseX The mouse X position.
+     * @param mouseY The mouse Y position.
+     * @param button The mouse button.
+     */
+    protected void notifyGlobalClickListeners(double mouseX, double mouseY, int button) {
+        for (GlobalClickListener listener : globalClickListeners) {
+            listener.onGlobalClick(mouseX, mouseY, button);
+        }
     }
 }
