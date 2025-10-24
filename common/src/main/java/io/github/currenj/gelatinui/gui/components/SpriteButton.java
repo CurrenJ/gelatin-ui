@@ -64,6 +64,18 @@ public class SpriteButton extends SpriteRectangle<SpriteButton> {
     }
 
     @Override
+    public SpriteButton autoSize(boolean autoSize) {
+        super.autoSize(autoSize);
+        return this;
+    }
+
+    @Override
+    public SpriteButton padding(float x, float y) {
+        super.padding(x, y);
+        return this;
+    }
+
+    @Override
     protected void onUpdate(float deltaTime) {
         if (pressedTimer > 0f) {
             pressedTimer -= deltaTime;

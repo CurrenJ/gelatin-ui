@@ -20,6 +20,11 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
     private String text = null;
     private int textColor = 0xFFFFFFFF;
 
+    private boolean autoSize = false;
+    private float paddingX = 0f;
+    private float paddingY = 0f;
+    private boolean textChanged = false;
+
     protected boolean hovered = false;
     protected boolean pressed = false;
 
@@ -146,6 +151,7 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
         if (this.text == null || !this.text.equals(text) || this.textColor != color) {
             this.text = text;
             this.textColor = color;
+            this.textChanged = true;
             markDirty(DirtyFlag.CONTENT);
         }
         return self();
@@ -156,6 +162,29 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
      */
     public String getText() {
         return text;
+    }
+
+    /**
+     * Enable or disable auto-sizing to fit the text.
+     */
+    public T autoSize(boolean autoSize) {
+        this.autoSize = autoSize;
+        if (autoSize && text != null) {
+            textChanged = true;
+        }
+        return self();
+    }
+
+    /**
+     * Set padding for auto-sizing.
+     */
+    public T padding(float x, float y) {
+        this.paddingX = x;
+        this.paddingY = y;
+        if (autoSize && text != null) {
+            textChanged = true;
+        }
+        return self();
     }
 
     /**
@@ -175,6 +204,16 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
 
     @Override
     protected void renderSelf(IRenderContext context) {
+        // Handle auto-sizing if enabled and text has changed
+        if (autoSize && text != null && textChanged) {
+            int textWidth = context.getStringWidth(text);
+            int textHeight = context.getFontHeight();
+            float newWidth = textWidth + paddingX * 2;
+            float newHeight = textHeight + paddingY * 2;
+            setSize(new Vector2f(newWidth, newHeight));
+            textChanged = false;
+        }
+
         int x1 = 0;
         int y1 = 0;
         int w = (int) Math.ceil(size.x);
