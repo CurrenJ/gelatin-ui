@@ -1,14 +1,7 @@
 package io.github.currenj.gelatinui;
 
 import io.github.currenj.gelatinui.gui.UI;
-import io.github.currenj.gelatinui.gui.components.VBox;
-import io.github.currenj.gelatinui.gui.components.HBox;
-import io.github.currenj.gelatinui.gui.components.Label;
-import io.github.currenj.gelatinui.gui.components.SpriteButton;
-import io.github.currenj.gelatinui.gui.components.SpriteProgressBar;
-import io.github.currenj.gelatinui.gui.components.ItemRenderer;
-import io.github.currenj.gelatinui.gui.components.RotatingItemRing;
-import io.github.currenj.gelatinui.gui.components.ItemTabs;
+import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -67,12 +60,18 @@ public class TabsTestScreen extends GelatinUIScreen {
         tab1Content.addChild(tab1Label1);
         tab1Content.addChild(tab1Label2);
 
+        SpriteRectangle.SpriteRectangleImpl tab1tooltip = UI.spriteRectangle(120, 20, UI.rgb(0, 100, 200))
+                .text("Shiny and valuable!", UI.rgb(255, 255, 0));
+
         // Tab 2 content
         VBox tab2Content = UI.vbox().spacing(4).alignment(VBox.Alignment.CENTER);
         Label tab2Label1 = UI.label(tempContext, "Emeralds are rare", UI.rgb(180, 255, 200));
         Label tab2Label2 = UI.label(tempContext, "Selected: Emerald", UI.rgb(255, 255, 255));
         tab2Content.addChild(tab2Label1);
         tab2Content.addChild(tab2Label2);
+
+        SpriteRectangle.SpriteRectangleImpl tab2tooltip = UI.spriteRectangle(130, 20, UI.rgb(0, 150, 0))
+                .text("Villager currency!", UI.rgb(255, 255, 255));
 
         // Tab 3 content
         VBox tab3Content = UI.vbox().spacing(4).alignment(VBox.Alignment.CENTER);
@@ -81,9 +80,12 @@ public class TabsTestScreen extends GelatinUIScreen {
         tab3Content.addChild(appleLabelTab);
         tab3Content.addChild(tab3Label2);
 
-        itemTabs.addTab(new ItemStack(Items.DIAMOND), tab1Content);
-        itemTabs.addTab(new ItemStack(Items.EMERALD), tab2Content);
-        itemTabs.addTab(new ItemStack(Items.APPLE), tab3Content);
+        SpriteRectangle.SpriteRectangleImpl tab3tooltip = UI.spriteRectangle(100, 20, UI.rgb(200, 0, 0))
+                .text("Keeps the doctor away!", UI.rgb(255, 255, 255));
+
+        itemTabs.addTab(new ItemStack(Items.DIAMOND), tab1Content).tooltip(uiScreen, tab1tooltip);
+        itemTabs.addTab(new ItemStack(Items.EMERALD), tab2Content).tooltip(uiScreen, tab2tooltip);
+        itemTabs.addTab(new ItemStack(Items.APPLE), tab3Content).tooltip(uiScreen, tab3tooltip);
 
         itemTabs.update(0);
         outerVBox.addChild(itemTabs);

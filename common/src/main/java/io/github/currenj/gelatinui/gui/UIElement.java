@@ -67,9 +67,9 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     protected List<UIEventListener> eventListeners = new ArrayList<>();
 
     // Action handlers for common events
-    protected ClickAction onClickAction = null;
-    protected MouseEnterAction onMouseEnterAction = null;
-    protected MouseExitAction onMouseExitAction = null;
+    protected List<ClickAction> onClickActions = new ArrayList<>();
+    protected List<MouseEnterAction> onMouseEnterActions = new ArrayList<>();
+    protected List<MouseExitAction> onMouseExitActions = new ArrayList<>();
 
     /**
      * Functional interface for click actions.
@@ -640,20 +640,26 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
         // Dispatch to registered action handlers
         switch (event.getType()) {
             case CLICK:
-                if (onClickAction != null) {
-                    onClickAction.onClick(event);
+                if (!onClickActions.isEmpty()) {
+                    for (ClickAction action : onClickActions) {
+                        action.onClick(event);
+                    }
                     return true;
                 }
                 break;
             case HOVER_ENTER:
-                if (onMouseEnterAction != null) {
-                    onMouseEnterAction.onMouseEnter(event);
+                if (!onMouseEnterActions.isEmpty()) {
+                    for (MouseEnterAction action : onMouseEnterActions) {
+                        action.onMouseEnter(event);
+                    }
                     return true;
                 }
                 break;
             case HOVER_EXIT:
-                if (onMouseExitAction != null) {
-                    onMouseExitAction.onMouseExit(event);
+                if (!onMouseExitActions.isEmpty()) {
+                    for (MouseExitAction action : onMouseExitActions) {
+                        action.onMouseExit(event);
+                    }
                     return true;
                 }
                 break;
@@ -748,7 +754,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
      * @return this element for method chaining
      */
     public T onClick(ClickAction action) {
-        this.onClickAction = action;
+        this.onClickActions.add(action);
         return self();
     }
 
@@ -758,7 +764,18 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
      * @return this element for method chaining
      */
     public T clearOnClick() {
-        this.onClickAction = null;
+        this.onClickActions.clear();
+        return self();
+    }
+
+    /**
+     * Remove a specific click action handler from this element.
+     *
+     * @param action The action to remove
+     * @return this element for method chaining
+     */
+    public T removeOnClick(ClickAction action) {
+        this.onClickActions.remove(action);
         return self();
     }
 
@@ -770,7 +787,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
      * @return this element for method chaining
      */
     public T onMouseEnter(MouseEnterAction action) {
-        this.onMouseEnterAction = action;
+        this.onMouseEnterActions.add(action);
         return self();
     }
 
@@ -780,7 +797,18 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
      * @return this element for method chaining
      */
     public T clearOnMouseEnter() {
-        this.onMouseEnterAction = null;
+        this.onMouseEnterActions.clear();
+        return self();
+    }
+
+    /**
+     * Remove a specific mouse enter action handler from this element.
+     *
+     * @param action The action to remove
+     * @return this element for method chaining
+     */
+    public T removeOnMouseEnter(MouseEnterAction action) {
+        this.onMouseEnterActions.remove(action);
         return self();
     }
 
@@ -792,7 +820,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
      * @return this element for method chaining
      */
     public T onMouseExit(MouseExitAction action) {
-        this.onMouseExitAction = action;
+        this.onMouseExitActions.add(action);
         return self();
     }
 
@@ -802,7 +830,18 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
      * @return this element for method chaining
      */
     public T clearOnMouseExit() {
-        this.onMouseExitAction = null;
+        this.onMouseExitActions.clear();
+        return self();
+    }
+
+    /**
+     * Remove a specific mouse exit action handler from this element.
+     *
+     * @param action The action to remove
+     * @return this element for method chaining
+     */
+    public T removeOnMouseExit(MouseExitAction action) {
+        this.onMouseExitActions.remove(action);
         return self();
     }
 
@@ -812,9 +851,23 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
      * @return this element for method chaining
      */
     public T clearAllActions() {
-        this.onClickAction = null;
-        this.onMouseEnterAction = null;
-        this.onMouseExitAction = null;
+        this.onClickActions.clear();
+        this.onMouseEnterActions.clear();
+        this.onMouseExitActions.clear();
+        return self();
+    }
+
+    /**
+     * Set a tooltip element to show when hovering over this element.
+     *
+     * @param screen         The UIScreen to set the tooltip on
+     * @param tooltipElement The tooltip element to display
+     * @return this element for method chaining
+     */
+    public T tooltip(UIScreen screen, IUIElement tooltipElement)
+    {
+        this.onMouseEnter(e -> screen.setTooltip(tooltipElement));
+        this.onMouseExit(e -> screen.clearTooltip());
         return self();
     }
 

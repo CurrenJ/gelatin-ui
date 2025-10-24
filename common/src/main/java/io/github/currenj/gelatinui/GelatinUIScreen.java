@@ -1,5 +1,6 @@
 package io.github.currenj.gelatinui;
 
+import io.github.currenj.gelatinui.gui.IUIElement;
 import io.github.currenj.gelatinui.gui.UIScreen;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import net.minecraft.client.gui.GuiGraphics;
@@ -218,6 +219,50 @@ public abstract class GelatinUIScreen extends Screen {
     protected void notifyGlobalClickListeners(double mouseX, double mouseY, int button) {
         for (GlobalClickListener listener : globalClickListeners) {
             listener.onGlobalClick(mouseX, mouseY, button);
+        }
+    }
+
+    // ----- Tooltip API -----
+
+    /**
+     * Set the global tooltip element to be rendered at the mouse position.
+     * The tooltip will follow the mouse cursor and can be any UI component.
+     *
+     * @param tooltip The UI element to use as a tooltip, or null to hide the tooltip
+     */
+    public void setTooltip(IUIElement tooltip) {
+        if (uiScreen != null) {
+            uiScreen.setTooltip(tooltip);
+        }
+    }
+
+    /**
+     * Get the current tooltip element.
+     *
+     * @return The current tooltip element, or null if no tooltip is set
+     */
+    public IUIElement getTooltip() {
+        return uiScreen != null ? uiScreen.getTooltip() : null;
+    }
+
+    /**
+     * Set the offset from the mouse cursor where the tooltip should appear.
+     *
+     * @param offsetX Horizontal offset in pixels (default: 10)
+     * @param offsetY Vertical offset in pixels (default: 10)
+     */
+    public void setTooltipOffset(float offsetX, float offsetY) {
+        if (uiScreen != null) {
+            uiScreen.setTooltipOffset(offsetX, offsetY);
+        }
+    }
+
+    /**
+     * Clear the current tooltip (same as setTooltip(null)).
+     */
+    public void clearTooltip() {
+        if (uiScreen != null) {
+            uiScreen.clearTooltip();
         }
     }
 }

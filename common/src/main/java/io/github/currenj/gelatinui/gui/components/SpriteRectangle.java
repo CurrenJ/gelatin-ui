@@ -110,45 +110,45 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
         return self();
     }
 
-    public SpriteRectangle texSize(int texW, int texH) {
+    public T texSize(int texW, int texH) {
         if (this.sprite != null) {
             this.sprite = new SpriteData(sprite.texture(), sprite.u(), sprite.v(), texW, texH, sprite.actualW(), sprite.actualH(), sprite.atlasW(), sprite.atlasH());
             markDirty(DirtyFlag.CONTENT);
         }
-        return this;
+        return self();
     }
 
-    public SpriteRectangle actualSize(int actualW, int actualH) {
+    public T actualSize(int actualW, int actualH) {
         if (this.sprite != null) {
             this.sprite = new SpriteData(sprite.texture(), sprite.u(), sprite.v(), sprite.texW(), sprite.texH(), actualW, actualH, sprite.atlasW(), sprite.atlasH());
             markDirty(DirtyFlag.CONTENT);
         }
-        return this;
+        return self();
     }
 
-    public SpriteRectangle atlasSize(int atlasW, int atlasH) {
+    public T atlasSize(int atlasW, int atlasH) {
         if (this.sprite != null) {
             this.sprite = new SpriteData(sprite.texture(), sprite.u(), sprite.v(), sprite.texW(), sprite.texH(), sprite.actualW(), sprite.actualH(), atlasW, atlasH);
             markDirty(DirtyFlag.CONTENT);
         }
-        return this;
+        return self();
     }
 
-    public SpriteRectangle color(int color) {
+    public T color(int color) {
         if (this.color != color) {
             this.color = color;
             markDirty(DirtyFlag.CONTENT);
         }
-        return this;
+        return self();
     }
 
-    public SpriteRectangle text(String text, int color) {
+    public T text(String text, int color) {
         if (this.text == null || !this.text.equals(text) || this.textColor != color) {
             this.text = text;
             this.textColor = color;
             markDirty(DirtyFlag.CONTENT);
         }
-        return this;
+        return self();
     }
 
     /**
@@ -226,21 +226,7 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
 
     @Override
     protected boolean onEvent(io.github.currenj.gelatinui.gui.UIEvent event) {
-        switch (event.getType()) {
-            case HOVER_ENTER -> {
-                this.hovered = true;
-                markDirty(DirtyFlag.CONTENT);
-                return false;
-            }
-            case HOVER_EXIT -> {
-                this.hovered = false;
-                markDirty(DirtyFlag.CONTENT);
-                return false;
-            }
-            default -> {
-                return false;
-            }
-        }
+        return super.onEvent(event);
     }
 
     public static class SpriteRectangleImpl extends SpriteRectangle<SpriteRectangleImpl> {

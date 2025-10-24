@@ -34,6 +34,7 @@ public final class Easing {
     }
 
     public static final Func EASE_OUT_BACK = easeOutBack(1.70158f);
+    public static final Func EASE_IN_CUBIC = t -> (float) Math.pow(clamp01(t), 3);
 
     private static float clamp01(float t) {
         if (t < 0f) return 0f;
@@ -41,4 +42,3 @@ public final class Easing {
         return t;
     }
 }
-

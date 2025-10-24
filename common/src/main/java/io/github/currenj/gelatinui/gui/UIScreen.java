@@ -3,6 +3,8 @@ package io.github.currenj.gelatinui.gui;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.currenj.gelatinui.gui.animation.Easing;
+import io.github.currenj.gelatinui.gui.animation.FloatKeyframeAnimation;
 import io.github.currenj.gelatinui.gui.components.HBox;
 import io.github.currenj.gelatinui.gui.components.VBox;
 import io.github.currenj.gelatinui.gui.components.VerticalScrollBar;
@@ -20,6 +22,11 @@ public class UIScreen {
     // visual scrollbar
     private final VerticalScrollBar vscroll;
     private int scrollbarMargin = 6; // pixels from right edge
+
+    // Global tooltip system
+    private IUIElement tooltipElement = null;
+    private Vector2f tooltipOffset = new Vector2f(10, 10); // Default offset from mouse cursor
+    private boolean tooltipAnimationsEnabled = true; // Enable scaling animations for tooltips
 
     // Mouse state for event handling
     private int lastMouseX = 0;
@@ -182,6 +189,11 @@ public class UIScreen {
             // update scrollbar position/size each frame in case viewport/root sizes changed
             positionScrollbar();
         }
+
+        // Update tooltip if present
+        if (tooltipElement != null) {
+            tooltipElement.update(adjustedDeltaTime);
+        }
     }
 
     /**
@@ -201,6 +213,39 @@ public class UIScreen {
             if (UIElement.isDebugCulledEnabled()) {
                 renderCulledElementsOverlay(context);
             }
+        }
+
+        // Render tooltip on top of everything
+        renderTooltip(context);
+    }
+
+    /**
+     * Render the global tooltip at the mouse position.
+     */
+    private void renderTooltip(IRenderContext context) {
+        if (tooltipElement != null && tooltipElement.isVisible()) {
+            // Position tooltip at mouse cursor with offset
+            float tooltipX = lastMouseX + tooltipOffset.x;
+            float tooltipY = lastMouseY + tooltipOffset.y;
+
+            // Clamp tooltip to viewport bounds
+            Vector2f tooltipSize = tooltipElement.getSize();
+            float maxX = (float) viewport.getWidth() - tooltipSize.x;
+            float maxY = (float) viewport.getHeight() - tooltipSize.y;
+
+            if (tooltipX > maxX) {
+                tooltipX = lastMouseX - tooltipSize.x - tooltipOffset.x;
+            }
+            if (tooltipY > maxY) {
+                tooltipY = lastMouseY - tooltipSize.y - tooltipOffset.y;
+            }
+
+            // Ensure tooltip stays within bounds
+            tooltipX = Math.max(0, Math.min(tooltipX, maxX));
+            tooltipY = Math.max(0, Math.min(tooltipY, maxY));
+
+            tooltipElement.setPosition(new Vector2f(tooltipX, tooltipY));
+            tooltipElement.render(context, viewport);
         }
     }
 
@@ -447,6 +492,8 @@ public class UIScreen {
                     return found;
                 }
             }
+            // If no child contains the point, don't return the container
+            return null;
         }
 
         return element;
@@ -533,5 +580,123 @@ public class UIScreen {
 
     public float getScrollY() {
         return scrollY;
+    }
+
+    // ----- Tooltip API -----
+
+    /**
+     * Set the global tooltip element to be rendered at the mouse position.
+     * The tooltip will be positioned relative to the mouse cursor with an offset.
+     *
+     * @param tooltip The UI element to use as a tooltip, or null to hide the tooltip
+     */
+    public void setTooltip(IUIElement tooltip) {
+        if (tooltipAnimationsEnabled && tooltipElement instanceof UIElement current && tooltip == null) {
+            // Animate out the current tooltip
+            animateTooltipOut(current);
+        } else {
+            this.tooltipElement = tooltip;
+            if (tooltip != null) {
+                tooltip.markDirty(DirtyFlag.LAYOUT);
+                if (tooltipAnimationsEnabled && tooltip instanceof UIElement uiTooltip) {
+                    // Animate in the new tooltip
+                    animateTooltipIn(uiTooltip);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get the current tooltip element.
+     *
+     * @return The current tooltip element, or null if no tooltip is set
+     */
+    public IUIElement getTooltip() {
+        return tooltipElement;
+    }
+
+    /**
+     * Set the offset from the mouse cursor where the tooltip should appear.
+     *
+     * @param offsetX Horizontal offset in pixels
+     * @param offsetY Vertical offset in pixels
+     */
+    public void setTooltipOffset(float offsetX, float offsetY) {
+        this.tooltipOffset.set(offsetX, offsetY);
+    }
+
+    /**
+     * Get the current tooltip offset.
+     *
+     * @return The tooltip offset vector
+     */
+    public Vector2f getTooltipOffset() {
+        return new Vector2f(tooltipOffset);
+    }
+
+    /**
+     * Clear the current tooltip.
+     */
+    public void clearTooltip() {
+        setTooltip(null);
+    }
+
+    /**
+     * Enable or disable tooltip scaling animations.
+     *
+     * @param enabled true to enable animations, false to disable
+     */
+    public void setTooltipAnimationsEnabled(boolean enabled) {
+        this.tooltipAnimationsEnabled = enabled;
+    }
+
+    /**
+     * Check if tooltip animations are enabled.
+     *
+     * @return true if animations are enabled
+     */
+    public boolean isTooltipAnimationsEnabled() {
+        return tooltipAnimationsEnabled;
+    }
+
+    /**
+     * Animate a tooltip scaling in from 0 to 1.
+     */
+    private void animateTooltipIn(UIElement<?> tooltip) {
+        tooltip.setTargetScale(0f, false); // Start at 0
+        java.util.List<io.github.currenj.gelatinui.gui.animation.Keyframe> keys = new java.util.ArrayList<>();
+        keys.add(new io.github.currenj.gelatinui.gui.animation.Keyframe(0.0f, 0.0f));
+        keys.add(new io.github.currenj.gelatinui.gui.animation.Keyframe(0.15f, 1.0f, io.github.currenj.gelatinui.gui.animation.Easing.EASE_OUT_BACK));
+        FloatKeyframeAnimation anim = new FloatKeyframeAnimation(
+                "tooltipIn",
+                keys,
+                v -> {
+                    tooltip.setTargetScale(v, false);
+                    tooltip.markDirty(DirtyFlag.SIZE);
+                },
+                () -> {
+                    tooltip.setTargetScale(1.0f, false);
+                    tooltip.markDirty(DirtyFlag.SIZE);
+                }
+        );
+        tooltip.playAnimation(anim);
+    }
+
+    /**
+     * Animate a tooltip scaling out from 1 to 0, then clear it.
+     */
+    private void animateTooltipOut(UIElement<?> tooltip) {
+        java.util.List<io.github.currenj.gelatinui.gui.animation.Keyframe> keys = new java.util.ArrayList<>();
+        keys.add(new io.github.currenj.gelatinui.gui.animation.Keyframe(0.0f, 1.0f));
+        keys.add(new io.github.currenj.gelatinui.gui.animation.Keyframe(0.15f, 0.0f, Easing.EASE_IN_CUBIC));
+        FloatKeyframeAnimation anim = new FloatKeyframeAnimation(
+                "tooltipOut",
+                keys,
+                v -> {
+                    tooltip.setTargetScale(v, false);
+                    tooltip.markDirty(DirtyFlag.SIZE);
+                }
+        );
+        tooltip.playAnimation(anim);
     }
 }

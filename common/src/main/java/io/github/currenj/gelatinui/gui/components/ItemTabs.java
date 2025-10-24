@@ -40,7 +40,7 @@ public class ItemTabs extends VBox {
     /**
      * Add a simple SpriteButton tab.
      */
-    public int addTab(ItemStack icon, IUIElement content) {
+    public UIElement<?> addTab(ItemStack icon, IUIElement content) {
         int index = tabs.size();
 
         // Create a simple SpriteButton (20x20 colored rectangle with number)
@@ -64,7 +64,7 @@ public class ItemTabs extends VBox {
             select(0);
         }
 
-        return index;
+        return btn;
     }
 
     /**
