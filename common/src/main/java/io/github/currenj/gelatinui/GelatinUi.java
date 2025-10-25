@@ -5,8 +5,9 @@ public final class GelatinUi {
 
     public static void init() {
         // Write common init code here.
-        DebugScreenRegistry.register("testui", TestScreen::new);
-        DebugScreenRegistry.register("tabstest", TabsTestScreen::new);
-        DebugScreenRegistry.register("inputtest", InputComponentsTestScreen::new);
+        DebugScreenRegistry.register("example/test", TestScreen::new);
+        DebugScreenRegistry.register("example/tabs", TabsTestScreen::new);
+        DebugScreenRegistry.register("example/input", InputComponentsTestScreen::new);
+        DebugScreenRegistry.register("example/scale_up", ScaleToFitTestScreen::new);
     }
 }

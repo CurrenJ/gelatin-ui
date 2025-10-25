@@ -147,8 +147,7 @@ public class TestScreen extends GelatinUIScreen {
         // Create a button column using SpriteRectangle components instead of Minecraft widgets
         VBox buttonsVBox = UI.vbox()
             .spacing(2)
-            .scaleToFit(true)
-            .maxHeight(50)
+            .scaleToHeight(50)
             .alignment(VBox.Alignment.CENTER);
 
         // Progress control buttons
@@ -324,13 +323,8 @@ public class TestScreen extends GelatinUIScreen {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         boolean anyPressed = super.keyPressed(keyCode, scanCode, modifiers);
 
-        if (anyPressed) {
-            return true;
-        }
-        else if (keyCode == 54) { // Key '6' = GLFW_KEY_
-            outerVBox
-                    .maxHeight((float) uiScreen.getViewport().getHeight())
-                    .scaleToFit(true);
+        if (keyCode == 54) { // Key '6' = GLFW_KEY_
+            outerVBox.scaleToHeight(this.uiScreen.getViewHeight());
             return true;
         }
 

@@ -34,12 +34,11 @@ public class VBox extends UIContainer<VBox> {
     // When true, the VBox will use this screen height when parent is null
     private float screenHeight = 0;
 
-    // When true, children will be uniformly scaled down if they exceed the container bounds
-    private boolean scaleToFit = false;
+    // When set > 0, children will be uniformly scaled to fit this width (mutually exclusive with scaleToHeight)
+    private float scaleToWidth = 0;
 
-    // Maximum bounds for scaling (if 0, uses container size minus padding)
-    private float maxWidth = 0;
-    private float maxHeight = 0;
+    // When set > 0, children will be uniformly scaled to fit this height (mutually exclusive with scaleToWidth)
+    private float scaleToHeight = 0;
 
     // Track if layout needs recalculation
     private boolean layoutDirty = true;
@@ -111,25 +110,23 @@ public class VBox extends UIContainer<VBox> {
         }
     }
 
-    public VBox scaleToFit(boolean scaleToFit) {
-        if (this.scaleToFit != scaleToFit) {
-            this.scaleToFit = scaleToFit;
+    public VBox scaleToWidth(float width) {
+        if (this.scaleToWidth != width) {
+            this.scaleToWidth = width;
+            if (width > 0) {
+                this.scaleToHeight = 0; // Mutually exclusive
+            }
             markDirty(DirtyFlag.LAYOUT);
         }
         return this;
     }
 
-    public VBox maxWidth(float maxWidth) {
-        if (this.maxWidth != maxWidth) {
-            this.maxWidth = maxWidth;
-            markDirty(DirtyFlag.LAYOUT);
-        }
-        return this;
-    }
-
-    public VBox maxHeight(float maxHeight) {
-        if (this.maxHeight != maxHeight) {
-            this.maxHeight = maxHeight;
+    public VBox scaleToHeight(float height) {
+        if (this.scaleToHeight != height) {
+            this.scaleToHeight = height;
+            if (height > 0) {
+                this.scaleToWidth = 0; // Mutually exclusive
+            }
             markDirty(DirtyFlag.LAYOUT);
         }
         return this;
@@ -191,17 +188,17 @@ public class VBox extends UIContainer<VBox> {
 
         // Compute scaleFactor if needed (based on baseline content)
         float scaleFactor = 1.0f;
-        if (scaleToFit) {
-            float availableWidth = (this.maxWidth > 0 ? this.maxWidth : finalWidth) - padding * 2;
-            float availableHeight = (this.maxHeight > 0 ? this.maxHeight : finalHeight) - padding * 2;
+        if (scaleToWidth > 0 || scaleToHeight > 0) {
+            float availableWidth = (scaleToWidth > 0 ? scaleToWidth : finalWidth) - padding * 2;
+            float availableHeight = (scaleToHeight > 0 ? scaleToHeight : finalHeight) - padding * 2;
 
             float contentWidth = baseMaxWidth;
             float contentHeight = baseTotalHeight - padding * 2;
 
-            float widthScale = availableWidth > 0 && contentWidth > availableWidth ? availableWidth / contentWidth : 1.0f;
-            float heightScale = availableHeight > 0 && contentHeight > availableHeight ? availableHeight / contentHeight : 1.0f;
+            float widthScale = availableWidth > 0 && contentWidth > 0 ? availableWidth / contentWidth : 1.0f;
+            float heightScale = availableHeight > 0 && contentHeight > 0 ? availableHeight / contentHeight : 1.0f;
 
-            scaleFactor = Math.min(widthScale, heightScale);
+            scaleFactor = (scaleToWidth > 0) ? widthScale : heightScale;
         }
 
         // Determine effective scaled content size (take into account existing child scales when not scaling-to-fit)
@@ -212,9 +209,9 @@ public class VBox extends UIContainer<VBox> {
             if (!child.isVisible()) continue;
             Vector2f childSize = child.getSize();
             float childScale = 1.0f;
-            if (!scaleToFit && child instanceof UIElement<?> uiChild) {
+            if (scaleToWidth == 0 && scaleToHeight == 0 && child instanceof UIElement<?> uiChild) {
                 childScale = uiChild.getCurrentScale();
-            } else if (scaleToFit) {
+            } else if (scaleToWidth > 0 || scaleToHeight > 0) {
                 childScale = scaleFactor;
             }
             float w = childSize.x * childScale;
@@ -223,7 +220,7 @@ public class VBox extends UIContainer<VBox> {
                 scaledTotalHeight = padding + h;
                 first = false;
             } else {
-                scaledTotalHeight += (scaleToFit ? spacing * scaleFactor : spacing) + h;
+                scaledTotalHeight += (scaleToWidth > 0 || scaleToHeight > 0 ? spacing * scaleFactor : spacing) + h;
             }
             scaledMaxWidth = Math.max(scaledMaxWidth, w);
         }
@@ -246,32 +243,23 @@ public class VBox extends UIContainer<VBox> {
         }
 
         // Ensure we respect configured max bounds when scaleToFit is enabled
-        if (scaleToFit) {
-            if (this.maxWidth > 0) {
-                finalWidth = Math.min(finalWidth, this.maxWidth);
+        if (scaleToWidth > 0 || scaleToHeight > 0) {
+            if (scaleToWidth > 0) {
+                finalWidth = Math.min(finalWidth, scaleToWidth);
             }
-            if (this.maxHeight > 0) {
-                finalHeight = Math.min(finalHeight, this.maxHeight);
+            if (scaleToHeight > 0) {
+                finalHeight = Math.min(finalHeight, scaleToHeight);
             }
         }
 
         size.set(finalWidth, finalHeight);
 
         // Now actually apply scaling to children (preserve previous behavior of setting targetScale)
-        if (scaleToFit) {
-            if (scaleFactor < 1.0f) {
-                for (IUIElement child : children) {
-                    if (!child.isVisible()) continue;
-                    if (child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild) {
-                        uiChild.scale(scaleFactor);
-                    }
-                }
-            } else {
-                for (IUIElement child : children) {
-                    if (!child.isVisible()) continue;
-                    if (child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild) {
-                        uiChild.scale(1.0f);
-                    }
+        if (scaleToWidth > 0 || scaleToHeight > 0) {
+            for (IUIElement child : children) {
+                if (!child.isVisible()) continue;
+                if (child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild) {
+                    uiChild.scale(scaleFactor);
                 }
             }
         }
@@ -282,7 +270,7 @@ public class VBox extends UIContainer<VBox> {
         for (IUIElement child : children) {
             if (!child.isVisible()) continue;
             Vector2f childSize = child.getSize();
-            float effectiveScale = scaleToFit ? scaleFactor : (child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild ? uiChild.getCurrentScale() : 1.0f);
+            float effectiveScale = scaleToWidth > 0 || scaleToHeight > 0 ? scaleFactor : (child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild ? uiChild.getCurrentScale() : 1.0f);
             float scaledChildWidth = childSize.x * effectiveScale;
             float scaledChildHeight = childSize.y * effectiveScale;
             float xOffsetLocal = 0f;
@@ -326,7 +314,7 @@ public class VBox extends UIContainer<VBox> {
             }
 
             // Update offsets with scaled height
-            yOffset += scaledChildHeight + spacing * Math.min(effectiveScale, 1.0f);
+            yOffset += scaledChildHeight + spacing * effectiveScale;
         }
 
         layoutDirty = false;
