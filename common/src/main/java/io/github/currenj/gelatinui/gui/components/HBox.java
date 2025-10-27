@@ -8,7 +8,7 @@ import org.joml.Vector2f;
  * Stacks children horizontally with configurable spacing and alignment.
  * Implements efficient layout caching to avoid redundant calculations.
  */
-public class HBox extends UIContainer<HBox> {
+public class HBox extends PanelBase<HBox> {
     /**
      * Vertical alignment options for children
      */
@@ -333,7 +333,7 @@ public class HBox extends UIContainer<HBox> {
 
     @Override
     protected HBox self() {
-        return null;
+        return this;
     }
 
     @Override
@@ -341,11 +341,6 @@ public class HBox extends UIContainer<HBox> {
         if (layoutDirty) {
             performLayout();
         }
-    }
-
-    @Override
-    protected void renderSelf(IRenderContext context) {
-        // HBox doesn't render itself, only children
     }
 
     public float getSpacing() {

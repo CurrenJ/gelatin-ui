@@ -61,7 +61,7 @@ public class TestRenderContext implements IRenderContext {
     }
 
     @Override
-    public void drawTexture(net.minecraft.resources.ResourceLocation texture, int x, int y, int width, int height, int u, int v, int texWidth, int texHeight, int textureWidth, int textureHeight) {
+    public void drawTexture(net.minecraft.resources.ResourceLocation texture, int x, int y, int width, int height, int u, int v, int regionWidth, int regionHeight, int textureWidth, int textureHeight) {
         // No-op for UV-aware draw calls in tests; record or assert in future if necessary
     }
 }

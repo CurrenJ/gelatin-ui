@@ -2,13 +2,11 @@ package io.github.currenj.gelatinui;
 
 import io.github.currenj.gelatinui.gui.UI;
 import io.github.currenj.gelatinui.gui.UIEvent;
-import io.github.currenj.gelatinui.gui.components.VBox;
-import io.github.currenj.gelatinui.gui.components.HBox;
-import io.github.currenj.gelatinui.gui.components.Label;
-import io.github.currenj.gelatinui.gui.components.SpriteButton;
+import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class ScaleToFitTestScreen extends GelatinUIScreen {
     public ScaleToFitTestScreen() {
@@ -30,11 +28,19 @@ public class ScaleToFitTestScreen extends GelatinUIScreen {
             this.font
         );
 
+        // Panel texture
+        ResourceLocation panelTex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel.png");
+
         // Create a VBox that will scale its children to fit a larger area
         VBox smallTextVBox = UI.vbox()
             .spacing(3)
+            .padding(3f)
             .alignment(VBox.Alignment.CENTER)
-            .fillWidth(true);
+            .backgroundSprite(SpriteData.texture(panelTex)
+                    .uv(0, 0, 16, 16)
+                    .tileScale(1f)
+                    .slice(6, 6, 6, 6)
+                    .textureSize(16, 16));
 
         // Add small labels that should be scaled up
         Label smallLabel1 = UI.label(tempContext, "Small Text 1", UI.rgb(255, 0, 0));
@@ -45,10 +51,15 @@ public class ScaleToFitTestScreen extends GelatinUIScreen {
         smallTextVBox.addChild(smallLabel2);
         smallTextVBox.addChild(smallLabel3);
 
-        // Create an HBox that scales up
         HBox hTextHBox = UI.hbox()
             .spacing(5)
-            .alignment(HBox.Alignment.CENTER);
+            .padding(8)
+            .alignment(HBox.Alignment.CENTER)
+            .backgroundSprite(SpriteData.texture(panelTex)
+                    .uv(0, 0, 16, 16)
+                    .tileScale(2f)
+                    .slice(6, 6, 6, 6)
+                    .textureSize(16, 16));
 
         Label hLabel1 = UI.label(tempContext, "H1", UI.rgb(255, 255, 0));
         Label hLabel2 = UI.label(tempContext, "H2", UI.rgb(255, 0, 255));
@@ -68,6 +79,7 @@ public class ScaleToFitTestScreen extends GelatinUIScreen {
         Label titleLabel = UI.label(tempContext, "Scale To Fit Test (Scaling Up)", UI.rgb(255, 255, 255));
         outerVBox.addChild(titleLabel);
         outerVBox.addChild(smallTextVBox);
+
         outerVBox.addChild(hTextHBox);
 
         // Close button

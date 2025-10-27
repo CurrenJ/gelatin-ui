@@ -8,7 +8,7 @@ import org.joml.Vector2f;
  * Stacks children vertically with configurable spacing and alignment.
  * Implements efficient layout caching to avoid redundant calculations.
  */
-public class VBox extends UIContainer<VBox> {
+public class VBox extends PanelBase<VBox> {
     /**
      * Horizontal alignment options for children
      */
@@ -340,11 +340,6 @@ public class VBox extends UIContainer<VBox> {
         if (layoutDirty) {
             performLayout();
         }
-    }
-
-    @Override
-    protected void renderSelf(IRenderContext context) {
-        // VBox doesn't render itself, only children
     }
 
     public float getSpacing() {

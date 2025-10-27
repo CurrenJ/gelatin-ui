@@ -40,30 +40,6 @@ public class SpriteButton extends SpriteRectangle<SpriteButton> {
     }
 
     @Override
-    public SpriteButton texture(ResourceLocation texture) {
-        super.texture(texture);
-        return this;
-    }
-
-    @Override
-    public SpriteButton texture(ResourceLocation texture, int u, int v, int texWidth, int texHeight) {
-        super.texture(texture, u, v, texWidth, texHeight);
-        return this;
-    }
-
-    @Override
-    public SpriteButton hoverTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight) {
-        super.hoverTexture(texture, u, v, texWidth, texHeight);
-        return this;
-    }
-
-    @Override
-    public SpriteButton pressedTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight) {
-        super.pressedTexture(texture, u, v, texWidth, texHeight);
-        return this;
-    }
-
-    @Override
     public SpriteButton autoSize(boolean autoSize) {
         super.autoSize(autoSize);
         return this;

@@ -72,9 +72,12 @@ public class MinecraftRenderContext implements IRenderContext {
     }
 
     @Override
-    public void drawTexture(ResourceLocation texture, int x, int y, int width, int height, int u, int v, int texWidth, int texHeight, int textureWidth, int textureHeight) {
-        // Use the public GuiGraphics.blit method: blit(ResourceLocation, int x, int y, int z, float u, float v, int width, int height, int texWidth, int texHeight)
-        graphics.blit(texture, x, y, 0, (float) u, (float) v, width, height, textureWidth, textureHeight);
+    public void drawTexture(ResourceLocation texture, int x, int y, int width, int height, int u, int v, int regionWidth, int regionHeight, int textureWidth, int textureHeight) {
+        // GuiGraphics.blit signature: blit(ResourceLocation, int x, int y, int z, float u, float v, int width, int height, int textureWidth, int textureHeight)
+        // where width/height are destination size, and textureWidth/textureHeight are the total atlas dimensions
+        // Note: texWidth and texHeight (source region size) are implicitly the same as width and height when using this blit overload
+        // So we need to use the innerBlit method instead for proper UV mapping
+        graphics.blit(texture, x, y, width, height, (float) u, (float) v, regionWidth, regionHeight, textureWidth, textureHeight);
     }
 
     /**

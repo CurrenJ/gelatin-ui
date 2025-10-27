@@ -8,6 +8,7 @@ public final class GelatinUi {
         DebugScreenRegistry.register("example/test", TestScreen::new);
         DebugScreenRegistry.register("example/tabs", TabsTestScreen::new);
         DebugScreenRegistry.register("example/input", InputComponentsTestScreen::new);
-        DebugScreenRegistry.register("example/scale_up", ScaleToFitTestScreen::new);
+        DebugScreenRegistry.register("example/scale2fit", ScaleToFitTestScreen::new);
+        DebugScreenRegistry.register("example/effects", EffectsTestScreen::new);
     }
 }

@@ -47,29 +47,6 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
         this.color = color;
     }
 
-    // Convenience: set texture with no region info
-    public SpriteRectangle texture(ResourceLocation texture) {
-        SpriteData d = new SpriteData(texture);
-        return texture(d);
-    }
-
-    /**
-     * Set texture with explicit source UV/size in texture pixels.
-     */
-    public SpriteRectangle texture(ResourceLocation texture, int u, int v, int texWidth, int texHeight) {
-        SpriteData d = new SpriteData(texture, u, v, texWidth, texHeight);
-        return texture(d);
-    }
-
-    /**
-     * Set texture with explicit source UV/size in texture pixels and the actual content size
-     * inside that source region (useful when the source region includes padding/margins).
-     */
-    public SpriteRectangle texture(ResourceLocation texture, int u, int v, int texWidth, int texHeight, int actualWidth, int actualHeight) {
-        SpriteData d = new SpriteData(texture, u, v, texWidth, texHeight, actualWidth, actualHeight);
-        return texture(d);
-    }
-
     /**
      * Primary sprite setter using the SpriteData record.
      */
@@ -79,30 +56,10 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
         return self();
     }
 
-    public T hoverTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight) {
-        SpriteData d = new SpriteData(texture, u, v, texWidth, texHeight);
-        return hoverTexture(d);
-    }
-
-    public T hoverTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight, int actualWidth, int actualHeight) {
-        SpriteData d = new SpriteData(texture, u, v, texWidth, texHeight, actualWidth, actualHeight);
-        return hoverTexture(d);
-    }
-
     public T hoverTexture(SpriteData data) {
         this.hoverSprite = data;
         markDirty(DirtyFlag.CONTENT);
         return self();
-    }
-
-    public T pressedTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight) {
-        SpriteData d = new SpriteData(texture, u, v, texWidth, texHeight);
-        return pressedTexture(d);
-    }
-
-    public T pressedTexture(ResourceLocation texture, int u, int v, int texWidth, int texHeight, int actualWidth, int actualHeight) {
-        SpriteData d = new SpriteData(texture, u, v, texWidth, texHeight, actualWidth, actualHeight);
-        return pressedTexture(d);
     }
 
     public T pressedTexture(SpriteData data) {
@@ -113,15 +70,15 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
 
     public T uv(int u, int v) {
         if (this.sprite != null) {
-            this.sprite = new SpriteData(sprite.texture(), u, v, sprite.texW(), sprite.texH(), sprite.actualW(), sprite.actualH(), sprite.atlasW(), sprite.atlasH());
+            this.sprite = this.sprite.uv(u, v);
             markDirty(DirtyFlag.CONTENT);
         }
         return self();
     }
 
-    public T texSize(int texW, int texH) {
+    public T region(int regionW, int regionH) {
         if (this.sprite != null) {
-            this.sprite = new SpriteData(sprite.texture(), sprite.u(), sprite.v(), texW, texH, sprite.actualW(), sprite.actualH(), sprite.atlasW(), sprite.atlasH());
+            this.sprite = this.sprite.uv(sprite.u(), sprite.v(), regionW, regionH);
             markDirty(DirtyFlag.CONTENT);
         }
         return self();
@@ -129,7 +86,7 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
 
     public T actualSize(int actualW, int actualH) {
         if (this.sprite != null) {
-            this.sprite = new SpriteData(sprite.texture(), sprite.u(), sprite.v(), sprite.texW(), sprite.texH(), actualW, actualH, sprite.atlasW(), sprite.atlasH());
+            this.sprite = this.sprite.actualSize(actualW, actualH);
             markDirty(DirtyFlag.CONTENT);
         }
         return self();
@@ -137,7 +94,7 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
 
     public T atlasSize(int atlasW, int atlasH) {
         if (this.sprite != null) {
-            this.sprite = new SpriteData(sprite.texture(), sprite.u(), sprite.v(), sprite.texW(), sprite.texH(), sprite.actualW(), sprite.actualH(), atlasW, atlasH);
+            this.sprite = this.sprite.textureSize(atlasW, atlasH);
             markDirty(DirtyFlag.CONTENT);
         }
         return self();
@@ -267,6 +224,7 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
             context.fill(w - 1, 1, w, h - 1, c2); // right
         }
 
+        // Select sprite based on state
         SpriteData chosen = null;
         if (pressed && pressedSprite != null) {
             chosen = pressedSprite;
@@ -276,30 +234,13 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
             chosen = sprite;
         }
 
+        // Render sprite using the unified drawSprite method that handles all modes
         if (chosen != null && chosen.texture() != null) {
-            int du = chosen.u();
-            int dv = chosen.v();
-            int dw = chosen.texW();
-            int dh = chosen.texH();
-
-            // if actual content size is provided, center that inside the full source region
-            if (chosen.actualW() > 0 && chosen.actualH() > 0 && dw > 0 && dh > 0) {
-                int dx = (dw - chosen.actualW()) / 2;
-                int dy = (dh - chosen.actualH()) / 2;
-                du += Math.max(0, dx);
-                dv += Math.max(0, dy);
-                dw = chosen.actualW();
-                dh = chosen.actualH();
-            }
-
             context.enableBlend();
-            if (dw > 0 && dh > 0) {
-                context.drawTexture(chosen.texture(), x1, y1, w, h, du, dv, dw, dh, chosen.atlasW(), chosen.atlasH());
-            } else {
-                context.drawTexture(chosen.texture(), x1, y1, w, h);
-            }
+            context.drawSprite(chosen, x1, y1, w, h);
             context.disableBlend();
         } else {
+            // Fall back to solid color
             context.fill(x1, y1, x1 + w, y1 + h, color);
         }
 

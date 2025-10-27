@@ -2,14 +2,7 @@ package io.github.currenj.gelatinui;
 
 import io.github.currenj.gelatinui.gui.UI;
 import io.github.currenj.gelatinui.gui.UIEvent;
-import io.github.currenj.gelatinui.gui.components.VBox;
-import io.github.currenj.gelatinui.gui.components.HBox;
-import io.github.currenj.gelatinui.gui.components.Label;
-import io.github.currenj.gelatinui.gui.components.SpriteButton;
-import io.github.currenj.gelatinui.gui.components.SpriteProgressBar;
-import io.github.currenj.gelatinui.gui.components.ItemRenderer;
-import io.github.currenj.gelatinui.gui.components.RotatingItemRing;
-import io.github.currenj.gelatinui.gui.components.ItemTabs;
+import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -180,8 +173,13 @@ public class TestScreen extends GelatinUIScreen {
                 });
 
         // Close button
+        ResourceLocation progressBarBgTex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_background.png");
         SpriteButton closeBtn = UI.spriteButton(128, 10, UI.rgb(180, 50, 50))
-                .texture(ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_background.png"), 9, 9, 128, 128)
+                .texture(SpriteData
+                        .texture(progressBarBgTex)
+                        .uv(9, 9)
+                        .textureSize(128)
+                )
                 .text("Close", UI.rgb(255, 255, 255))
                 .onClick(e -> onClose());
 

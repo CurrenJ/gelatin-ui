@@ -1,5 +1,6 @@
 package io.github.currenj.gelatinui.gui;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +10,9 @@ import io.github.currenj.gelatinui.gui.components.HBox;
 import io.github.currenj.gelatinui.gui.components.VBox;
 import io.github.currenj.gelatinui.gui.components.VerticalScrollBar;
 import java.awt.geom.Rectangle2D;
+
+import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import net.minecraft.client.gui.GuiGraphics;
 import org.joml.Vector2f;
 
 /**
@@ -245,7 +249,15 @@ public class UIScreen {
             tooltipY = Math.max(0, Math.min(tooltipY, maxY));
 
             tooltipElement.setPosition(new Vector2f(tooltipX, tooltipY));
-            tooltipElement.render(context, viewport);
+
+            if (context instanceof MinecraftRenderContext ctx) {
+                GuiGraphics graphics = ctx.getGraphics();
+
+                final int zOffset = 500; // ensure tooltip renders on top
+                graphics.pose().translate(0, 0, zOffset);
+                tooltipElement.render(context, viewport);
+                graphics.pose().translate(0, 0, -zOffset);
+            }
         }
     }
 
@@ -591,14 +603,14 @@ public class UIScreen {
      * @param tooltip The UI element to use as a tooltip, or null to hide the tooltip
      */
     public void setTooltip(IUIElement tooltip) {
-        if (tooltipAnimationsEnabled && tooltipElement instanceof UIElement current && tooltip == null) {
+        if (tooltipAnimationsEnabled && tooltipElement instanceof UIElement<?> current && tooltip == null) {
             // Animate out the current tooltip
             animateTooltipOut(current);
         } else {
             this.tooltipElement = tooltip;
             if (tooltip != null) {
                 tooltip.markDirty(DirtyFlag.LAYOUT);
-                if (tooltipAnimationsEnabled && tooltip instanceof UIElement uiTooltip) {
+                if (tooltipAnimationsEnabled && tooltip instanceof UIElement<?> uiTooltip) {
                     // Animate in the new tooltip
                     animateTooltipIn(uiTooltip);
                 }

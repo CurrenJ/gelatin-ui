@@ -6,6 +6,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Comparator;
 
 /**
  * Base implementation of IUIElement with dirty-flag system and caching.
@@ -44,6 +45,9 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     // Visibility state
     protected boolean visible = true;
 
+    // Effects layout toggle: when true, effects will affect bounds and layout calculations
+    protected boolean effectsAffectLayout = false;
+
     // Dirty flag system
     protected boolean isDirty = true;
     protected EnumSet<DirtyFlag> dirtyFlags = EnumSet.noneOf(DirtyFlag.class);
@@ -53,6 +57,10 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
 
     // Keyframe animation system (per element)
     private final List<io.github.currenj.gelatinui.gui.animation.Animation> animations = new ArrayList<>();
+
+    // Effects system (per element)
+    private final List<io.github.currenj.gelatinui.gui.effects.Effect> effects = new ArrayList<>();
+    private io.github.currenj.gelatinui.gui.effects.TransformDelta combinedEffectDelta = io.github.currenj.gelatinui.gui.effects.TransformDelta.IDENTITY;
 
     // Interpolation speeds (per-second)
     // Increased speeds so tests and UI see noticeable motion within a few frames.
@@ -187,7 +195,99 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
             }
         }
 
-        isAnimating = positionAnimating || scaleAnimating || anyKeyframeAnimating;
+        // Step effects and combine their deltas
+        boolean anyEffectActive = updateEffects(deltaTime);
+
+        isAnimating = positionAnimating || scaleAnimating || anyKeyframeAnimating || anyEffectActive;
+    }
+
+    /**
+     * Update all effects and combine their transform deltas.
+     * @return true if any effects are still active
+     */
+    private boolean updateEffects(float deltaTime) {
+        if (effects.isEmpty()) {
+            io.github.currenj.gelatinui.gui.effects.TransformDelta previousDelta = combinedEffectDelta;
+            combinedEffectDelta = io.github.currenj.gelatinui.gui.effects.TransformDelta.IDENTITY;
+
+            // If effects affect layout and delta changed, trigger layout recalculation
+            if (effectsAffectLayout && !previousDelta.equals(io.github.currenj.gelatinui.gui.effects.TransformDelta.IDENTITY)) {
+                markDirty(DirtyFlag.LAYOUT);
+            }
+
+            return false;
+        }
+
+        // Update each effect and remove finished ones
+        List<io.github.currenj.gelatinui.gui.effects.Effect> toRemove = new ArrayList<>();
+        for (io.github.currenj.gelatinui.gui.effects.Effect effect : new ArrayList<>(effects)) {
+            boolean alive = effect.update(Math.max(0f, deltaTime), this);
+            if (!alive || effect.isCancelled()) {
+                toRemove.add(effect);
+            }
+        }
+        if (!toRemove.isEmpty()) {
+            effects.removeAll(toRemove);
+        }
+
+        // Combine all effect deltas
+        if (effects.isEmpty()) {
+            io.github.currenj.gelatinui.gui.effects.TransformDelta previousDelta = combinedEffectDelta;
+            combinedEffectDelta = io.github.currenj.gelatinui.gui.effects.TransformDelta.IDENTITY;
+
+            // If effects affect layout and delta changed, trigger layout recalculation
+            if (effectsAffectLayout && !previousDelta.equals(io.github.currenj.gelatinui.gui.effects.TransformDelta.IDENTITY)) {
+                markDirty(DirtyFlag.LAYOUT);
+            }
+
+            return false;
+        }
+
+        // Sort effects by priority (lower priority first, so higher priority effects are applied last)
+        List<io.github.currenj.gelatinui.gui.effects.Effect> sortedEffects = new ArrayList<>(effects);
+        sortedEffects.sort(Comparator.comparingInt(io.github.currenj.gelatinui.gui.effects.Effect::getPriority));
+
+        // Store previous delta for comparison
+        io.github.currenj.gelatinui.gui.effects.TransformDelta previousDelta = combinedEffectDelta;
+
+        // Combine deltas according to blend modes
+        io.github.currenj.gelatinui.gui.effects.TransformDelta combined = io.github.currenj.gelatinui.gui.effects.TransformDelta.IDENTITY;
+        for (io.github.currenj.gelatinui.gui.effects.Effect effect : sortedEffects) {
+            io.github.currenj.gelatinui.gui.effects.TransformDelta delta = effect.getDelta();
+            combined = combined.combine(delta, effect.getBlendMode(), effect.getWeight());
+        }
+
+        combinedEffectDelta = combined;
+
+        // If effects affect layout and delta changed significantly, trigger layout recalculation
+        if (effectsAffectLayout && !deltaEquals(previousDelta, combinedEffectDelta)) {
+            markDirty(DirtyFlag.LAYOUT);
+        }
+
+        return true;
+    }
+
+    /**
+     * Helper to compare two TransformDeltas for meaningful differences.
+     */
+    private boolean deltaEquals(io.github.currenj.gelatinui.gui.effects.TransformDelta a, io.github.currenj.gelatinui.gui.effects.TransformDelta b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+
+        Vector2f aPos = a.getPositionOffset();
+        Vector2f bPos = b.getPositionOffset();
+
+        // Check if position offsets differ by more than a small threshold
+        if (Math.abs(aPos.x - bPos.x) > 0.001f || Math.abs(aPos.y - bPos.y) > 0.001f) {
+            return false;
+        }
+
+        // Check if scale multipliers differ
+        if (Math.abs(a.getScaleMultiplier() - b.getScaleMultiplier()) > 0.0001f) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
@@ -205,15 +305,18 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
             return; // Culling: skip off-screen elements
         }
 
-        // Apply hierarchical transform: translate by local position, scale by local scale, then render self and children within this transform.
+        // Apply hierarchical transform: translate by effective position, scale by effective scale
         if (context instanceof io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext) {
             io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext mc = (io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext) context;
             var pose = mc.getGraphics().pose();
             pose.pushPose();
 
-            // translate-local-position *in parent space*
-            pose.translate(position.x, position.y, 0);
-            float combinedScale = currentScale * effectScale;
+            // Apply effect position offset
+            Vector2f effectPos = combinedEffectDelta.getPositionOffset();
+            pose.translate(position.x + effectPos.x, position.y + effectPos.y, 0);
+
+            // Apply combined scale (base * effectScale * effect delta scale)
+            float combinedScale = currentScale * effectScale * combinedEffectDelta.getScaleMultiplier();
             pose.scale(combinedScale, combinedScale, 1.0f);
 
             // render self and children under same transform so children inherit the parent's transform
@@ -377,15 +480,27 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
 
     /**
      * Calculate bounds using global position and global scale.
+     * When effectsAffectLayout is true, includes effect transformations in the bounds.
      */
     protected Rectangle2D calculateBounds() {
         Vector2f gp = getGlobalPosition();
         float gs = getGlobalScale();
+
+        // Apply effect transformations to bounds if enabled
+        if (effectsAffectLayout) {
+            Vector2f effectOffset = combinedEffectDelta.getPositionOffset();
+            gp.add(effectOffset);
+            gs *= combinedEffectDelta.getScaleMultiplier();
+        }
+
         return new Rectangle2D.Float(gp.x, gp.y, size.x * gs, size.y * gs);
     }
 
     @Override
     public Vector2f getPosition() {
+        if (effectsAffectLayout) {
+            return new Vector2f(position).add(combinedEffectDelta.getPositionOffset());
+        }
         return new Vector2f(position);
     }
 
@@ -417,14 +532,24 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
 
     @Override
     public Vector2f getSize() {
+        if (effectsAffectLayout) {
+            float effectiveScale = combinedEffectDelta.getScaleMultiplier();
+            return new Vector2f(size.x * effectiveScale, size.y * effectiveScale);
+        }
         return new Vector2f(size);
     }
 
-    public void setSize(Vector2f size) {
+    public T setSize(Vector2f size) {
         if (!this.size.equals(size)) {
             this.size.set(size);
             markDirty(DirtyFlag.SIZE);
         }
+        return self();
+    }
+
+    public T setSize(float width, float height) {
+        setSize(new Vector2f(width, height));
+        return self();
     }
 
     /**
@@ -730,6 +855,137 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
         playAnimation(anim);
     }
 
+    // ===== Effects System API =====
+
+    /**
+     * Add an effect to this element.
+     * @param effect The effect to add
+     * @return this element for method chaining
+     */
+    public T addEffect(io.github.currenj.gelatinui.gui.effects.Effect effect) {
+        if (effect != null) {
+            effects.add(effect);
+            isAnimating = true;
+            markDirty(DirtyFlag.POSITION, DirtyFlag.SIZE);
+        }
+        return self();
+    }
+
+    /**
+     * Add an effect with channel exclusivity - cancels any existing effects on the same channel.
+     * @param effect The effect to add
+     * @return this element for method chaining
+     */
+    public T addEffectExclusive(io.github.currenj.gelatinui.gui.effects.Effect effect) {
+        if (effect != null) {
+            String channel = effect.getChannel();
+            if (channel != null) {
+                cancelEffectChannel(channel);
+            }
+            addEffect(effect);
+        }
+        return self();
+    }
+
+    /**
+     * Remove an effect by its ID.
+     * @param effectId The ID of the effect to remove
+     * @return this element for method chaining
+     */
+    public T removeEffect(String effectId) {
+        effects.removeIf(e -> e.getId().equals(effectId));
+        return self();
+    }
+
+    /**
+     * Cancel all effects on a specific channel.
+     * @param channel The channel name
+     * @return this element for method chaining
+     */
+    public T cancelEffectChannel(String channel) {
+        if (channel == null) return self();
+        for (int i = effects.size() - 1; i >= 0; i--) {
+            io.github.currenj.gelatinui.gui.effects.Effect e = effects.get(i);
+            if (channel.equals(e.getChannel())) {
+                e.cancel();
+                effects.remove(i);
+            }
+        }
+        return self();
+    }
+
+    /**
+     * Clear all effects from this element.
+     * @return this element for method chaining
+     */
+    public T clearEffects() {
+        for (io.github.currenj.gelatinui.gui.effects.Effect e : effects) {
+            e.cancel();
+        }
+        effects.clear();
+        combinedEffectDelta = io.github.currenj.gelatinui.gui.effects.TransformDelta.IDENTITY;
+        return self();
+    }
+
+    /**
+     * Get all active effects on this element.
+     * @return unmodifiable list of effects
+     */
+    public List<io.github.currenj.gelatinui.gui.effects.Effect> getEffects() {
+        return java.util.Collections.unmodifiableList(effects);
+    }
+
+    /**
+     * Get the combined effect transform delta.
+     * @return the combined transform delta from all active effects
+     */
+    public io.github.currenj.gelatinui.gui.effects.TransformDelta getCombinedEffectDelta() {
+        return combinedEffectDelta;
+    }
+
+    /**
+     * Get the effective position (base position + effect offset) for rendering.
+     * @return effective position vector
+     */
+    public Vector2f getEffectivePosition() {
+        return new Vector2f(position).add(combinedEffectDelta.getPositionOffset());
+    }
+
+    /**
+     * Get the effective scale (base scale * effect scale multiplier) for rendering.
+     * @return effective scale value
+     */
+    public float getEffectiveScale() {
+        return currentScale * effectScale * combinedEffectDelta.getScaleMultiplier();
+    }
+
+    /**
+     * Convenience: add a click bounce effect using the new effects system.
+     * @return this element for method chaining
+     */
+    public T addClickBounceEffect() {
+        addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.ClickBounceEffect("click-bounce", 0));
+        return self();
+    }
+
+    /**
+     * Convenience: add a breathe effect.
+     * @return this element for method chaining
+     */
+    public T addBreatheEffect() {
+        addEffect(new io.github.currenj.gelatinui.gui.effects.BreatheEffect("breathe", 0));
+        return self();
+    }
+
+    /**
+     * Convenience: add a wander effect.
+     * @return this element for method chaining
+     */
+    public T addWanderEffect() {
+        addEffect(new io.github.currenj.gelatinui.gui.effects.WanderEffect("wander", 0));
+        return self();
+    }
+
     /**
      * Interface for event listeners.
      */
@@ -1000,4 +1256,45 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     }
 
     protected abstract T self();
+
+    /**
+     * Enable or disable effects affecting layout calculations.
+     * When enabled, effects will modify the reported position and size of this element,
+     * causing parent containers to account for the effect transformations when laying out children.
+     *
+     * @param enabled true to make effects affect layout, false otherwise
+     * @return this element for method chaining
+     */
+    public T setEffectsAffectLayout(boolean enabled) {
+        if (this.effectsAffectLayout != enabled) {
+            this.effectsAffectLayout = enabled;
+            // Trigger layout recalculation since this changes how size/position are reported
+            markDirty(DirtyFlag.LAYOUT);
+        }
+        return self();
+    }
+
+    /**
+     * Check if effects affect layout calculations.
+     * @return true if effects affect layout
+     */
+    public boolean getEffectsAffectLayout() {
+        return effectsAffectLayout;
+    }
+
+    /**
+     * Convenience method: enable effects affecting layout.
+     * @return this element for method chaining
+     */
+    public T enableEffectsLayout() {
+        return setEffectsAffectLayout(true);
+    }
+
+    /**
+     * Convenience method: disable effects affecting layout.
+     * @return this element for method chaining
+     */
+    public T disableEffectsLayout() {
+        return setEffectsAffectLayout(false);
+    }
 }

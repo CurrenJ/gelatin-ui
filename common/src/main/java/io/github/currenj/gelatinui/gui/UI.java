@@ -31,13 +31,6 @@ public class UI {
     }
 
     /**
-     * Create a new Label with text.
-     */
-    public static Label label(String text) {
-        return new Label(text);
-    }
-
-    /**
      * Create a new Label with text and color.
      */
     public static Label label(IRenderContext context, String text, int color) {
