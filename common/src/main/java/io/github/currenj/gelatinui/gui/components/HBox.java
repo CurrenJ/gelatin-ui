@@ -135,7 +135,7 @@ public class HBox extends PanelBase<HBox> {
     @Override
     protected void performLayout() {
         if (children.isEmpty()) {
-            size.set(padding * 2, padding * 2);
+            setSize(padding * 2, padding * 2);
             layoutDirty = false;
             animatePositions = false;
             return;
@@ -256,7 +256,7 @@ public class HBox extends PanelBase<HBox> {
             }
         }
 
-        size.set(finalWidth, finalHeight);
+        setSize(finalWidth, finalHeight);
 
         // Now actually apply scaling to children (preserve previous behavior of setting targetScale)
         if (scaleToWidth > 0 || scaleToHeight > 0) {

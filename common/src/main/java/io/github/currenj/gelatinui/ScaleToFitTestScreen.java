@@ -29,18 +29,28 @@ public class ScaleToFitTestScreen extends GelatinUIScreen {
         );
 
         // Panel texture
-        ResourceLocation panelTex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel.png");
+        ResourceLocation panel1Tex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel.png");
+        SpriteData panel1 = SpriteData.texture(panel1Tex)
+            .uv(0, 0, 16, 16)
+            .tileScale(1f)
+            .slice(6, 6, 6, 6)
+            .textureSize(16, 16)
+            .renderMode(SpriteRenderMode.TILE);
+
+        ResourceLocation panelTex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel2.png");
+        SpriteData panel2 = SpriteData.texture(panelTex)
+            .uv(0, 0, 23, 23)
+            .tileScale(1f)
+            .slice(7, 7, 7, 7)
+            .textureSize(32, 32)
+            .renderMode(SpriteRenderMode.TILE);
 
         // Create a VBox that will scale its children to fit a larger area
         VBox smallTextVBox = UI.vbox()
             .spacing(3)
             .padding(3f)
             .alignment(VBox.Alignment.CENTER)
-            .backgroundSprite(SpriteData.texture(panelTex)
-                    .uv(0, 0, 16, 16)
-                    .tileScale(1f)
-                    .slice(6, 6, 6, 6)
-                    .textureSize(16, 16));
+            .backgroundSprite(panel2);
 
         // Add small labels that should be scaled up
         Label smallLabel1 = UI.label(tempContext, "Small Text 1", UI.rgb(255, 0, 0));
@@ -55,11 +65,7 @@ public class ScaleToFitTestScreen extends GelatinUIScreen {
             .spacing(5)
             .padding(8)
             .alignment(HBox.Alignment.CENTER)
-            .backgroundSprite(SpriteData.texture(panelTex)
-                    .uv(0, 0, 16, 16)
-                    .tileScale(2f)
-                    .slice(6, 6, 6, 6)
-                    .textureSize(16, 16));
+            .backgroundSprite(panel2);
 
         Label hLabel1 = UI.label(tempContext, "H1", UI.rgb(255, 255, 0));
         Label hLabel2 = UI.label(tempContext, "H2", UI.rgb(255, 0, 255));

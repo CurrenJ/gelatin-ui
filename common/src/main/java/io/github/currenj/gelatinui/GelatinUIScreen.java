@@ -90,7 +90,7 @@ public abstract class GelatinUIScreen extends Screen {
         }
     }
 
-    protected abstract void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick);
+    protected void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {}
 
     protected void updateComponentSizes(MinecraftRenderContext context) {
         // Default implementation: do nothing

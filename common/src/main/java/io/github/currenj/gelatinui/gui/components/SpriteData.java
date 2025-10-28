@@ -56,7 +56,7 @@ public record SpriteData(
     }
 
     public SpriteData slice(int left, int right, int top, int bottom) {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, SpriteRenderMode.SLICE, left, right, top, bottom, tileScale);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, left, right, top, bottom, tileScale);
     }
 
     public SpriteData textureSize(int textureSize) {
@@ -74,7 +74,7 @@ public record SpriteData(
     }
 
     public SpriteData tileScale(float tileScale) {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, SpriteRenderMode.TILE, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale);
     }
 
     /**

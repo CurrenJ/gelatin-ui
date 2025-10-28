@@ -16,6 +16,15 @@ public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T>
     // Layout cache
     protected LayoutCache layoutCache = new LayoutCache();
 
+    // Size alignment - restrict width/height to multiples of these values
+    // 0 means no alignment restriction (default)
+    protected int alignWidthToMultiple = 0;
+    protected int alignHeightToMultiple = 0;
+
+    // Alignment offsets - for patterns like offset + multiple * x (e.g., 8 + 7*x)
+    protected int alignWidthOffset = 0;
+    protected int alignHeightOffset = 0;
+
     /**
      * Cache for layout calculations to avoid redundant recalculation.
      */
@@ -272,6 +281,148 @@ public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T>
     @Override
     public boolean needsUpdate() {
         return super.needsUpdate() || anyChildNeedsUpdate();
+    }
+
+    /**
+     * Set the width alignment. The container's width will be rounded up to the nearest multiple
+     * of this value. Useful for aligning with tiled sprite patterns.
+     * Set to 0 to disable width alignment (default).
+     *
+     * @param multiple The multiple to align width to (e.g., 3 for panel2 which has 3-pixel repeating segments)
+     * @return this for method chaining
+     */
+    public T alignWidthToMultiple(int multiple) {
+        return alignWidthToMultiple(multiple, 0);
+    }
+
+    /**
+     * Set the width alignment with an offset. The container's width will be rounded to the nearest
+     * value matching the pattern: offset + multiple * x (e.g., 8 + 7*x).
+     * Useful for aligning with tiled sprite patterns that have fixed borders.
+     *
+     * @param multiple The multiple to align width to
+     * @param offset The base offset (y-intercept)
+     * @return this for method chaining
+     */
+    public T alignWidthToMultiple(int multiple, int offset) {
+        if (multiple < 0) {
+            throw new IllegalArgumentException("Alignment multiple must be >= 0");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("Alignment offset must be >= 0");
+        }
+        this.alignWidthToMultiple = multiple;
+        this.alignWidthOffset = offset;
+        // Re-apply current size to trigger alignment
+        if (multiple > 0) {
+            setSize(size);
+        }
+        return self();
+    }
+
+    /**
+     * Set the height alignment. The container's height will be rounded up to the nearest multiple
+     * of this value. Useful for aligning with tiled sprite patterns.
+     * Set to 0 to disable height alignment (default).
+     *
+     * @param multiple The multiple to align height to (e.g., 3 for panel2 which has 3-pixel repeating segments)
+     * @return this for method chaining
+     */
+    public T alignHeightToMultiple(int multiple) {
+        return alignHeightToMultiple(multiple, 0);
+    }
+
+    /**
+     * Set the height alignment with an offset. The container's height will be rounded to the nearest
+     * value matching the pattern: offset + multiple * x (e.g., 8 + 7*x).
+     * Useful for aligning with tiled sprite patterns that have fixed borders.
+     *
+     * @param multiple The multiple to align height to
+     * @param offset The base offset (y-intercept)
+     * @return this for method chaining
+     */
+    public T alignHeightToMultiple(int multiple, int offset) {
+        if (multiple < 0) {
+            throw new IllegalArgumentException("Alignment multiple must be >= 0");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("Alignment offset must be >= 0");
+        }
+        this.alignHeightToMultiple = multiple;
+        this.alignHeightOffset = offset;
+        // Re-apply current size to trigger alignment
+        if (multiple > 0) {
+            setSize(size);
+        }
+        return self();
+    }
+
+    /**
+     * Set both width and height alignment to the same value.
+     *
+     * @param multiple The multiple to align both dimensions to
+     * @return this for method chaining
+     */
+    public T alignSizeToMultiple(int multiple) {
+        return alignSizeToMultiple(multiple, 0);
+    }
+
+    /**
+     * Set both width and height alignment to the same value with an offset.
+     * Both dimensions will be rounded to the pattern: offset + multiple * x.
+     *
+     * @param multiple The multiple to align both dimensions to
+     * @param offset The base offset (y-intercept)
+     * @return this for method chaining
+     */
+    public T alignSizeToMultiple(int multiple, int offset) {
+        alignWidthToMultiple(multiple, offset);
+        alignHeightToMultiple(multiple, offset);
+        return self();
+    }
+
+    @Override
+    public T setSize(Vector2f size) {
+        // Apply alignment if configured
+        float alignedWidth = size.x;
+        float alignedHeight = size.y;
+
+        if (alignWidthToMultiple > 0) {
+            // Round to pattern: offset + multiple * x
+            // Formula: offset + ceil((size - offset) / multiple) * multiple
+            float sizeAfterOffset = Math.max(0, size.x - alignWidthOffset);
+            alignedWidth = alignWidthOffset + (float) Math.ceil(sizeAfterOffset / alignWidthToMultiple) * alignWidthToMultiple;
+        }
+
+        if (alignHeightToMultiple > 0) {
+            // Round to pattern: offset + multiple * x
+            float sizeAfterOffset = Math.max(0, size.y - alignHeightOffset);
+            alignedHeight = alignHeightOffset + (float) Math.ceil(sizeAfterOffset / alignHeightToMultiple) * alignHeightToMultiple;
+        }
+
+        // Call parent setSize with aligned dimensions
+        return super.setSize(new Vector2f(alignedWidth, alignedHeight));
+    }
+
+    @Override
+    public T setSize(float width, float height) {
+        return setSize(new Vector2f(width, height));
+    }
+
+    public int getAlignWidthToMultiple() {
+        return alignWidthToMultiple;
+    }
+
+    public int getAlignHeightToMultiple() {
+        return alignHeightToMultiple;
+    }
+
+    public int getAlignWidthOffset() {
+        return alignWidthOffset;
+    }
+
+    public int getAlignHeightOffset() {
+        return alignHeightOffset;
     }
 
     /**

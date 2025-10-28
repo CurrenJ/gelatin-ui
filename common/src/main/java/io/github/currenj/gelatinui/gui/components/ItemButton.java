@@ -38,7 +38,7 @@ public class ItemButton extends ItemRenderer<ItemButton> {
         init();
     }
 
-    private void init()
+    protected void init()
     {
         // Handle hover state
         this.onMouseEnter(e -> {
@@ -49,25 +49,6 @@ public class ItemButton extends ItemRenderer<ItemButton> {
             this.setTargetScale(1.0f, true);
             markDirty(io.github.currenj.gelatinui.gui.DirtyFlag.CONTENT);
         });
-    }
-
-    // Provide fluent overrides so chaining from ItemRenderer returns ItemButton
-    @Override
-    public ItemButton itemStack(ItemStack itemStack) {
-        super.itemStack(itemStack);
-        return this;
-    }
-
-    @Override
-    public ItemButton showCount(boolean showCount) {
-        super.showCount(showCount);
-        return this;
-    }
-
-    @Override
-    public ItemButton itemScale(float scale) {
-        super.itemScale(scale);
-        return this;
     }
 
     @Override

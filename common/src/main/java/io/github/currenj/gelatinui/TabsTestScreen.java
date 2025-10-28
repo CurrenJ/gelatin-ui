@@ -1,9 +1,11 @@
 package io.github.currenj.gelatinui;
 
+import io.github.currenj.gelatinui.extension.IGuiGraphicsExtension;
 import io.github.currenj.gelatinui.gui.UI;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -181,6 +183,5 @@ public class TabsTestScreen extends GelatinUIScreen {
     @Override
     protected void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         // Draw title using traditional method
-//        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, this.height / 2 - 100, 0xFFFFFF);
     }
 }

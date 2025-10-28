@@ -429,7 +429,11 @@ public interface IRenderContext {
             for (int tx = 0; tx < tilesX; tx++) {
                 int drawX = x + tx * scaledTileW;
                 int drawW = Math.min(scaledTileW, width - tx * scaledTileW);
-                drawTexture(texture, drawX, y, drawW, height, u, v, regionW, regionH, textureW, textureH);
+
+                // Calculate proportional source region width to avoid squishing
+                int srcW = (drawW == scaledTileW) ? regionW : (int)((drawW / (float)scaledTileW) * regionW);
+
+                drawTexture(texture, drawX, y, drawW, height, u, v, srcW, regionH, textureW, textureH);
             }
         } else {
             // Tile vertically
@@ -439,7 +443,11 @@ public interface IRenderContext {
             for (int ty = 0; ty < tilesY; ty++) {
                 int drawY = y + ty * scaledTileH;
                 int drawH = Math.min(scaledTileH, height - ty * scaledTileH);
-                drawTexture(texture, x, drawY, width, drawH, u, v, regionW, regionH, textureW, textureH);
+
+                // Calculate proportional source region height to avoid squishing
+                int srcH = (drawH == scaledTileH) ? regionH : (int)((drawH / (float)scaledTileH) * regionH);
+
+                drawTexture(texture, x, drawY, width, drawH, u, v, regionW, srcH, textureW, textureH);
             }
         }
     }
@@ -478,7 +486,11 @@ public interface IRenderContext {
                 int drawW = Math.min(scaledTileW, width - tx * scaledTileW);
                 int drawH = Math.min(scaledTileH, height - ty * scaledTileH);
 
-                drawTexture(texture, drawX, drawY, drawW, drawH, u, v, regionW, regionH, textureW, textureH);
+                // Calculate proportional source region sizes to avoid squishing
+                int srcW = (drawW == scaledTileW) ? regionW : (int)((drawW / (float)scaledTileW) * regionW);
+                int srcH = (drawH == scaledTileH) ? regionH : (int)((drawH / (float)scaledTileH) * regionH);
+
+                drawTexture(texture, drawX, drawY, drawW, drawH, u, v, srcW, srcH, textureW, textureH);
             }
         }
     }
