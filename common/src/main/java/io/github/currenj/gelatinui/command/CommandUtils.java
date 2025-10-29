@@ -1,14 +1,16 @@
 package io.github.currenj.gelatinui.command;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.github.currenj.gelatinui.menu.DebugMenuTypes;
 import io.github.currenj.gelatinui.tooltip.ItemStacksInfo;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import io.github.currenj.gelatinui.DebugScreenRegistry;
 import io.github.currenj.gelatinui.tooltip.ItemStacksTooltip;
 
 import java.util.Arrays;
@@ -25,34 +27,58 @@ public final class CommandUtils {
         // Utility class
     }
 
+    // List of all registered screen IDs
+    private static final String[] SCREEN_IDS = {
+        "example/test",
+        "example/tabs",
+        "example/input",
+        "example/scale2fit",
+        "example/effects",
+        "example/extension",
+        "example/alignment"
+    };
+
     /**
      * Builds the command tree for screen registration commands.
      * @param commandTree The map to populate with command branches
-     * @param packetSender Function to send packets to players (platform-specific)
      */
     public static void buildScreenCommandTree(
-            Map<String, LiteralArgumentBuilder<CommandSourceStack>> commandTree,
-            PacketSender packetSender) {
+            Map<String, LiteralArgumentBuilder<CommandSourceStack>> commandTree) {
 
-        for (String id : DebugScreenRegistry.getRegisteredIds()) {
-            String[] parts = DebugScreenRegistry.getIdParts(id);
-            final String screenId = id; // Capture the ID properly for lambda
+        for (String screenId : SCREEN_IDS) {
+            String[] parts = screenId.split("[/:]");
 
             if (parts.length == 1) {
                 // Simple case: single part ID
                 LiteralArgumentBuilder<CommandSourceStack> command = LiteralArgumentBuilder.<CommandSourceStack>literal(parts[0])
                     .executes(context -> {
                         var source = context.getSource();
-                        if (source.getPlayer() != null) {
-                            packetSender.sendPacket(source.getPlayer(), screenId);
+                        ServerPlayer player = source.getPlayer();
+                        if (player != null) {
+                            openDebugScreen(player, screenId);
                         }
                         return 1;
                     });
                 commandTree.put(parts[0], command);
             } else {
                 // Multi-part ID: build nested command structure
-                buildCommandTree(commandTree, parts, screenId, packetSender);
+                buildCommandTree(commandTree, parts, screenId);
             }
+        }
+    }
+
+    /**
+     * Opens a debug screen for a player using the menu system.
+     * @param player The player to open the screen for
+     * @param screenId The screen ID to open
+     */
+    private static void openDebugScreen(ServerPlayer player, String screenId) {
+        var menuType = DebugMenuTypes.getMenuType(screenId);
+        if (menuType != null) {
+            player.openMenu(new SimpleMenuProvider(
+                (containerId, inventory, p) -> new io.github.currenj.gelatinui.menu.DebugScreenMenu(menuType, containerId, screenId),
+                Component.literal("Debug Screen")
+            ));
         }
     }
 
@@ -90,8 +116,7 @@ public final class CommandUtils {
     private static void buildCommandTree(
             Map<String, LiteralArgumentBuilder<CommandSourceStack>> commandTree,
             String[] parts,
-            String screenId,
-            PacketSender packetSender) {
+            String screenId) {
 
         // Get or create the root node
         String rootKey = parts[0];
@@ -113,8 +138,9 @@ public final class CommandUtils {
                 LiteralArgumentBuilder<CommandSourceStack> leaf = LiteralArgumentBuilder.<CommandSourceStack>literal(part)
                     .executes(context -> {
                         var source = context.getSource();
-                        if (source.getPlayer() != null) {
-                            packetSender.sendPacket(source.getPlayer(), screenId);
+                        ServerPlayer player = source.getPlayer();
+                        if (player != null) {
+                            openDebugScreen(player, screenId);
                         }
                         return 1;
                     });
@@ -138,13 +164,5 @@ public final class CommandUtils {
 
     private static Map<String, LiteralArgumentBuilder<CommandSourceStack>> getOrCreateChildMap(LiteralArgumentBuilder<CommandSourceStack> node) {
         return childMaps.computeIfAbsent(node, k -> new HashMap<>());
-    }
-
-    /**
-     * Functional interface for sending packets to players (platform-specific implementation).
-     */
-    @FunctionalInterface
-    public interface PacketSender {
-        void sendPacket(net.minecraft.server.level.ServerPlayer player, String screenId);
     }
 }
