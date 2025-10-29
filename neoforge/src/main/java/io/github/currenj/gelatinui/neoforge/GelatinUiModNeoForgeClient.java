@@ -8,7 +8,16 @@ import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactori
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-import io.github.currenj.gelatinui.*;
+import io.github.currenj.gelatinui.DebugScreenRegistry;
+import io.github.currenj.gelatinui.EffectsTestScreen;
+import io.github.currenj.gelatinui.GelatinUi;
+import io.github.currenj.gelatinui.GraphicsExtensionTestScreen;
+import io.github.currenj.gelatinui.InputComponentsTestScreen;
+import io.github.currenj.gelatinui.OpenTestScreenPacket;
+import io.github.currenj.gelatinui.ScaleToFitTestScreen;
+import io.github.currenj.gelatinui.SizeAlignmentTestScreen;
+import io.github.currenj.gelatinui.TabsTestScreen;
+import io.github.currenj.gelatinui.TestScreen;
 import io.github.currenj.gelatinui.tooltip.ClientItemStacksTooltip;
 import io.github.currenj.gelatinui.tooltip.ItemStacksTooltip;
 

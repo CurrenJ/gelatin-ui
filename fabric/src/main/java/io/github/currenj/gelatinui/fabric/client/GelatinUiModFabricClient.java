@@ -6,7 +6,15 @@ import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 
-import io.github.currenj.gelatinui.*;
+import io.github.currenj.gelatinui.DebugScreenRegistry;
+import io.github.currenj.gelatinui.EffectsTestScreen;
+import io.github.currenj.gelatinui.GraphicsExtensionTestScreen;
+import io.github.currenj.gelatinui.InputComponentsTestScreen;
+import io.github.currenj.gelatinui.OpenTestScreenPacket;
+import io.github.currenj.gelatinui.ScaleToFitTestScreen;
+import io.github.currenj.gelatinui.SizeAlignmentTestScreen;
+import io.github.currenj.gelatinui.TabsTestScreen;
+import io.github.currenj.gelatinui.TestScreen;
 import io.github.currenj.gelatinui.tooltip.ClientItemStacksTooltip;
 import io.github.currenj.gelatinui.tooltip.ItemStacksTooltip;
 
