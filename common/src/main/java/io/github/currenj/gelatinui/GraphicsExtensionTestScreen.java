@@ -31,7 +31,7 @@ public class GraphicsExtensionTestScreen extends GelatinUIScreen {
         IGuiGraphicsExtension gfxExt = (IGuiGraphicsExtension) guiGraphics;
 
         // Rectangle (should look like a normal fill)
-        gfxExt.potions_plus$fillQuad(
+        gfxExt.gelatinui$fillQuad(
                 RenderType.gui(),
                 50, 50,
                 150, 50,
@@ -41,7 +41,7 @@ public class GraphicsExtensionTestScreen extends GelatinUIScreen {
         );
 
         // Parallelogram
-        gfxExt.potions_plus$fillQuad(
+        gfxExt.gelatinui$fillQuad(
                 RenderType.gui(),
                 200, 50,
                 250, 30,
@@ -51,7 +51,7 @@ public class GraphicsExtensionTestScreen extends GelatinUIScreen {
         );
 
         // Trapezoid
-        gfxExt.potions_plus$fillQuad(
+        gfxExt.gelatinui$fillQuad(
                 RenderType.gui(),
                 50, 150,
                 150, 130,
@@ -61,7 +61,7 @@ public class GraphicsExtensionTestScreen extends GelatinUIScreen {
         );
 
         // Diamond (rhombus)
-        gfxExt.potions_plus$fillQuad(
+        gfxExt.gelatinui$fillQuad(
                 RenderType.gui(),
                 200, 150,
                 225, 125,
@@ -71,7 +71,7 @@ public class GraphicsExtensionTestScreen extends GelatinUIScreen {
         );
 
         // Irregular quad
-        gfxExt.potions_plus$fillQuad(
+        gfxExt.gelatinui$fillQuad(
                 RenderType.gui(),
                 50, 250,
                 120, 230,
@@ -81,7 +81,7 @@ public class GraphicsExtensionTestScreen extends GelatinUIScreen {
         );
 
         // Another shape
-        gfxExt.potions_plus$fillQuad(
+        gfxExt.gelatinui$fillQuad(
                 RenderType.gui(),
                 200, 250,
                 280, 240,
