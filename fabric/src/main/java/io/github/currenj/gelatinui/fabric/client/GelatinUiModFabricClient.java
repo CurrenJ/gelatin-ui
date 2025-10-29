@@ -1,13 +1,14 @@
 package io.github.currenj.gelatinui.fabric.client;
 
+import io.github.currenj.gelatinui.*;
+import io.github.currenj.gelatinui.menu.DebugMenuTypes;
+import io.github.currenj.gelatinui.menu.DebugScreenMenu;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 
-import io.github.currenj.gelatinui.DebugScreenRegistry;
-import io.github.currenj.gelatinui.OpenTestScreenPacket;
 import io.github.currenj.gelatinui.tooltip.ClientItemStacksTooltip;
 import io.github.currenj.gelatinui.tooltip.ItemStacksTooltip;
 
@@ -27,14 +28,29 @@ public final class GelatinUiModFabricClient implements ClientModInitializer {
             return null;
         });
 
-        // Register packet receiver
-        ClientPlayNetworking.registerGlobalReceiver(OpenTestScreenPacket.TYPE, (packet, context) -> {
-            context.client().execute(() -> {
-                Screen screen = DebugScreenRegistry.createScreen(packet.screenId());
-                if (screen != null) {
-                    Minecraft.getInstance().setScreen(screen);
-                }
-            });
-        });
+        // Register screen factories for debug menus
+        registerScreenFactories();
+    }
+
+    private void registerScreenFactories() {
+        registerScreenFactory("example/test", TestScreen::new);
+        registerScreenFactory("example/tabs", TabsTestScreen::new);
+        registerScreenFactory("example/input", InputComponentsTestScreen::new);
+        registerScreenFactory("example/scale2fit", ScaleToFitTestScreen::new);
+        registerScreenFactory("example/effects", EffectsTestScreen::new);
+        registerScreenFactory("example/extension", GraphicsExtensionTestScreen::new);
+        registerScreenFactory("example/alignment", SizeAlignmentTestScreen::new);
+    }
+
+    private void registerScreenFactory(String screenId, ScreenFactory factory) {
+        var menuType = DebugMenuTypes.getMenuType(screenId);
+        if (menuType != null) {
+            MenuScreens.register(menuType, (menu, inventory, title) -> factory.create());
+        }
+    }
+
+    @FunctionalInterface
+    private interface ScreenFactory {
+        Screen create();
     }
 }
