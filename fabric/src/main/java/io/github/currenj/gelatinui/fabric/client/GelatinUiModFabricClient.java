@@ -7,7 +7,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 
 import io.github.currenj.gelatinui.DebugScreenRegistry;
+import io.github.currenj.gelatinui.EffectsTestScreen;
+import io.github.currenj.gelatinui.GraphicsExtensionTestScreen;
+import io.github.currenj.gelatinui.InputComponentsTestScreen;
 import io.github.currenj.gelatinui.OpenTestScreenPacket;
+import io.github.currenj.gelatinui.ScaleToFitTestScreen;
+import io.github.currenj.gelatinui.SizeAlignmentTestScreen;
+import io.github.currenj.gelatinui.TabsTestScreen;
+import io.github.currenj.gelatinui.TestScreen;
 import io.github.currenj.gelatinui.tooltip.ClientItemStacksTooltip;
 import io.github.currenj.gelatinui.tooltip.ItemStacksTooltip;
 
@@ -15,6 +22,9 @@ public final class GelatinUiModFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         // This entrypoint is suitable for setting up client-specific logic, such as rendering.
+
+        // Register debug screens (client-only)
+        registerDebugScreens();
 
         // Register tooltip components
         TooltipComponentCallback.EVENT.register(data -> {
@@ -30,11 +40,25 @@ public final class GelatinUiModFabricClient implements ClientModInitializer {
         // Register packet receiver
         ClientPlayNetworking.registerGlobalReceiver(OpenTestScreenPacket.TYPE, (packet, context) -> {
             context.client().execute(() -> {
-                Screen screen = DebugScreenRegistry.createScreen(packet.screenId());
-                if (screen != null) {
+                Object screenObj = DebugScreenRegistry.createScreen(packet.screenId());
+                if (screenObj instanceof Screen screen) {
                     Minecraft.getInstance().setScreen(screen);
                 }
             });
         });
+    }
+
+    /**
+     * Register all debug test screens.
+     * This method references client-only Screen classes and should only be called from client code.
+     */
+    private void registerDebugScreens() {
+        DebugScreenRegistry.register("example/test", TestScreen::new);
+        DebugScreenRegistry.register("example/tabs", TabsTestScreen::new);
+        DebugScreenRegistry.register("example/input", InputComponentsTestScreen::new);
+        DebugScreenRegistry.register("example/scale2fit", ScaleToFitTestScreen::new);
+        DebugScreenRegistry.register("example/effects", EffectsTestScreen::new);
+        DebugScreenRegistry.register("example/extension", GraphicsExtensionTestScreen::new);
+        DebugScreenRegistry.register("example/alignment", SizeAlignmentTestScreen::new);
     }
 }

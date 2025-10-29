@@ -8,12 +8,8 @@ public final class GelatinUi {
 
     public static void init() {
         // Write common init code here.
-        DebugScreenRegistry.register("example/test", TestScreen::new);
-        DebugScreenRegistry.register("example/tabs", TabsTestScreen::new);
-        DebugScreenRegistry.register("example/input", InputComponentsTestScreen::new);
-        DebugScreenRegistry.register("example/scale2fit", ScaleToFitTestScreen::new);
-        DebugScreenRegistry.register("example/effects", EffectsTestScreen::new);
-        DebugScreenRegistry.register("example/extension", GraphicsExtensionTestScreen::new);
-        DebugScreenRegistry.register("example/alignment", SizeAlignmentTestScreen::new);
+        // Screen registration has been moved to client-only initialization
+        // to avoid loading client-only Screen class on the server.
+        // See GelatinUiModFabricClient and GelatinUiModNeoForgeClient.
     }
 }
