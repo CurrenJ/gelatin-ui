@@ -27,11 +27,13 @@ public class DebugMenuTypes {
         String registryName = screenId.replace('/', '_').replace(':', '_');
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "debug_" + registryName);
         
-        // First register the menu type with a factory that looks up the registered type.
-        // This avoids circular reference while ensuring the factory can access the MenuType.
+        // Create menu type with a factory lambda. The lambda captures screenId but is NOT executed now.
+        // It will only execute later when Minecraft needs to create a menu instance (client-side reconstruction).
+        // By that time, line 48 below will have already executed, so MENU_TYPES will contain this entry.
         MenuType<DebugScreenMenu> menuType = new MenuType<>(
             (containerId, inventory) -> {
-                // Look up the already-registered menu type for this screen
+                // This lambda executes LATER, after registration completes.
+                // Look up the already-registered menu type for this screen.
                 MenuType<DebugScreenMenu> registeredType = MENU_TYPES.get(screenId);
                 if (registeredType == null) {
                     throw new IllegalStateException("Menu type not yet registered for screen: " + screenId);
