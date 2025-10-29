@@ -4,6 +4,22 @@ plugins {
     id 'com.gradleup.shadow' version '8.3.6' apply false
 }
 
+// Load local.properties so properties like sonartypeUsername/password and centralUsername/password are available at root
+if (file('local.properties').exists()) {
+    def localProps = new Properties()
+    file('local.properties').withInputStream { localProps.load(it) }
+    localProps.each { k, v ->
+        // Use ext.set to avoid static type warnings and ensure values are available as Gradle properties
+        ext.set(k.toString(), v)
+    }
+}
+
+// Configure Central Portal publishing type: USER_MANAGED (manual) by default, or AUTOMATIC if explicitly requested
+ext.centralPublishingType = (System.getenv('CENTRAL_PUBLISHING_TYPE') ?: (findProperty('centralPublishingType') as String) ?: 'USER_MANAGED').toUpperCase()
+if (!(ext.centralPublishingType in ['USER_MANAGED', 'AUTOMATIC'])) {
+    throw new GradleException("Invalid centralPublishingType: '${ext.centralPublishingType}'. Use USER_MANAGED or AUTOMATIC.")
+}
+
 architectury {
     minecraft = project.minecraft_version
 }
@@ -17,6 +33,7 @@ subprojects {
     apply plugin: 'dev.architectury.loom'
     apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
+    apply plugin: 'signing'
 
     base {
         // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
@@ -44,6 +61,7 @@ subprojects {
         // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
         // if it is present.
         // If you remove this line, sources will not be generated.
+        withJavadocJar()
         withSourcesJar()
 
         sourceCompatibility = JavaVersion.VERSION_21
@@ -59,16 +77,140 @@ subprojects {
         publications {
             mavenJava(MavenPublication) {
                 artifactId = base.archivesName.get()
-                from components.java
+                // Publish explicit artifacts to avoid including dev-shadow via components.java
+                artifact tasks.named('remapJar')
+                artifact tasks.named('remapSourcesJar')
+                artifact tasks.named('javadocJar')
+                pom {
+                    name.set("${rootProject.mod_name} - ${project.name}")
+                    description.set(rootProject.mod_description ?: "${rootProject.mod_name} module: ${project.name}")
+                    url.set('https://github.com/CurrenJ/gelatin-ui')
+                    licenses {
+                        license {
+                            name.set(rootProject.mod_license ?: 'CC0-1.0')
+                            url.set('https://creativecommons.org/publicdomain/zero/1.0/')
+                        }
+                    }
+                    developers {
+                        developer {
+                            id.set('grill24')
+                            name.set('Curren J')
+                        }
+                    }
+                    scm {
+                        connection.set('scm:git:git://github.com/CurrenJ/gelatin-ui.git')
+                        developerConnection.set('scm:git:ssh://github.com/CurrenJ/gelatin-ui.git')
+                        url.set('https://github.com/CurrenJ/gelatin-ui')
+                    }
+                }
             }
         }
-
-        // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
         repositories {
-            // Add repositories to publish to here.
-            // Notice: This block does NOT have the same function as the block in the top level.
-            // The repositories here will be used for publishing your artifact, not for
-            // retrieving dependencies.
+            maven {
+                name = 'CentralLocal'
+                url = rootProject.layout.buildDirectory.dir('central-repo')
+            }
         }
+    }
+
+    signing {
+        useGpgCmd()
+        sign publishing.publications.mavenJava
+    }
+}
+
+// Aggregate tasks to create and upload a Central bundle for all subprojects
+// Publishes all subprojects to the aggregated local repo
+// Clean the aggregated local repo and bundles to ensure only current version artifacts are included
+tasks.register('cleanCentralLocalRepo') {
+    group = 'publishing'
+    description = 'Delete aggregated local repository (build/central-repo) and bundles (build/central-bundles) to avoid mixing versions.'
+    doLast {
+        delete layout.buildDirectory.dir('central-repo')
+        delete layout.buildDirectory.dir('central-bundles')
+    }
+}
+
+// Verify that the aggregated repo contains only the current version before bundling
+tasks.register('verifyCentralRepoCurrentVersion') {
+    group = 'publishing'
+    description = 'Fail if build/central-repo contains versions other than the current project version.'
+    dependsOn 'publishAllToCentralLocal'
+    doLast {
+        def current = rootProject.version.toString()
+        def repoDir = layout.buildDirectory.dir('central-repo').get().asFile
+        if (!repoDir.exists()) return
+        def offending = [] as Set
+        repoDir.eachFileRecurse { f ->
+            if (f.name.endsWith('.pom')) {
+                def versionDir = f.parentFile.name
+                if (versionDir != current) {
+                    offending << f.parentFile.absolutePath
+                }
+            }
+        }
+        if (!offending.isEmpty()) {
+            throw new GradleException("Aggregated repo includes versions other than ${current}:\n - " + offending.join('\n - ') + "\nRun :cleanCentralLocalRepo and retry.")
+        }
+    }
+}
+
+tasks.register('publishAllToCentralLocal') {
+    group = 'publishing'
+    description = 'Publish all subprojects to the aggregated local repository for Central bundling.'
+    // Ensure the repo is clean so we don't include old versions in the bundle
+    dependsOn 'cleanCentralLocalRepo'
+    dependsOn subprojects.collect { it.tasks.named('publishMavenJavaPublicationToCentralLocalRepository') }
+}
+
+// Create the bundle zip from the aggregated local repo
+tasks.register('createCentralBundle', Zip) {
+    group = 'publishing'
+    description = 'Create Sonatype Central bundle zip from aggregated local repository.'
+    from layout.buildDirectory.dir('central-repo')
+    archiveFileName = "${rootProject.name}-${rootProject.version}.zip"
+    destinationDirectory = layout.buildDirectory.dir('central-bundles')
+    dependsOn 'verifyCentralRepoCurrentVersion'
+}
+
+// Upload bundle to Sonatype Central
+tasks.register('uploadToCentralPortal') { t ->
+    group = 'publishing'
+    description = { "Upload the Central bundle to central.sonatype.com (publishingType=${project.ext.centralPublishingType})" }
+    dependsOn 'createCentralBundle'
+
+    doLast {
+        def bundle = layout.buildDirectory.file("central-bundles/${rootProject.name}-${rootProject.version}.zip").get().asFile
+        if (!bundle.exists()) throw new GradleException("Central bundle not found at: ${bundle}")
+
+        def token = System.getenv('CENTRAL_TOKEN') ?: (project.findProperty('centralToken') as String)
+        def username = System.getenv('CENTRAL_USERNAME') ?: (project.findProperty('centralUsername') as String) ?: (project.findProperty('sonartypeUsername') as String)
+        def password = System.getenv('CENTRAL_PASSWORD') ?: (project.findProperty('centralPassword') as String) ?: (project.findProperty('sonartypePassword') as String)
+
+        def publishingType = project.ext.centralPublishingType
+        def url = "https://central.sonatype.com/api/v1/publisher/upload?publishingType=${publishingType}"
+        logger.lifecycle("Uploading bundle to Sonatype Central: ${bundle.name} (publishingType=${publishingType})")
+
+        def cmd = ['curl', '-sS', '-f', '-X', 'POST', '-F', "bundle=@${bundle.absolutePath}"]
+        if (token) {
+            cmd += ['-H', "Authorization: Bearer ${token}"]
+        } else if (username && password) {
+            cmd += ['-u', "${username}:${password}"]
+        } else {
+            throw new GradleException('No Central credentials found. Provide CENTRAL_TOKEN env var, or CENTRAL_USERNAME and CENTRAL_PASSWORD, or sonartypeUsername/sonartypePassword in local.properties.')
+        }
+        cmd += [url]
+
+        // Ensure plain strings for ProcessBuilder
+        def cmdStrings = cmd.collect { it.toString() }
+        def proc = new ProcessBuilder(cmdStrings).redirectErrorStream(true).start()
+        def out = new StringBuffer()
+        proc.inputStream.eachLine { out.append(it).append('\n') }
+        int exit = proc.waitFor()
+        if (exit != 0) {
+            logger.error(out.toString())
+            throw new GradleException("Upload to Sonatype Central failed with exit code ${exit}")
+        }
+        logger.lifecycle('Upload completed. Review/publish in Central if USER_MANAGED, or watch publishing status at https://central.sonatype.com/publishing')
     }
 }
