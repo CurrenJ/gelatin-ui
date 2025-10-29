@@ -27,10 +27,15 @@ public class DebugMenuTypes {
         String registryName = screenId.replace('/', '_').replace(':', '_');
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "debug_" + registryName);
         
+        // Create a holder for the menu type that will be populated after registration
+        final MenuType<DebugScreenMenu>[] menuTypeHolder = new MenuType[1];
+        
         MenuType<DebugScreenMenu> menuType = new MenuType<>(
-            (containerId, inventory) -> new DebugScreenMenu(MENU_TYPES.get(screenId), containerId, screenId),
+            (containerId, inventory) -> new DebugScreenMenu(menuTypeHolder[0], containerId, screenId),
             FeatureFlags.DEFAULT_FLAGS
         );
+        
+        menuTypeHolder[0] = menuType;
         
         Registry.register(BuiltInRegistries.MENU, id, menuType);
         MENU_TYPES.put(screenId, menuType);
