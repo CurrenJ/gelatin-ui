@@ -16,7 +16,7 @@ public class DebugScreenMenu extends AbstractContainerMenu {
 
     /**
      * Creates a debug screen menu.
-     * @param menuType The menu type (may be null during initial registration, gets set properly when opened)
+     * @param menuType The menu type for this menu
      * @param containerId The container ID
      * @param screenId The screen ID to identify which debug screen to show
      */

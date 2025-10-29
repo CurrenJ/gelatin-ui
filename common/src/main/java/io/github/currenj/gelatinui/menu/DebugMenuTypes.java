@@ -27,16 +27,24 @@ public class DebugMenuTypes {
         String registryName = screenId.replace('/', '_').replace(':', '_');
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "debug_" + registryName);
         
-        // Create menu type. The factory lambda is used when Minecraft needs to create the menu on the client side.
-        // We pass null for the menuType in the factory since it creates a circular reference,
-        // but in practice the menu is always created via SimpleMenuProvider on the server
-        // which provides the correct menuType reference.
+        // First register the menu type with a factory that looks up the registered type.
+        // This avoids circular reference while ensuring the factory can access the MenuType.
         MenuType<DebugScreenMenu> menuType = new MenuType<>(
-            (containerId, inventory) -> new DebugScreenMenu(null, containerId, screenId),
+            (containerId, inventory) -> {
+                // Look up the already-registered menu type for this screen
+                MenuType<DebugScreenMenu> registeredType = MENU_TYPES.get(screenId);
+                if (registeredType == null) {
+                    throw new IllegalStateException("Menu type not yet registered for screen: " + screenId);
+                }
+                return new DebugScreenMenu(registeredType, containerId, screenId);
+            },
             FeatureFlags.DEFAULT_FLAGS
         );
         
+        // Register in Minecraft's registry
         Registry.register(BuiltInRegistries.MENU, id, menuType);
+        
+        // Store in our map for lookups
         MENU_TYPES.put(screenId, menuType);
         
         return menuType;
