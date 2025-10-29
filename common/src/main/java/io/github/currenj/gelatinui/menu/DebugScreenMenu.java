@@ -14,6 +14,12 @@ import net.minecraft.world.item.ItemStack;
 public class DebugScreenMenu extends AbstractContainerMenu {
     private final String screenId;
 
+    /**
+     * Creates a debug screen menu.
+     * @param menuType The menu type (may be null during initial registration, gets set properly when opened)
+     * @param containerId The container ID
+     * @param screenId The screen ID to identify which debug screen to show
+     */
     public DebugScreenMenu(MenuType<?> menuType, int containerId, String screenId) {
         super(menuType, containerId);
         this.screenId = screenId;
