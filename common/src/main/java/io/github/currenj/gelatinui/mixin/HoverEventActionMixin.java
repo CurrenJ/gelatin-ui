@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.serialization.Codec;
 import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.tooltip.ItemStacksInfo;
-import io.github.currenj.gelatinui.tooltip.ItemStacksTooltip;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.util.StringRepresentable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -47,6 +46,12 @@ public class HoverEventActionMixin {
 
     @Unique
     private static HoverEvent.Action<?>[] gelatinui$getAdditionalActions() {
-        return new HoverEvent.Action<?>[]{ItemStacksTooltip.SHOW_ITEM_STACKS};
+        // Create the action instance during the enum's <clinit> (static initialization).
+        // This method is invoked exactly once when HoverEvent.Action class is first loaded.
+        // The created instance becomes a permanent member of the enum and is managed by
+        // the enum framework, so we don't need to cache it here.
+        HoverEvent.Action<ItemStacksInfo> showItemStacks = 
+            new HoverEvent.Action<>("show_item_stacks", true, ItemStacksInfo.CODEC, ItemStacksInfo::legacyCreate);
+        return new HoverEvent.Action<?>[]{showItemStacks};
     }
 }
