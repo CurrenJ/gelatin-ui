@@ -46,7 +46,9 @@ public class HoverEventActionMixin {
 
     @Unique
     private static HoverEvent.Action<?>[] gelatinui$getAdditionalActions() {
-        // Create the action instance here, during the enum's <clinit>, when it's safe to do so
+        // Create the action instance here, during the enum's <clinit>, when it's safe to do so.
+        // This method is called exactly once during HoverEvent.Action's static initialization,
+        // so we don't need to cache the result.
         HoverEvent.Action<ItemStacksInfo> showItemStacks = 
             new HoverEvent.Action<>("show_item_stacks", true, ItemStacksInfo.CODEC, ItemStacksInfo::legacyCreate);
         return new HoverEvent.Action<?>[]{showItemStacks};
