@@ -1,16 +1,19 @@
-package io.github.currenj.gelatinui;
+package io.github.currenj.gelatinui.example;
 
+import io.github.currenj.gelatinui.GelatinUIScreen;
 import io.github.currenj.gelatinui.extension.IGuiGraphicsExtension;
 import io.github.currenj.gelatinui.gui.UI;
 import io.github.currenj.gelatinui.gui.components.Label;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import io.github.currenj.gelatinui.gui.GelatinMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
 
-public class GraphicsExtensionTestScreen extends GelatinUIScreen {
-    public GraphicsExtensionTestScreen() {
-        super(Component.literal("Graphics Extension Test"));
+public class GraphicsExtensionTestScreen extends GelatinUIScreen<GelatinMenu> {
+    public GraphicsExtensionTestScreen(GelatinMenu menu, Inventory inv) {
+        super(menu, inv, Component.literal("Graphics Extension Test"));
     }
 
     @Override

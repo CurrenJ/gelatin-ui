@@ -1,6 +1,7 @@
 package io.github.currenj.gelatinui.command;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.github.currenj.gelatinui.registration.menu.MenuRegistration;
 import io.github.currenj.gelatinui.tooltip.ItemStacksInfo;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
@@ -8,7 +9,6 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import io.github.currenj.gelatinui.DebugScreenRegistry;
 import io.github.currenj.gelatinui.tooltip.ItemStacksTooltip;
 
 import java.util.Arrays;
@@ -28,14 +28,14 @@ public final class CommandUtils {
     /**
      * Builds the command tree for screen registration commands.
      * @param commandTree The map to populate with command branches
-     * @param packetSender Function to send packets to players (platform-specific)
+     * @param commandOp Function to send packets to players (platform-specific)
      */
     public static void buildScreenCommandTree(
             Map<String, LiteralArgumentBuilder<CommandSourceStack>> commandTree,
-            PacketSender packetSender) {
+            CommandOp commandOp) {
 
-        for (String id : DebugScreenRegistry.getRegisteredIds()) {
-            String[] parts = DebugScreenRegistry.getIdParts(id);
+        for (String id : MenuRegistration.getRegisteredDebugMenuIds()) {
+            String[] parts = MenuRegistration.getIdParts(id);
             final String screenId = id; // Capture the ID properly for lambda
 
             if (parts.length == 1) {
@@ -44,14 +44,14 @@ public final class CommandUtils {
                     .executes(context -> {
                         var source = context.getSource();
                         if (source.getPlayer() != null) {
-                            packetSender.sendPacket(source.getPlayer(), screenId);
+                            commandOp.apply(source.getPlayer(), screenId);
                         }
                         return 1;
                     });
                 commandTree.put(parts[0], command);
             } else {
                 // Multi-part ID: build nested command structure
-                buildCommandTree(commandTree, parts, screenId, packetSender);
+                buildCommandTree(commandTree, parts, screenId, commandOp);
             }
         }
     }
@@ -91,7 +91,7 @@ public final class CommandUtils {
             Map<String, LiteralArgumentBuilder<CommandSourceStack>> commandTree,
             String[] parts,
             String screenId,
-            PacketSender packetSender) {
+            CommandOp commandOp) {
 
         // Get or create the root node
         String rootKey = parts[0];
@@ -114,7 +114,7 @@ public final class CommandUtils {
                     .executes(context -> {
                         var source = context.getSource();
                         if (source.getPlayer() != null) {
-                            packetSender.sendPacket(source.getPlayer(), screenId);
+                            commandOp.apply(source.getPlayer(), screenId);
                         }
                         return 1;
                     });
@@ -144,7 +144,7 @@ public final class CommandUtils {
      * Functional interface for sending packets to players (platform-specific implementation).
      */
     @FunctionalInterface
-    public interface PacketSender {
-        void sendPacket(net.minecraft.server.level.ServerPlayer player, String screenId);
+    public interface CommandOp {
+        void apply(net.minecraft.server.level.ServerPlayer player, String screenId);
     }
 }

@@ -1,16 +1,19 @@
-package io.github.currenj.gelatinui;
+package io.github.currenj.gelatinui.example;
 
+import io.github.currenj.gelatinui.GelatinUIScreen;
+import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.gui.UI;
-import io.github.currenj.gelatinui.gui.UIEvent;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import io.github.currenj.gelatinui.gui.GelatinMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
 
-public class ScaleToFitTestScreen extends GelatinUIScreen {
-    public ScaleToFitTestScreen() {
-        super(Component.literal("Scale To Fit Test"));
+public class ScaleToFitTestScreen extends GelatinUIScreen<GelatinMenu> {
+    public ScaleToFitTestScreen(GelatinMenu menu, Inventory inv) {
+        super(menu, inv, Component.literal("Scale To Fit Test"));
     }
 
     @Override
@@ -105,13 +108,11 @@ public class ScaleToFitTestScreen extends GelatinUIScreen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        boolean anyPressed = super.keyPressed(keyCode, scanCode, modifiers);
-
         if (keyCode == 54) { // Key '6' = GLFW_KEY_
             outerVBox.scaleToHeight(this.uiScreen.getViewHeight());
             return true;
         }
 
-        return false;
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 }

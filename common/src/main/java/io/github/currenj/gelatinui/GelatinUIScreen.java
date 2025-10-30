@@ -3,16 +3,20 @@ package io.github.currenj.gelatinui;
 import io.github.currenj.gelatinui.gui.IUIElement;
 import io.github.currenj.gelatinui.gui.UIScreen;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import io.github.currenj.gelatinui.gui.GelatinMenu;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class GelatinUIScreen extends Screen {
+public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractContainerScreen<M> {
     protected UIScreen uiScreen;
     private long lastFrameTimeNanos = 0L;
+    private long fadeStartTime;
+    private static final float FADE_DURATION = 0.2f;
 
     // Global click listeners for elements that need to respond to clicks anywhere
     private final List<GlobalClickListener> globalClickListeners = new ArrayList<>();
@@ -25,9 +29,10 @@ public abstract class GelatinUIScreen extends Screen {
         void onGlobalClick(double mouseX, double mouseY, int button);
     }
 
-    protected GelatinUIScreen(Component title) {
-        super(title);
+    protected GelatinUIScreen(M menu, Inventory inv, Component title) {
+        super(menu, inv, title);
         lastFrameTimeNanos = System.nanoTime();
+        fadeStartTime = System.nanoTime();
     }
 
     @Override
@@ -99,6 +104,8 @@ public abstract class GelatinUIScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        super.mouseClicked(mouseX, mouseY, button);
+
         // Notify global click listeners first
         notifyGlobalClickListeners(mouseX, mouseY, button);
 
@@ -113,6 +120,8 @@ public abstract class GelatinUIScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+
         if (uiScreen != null) {
             if (uiScreen.onMouseScroll((int) mouseX, (int) mouseY, (float) scrollY)) {
                 return true;
@@ -124,6 +133,8 @@ public abstract class GelatinUIScreen extends Screen {
     @Override
     public void resize(net.minecraft.client.Minecraft minecraft, int width, int height) {
         super.resize(minecraft, width, height);
+
+        super.resize(minecraft, width, height);
         if (uiScreen != null) {
             uiScreen.resize(width, height);
         }
@@ -131,7 +142,7 @@ public abstract class GelatinUIScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // Check for debug toggle keys
+        // Check for debug toggle keys BEFORE calling super to prevent escape key from closing the screen
         // Key '8' = GLFW_KEY_8 = 56
         // Key '9' = GLFW_KEY_9 = 57
         // Key '0' = GLFW_KEY_0 = 48
@@ -188,6 +199,7 @@ public abstract class GelatinUIScreen extends Screen {
             return true;
         }
 
+        // Call super last so our debug keys take priority and escape key handling works correctly
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -263,6 +275,32 @@ public abstract class GelatinUIScreen extends Screen {
     public void clearTooltip() {
         if (uiScreen != null) {
             uiScreen.clearTooltip();
+        }
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics guiGraphics, float f, int i, int j) {
+        // No background rendering here; handled in renderContent
+    }
+
+    @Override
+    public void renderTransparentBackground(GuiGraphics arg) {
+        long now = System.nanoTime();
+        float elapsed = (now - fadeStartTime) / 1_000_000_000f;
+        if (elapsed >= FADE_DURATION) {
+            arg.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
+        } else {
+            float progress = Math.min(1f, elapsed / FADE_DURATION);
+
+            int color1 = -1072689136;
+            int color2 = -804253680;
+            int alpha1 = (color1 >> 24) & 0xFF;
+            int alpha2 = (color2 >> 24) & 0xFF;
+            int newAlpha1 = (int) (alpha1 * progress);
+            int newAlpha2 = (int) (alpha2 * progress);
+            int newColor1 = (newAlpha1 << 24) | (color1 & 0x00FFFFFF);
+            int newColor2 = (newAlpha2 << 24) | (color2 & 0x00FFFFFF);
+            arg.fillGradient(0, 0, this.width, this.height, newColor1, newColor2);
         }
     }
 }

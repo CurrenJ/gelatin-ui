@@ -1,5 +1,6 @@
 package io.github.currenj.gelatinui.fabric;
 
+import io.github.currenj.gelatinui.registration.menu.MenuRegistration;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -9,7 +10,6 @@ import net.minecraft.commands.Commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import io.github.currenj.gelatinui.GelatinUi;
-import io.github.currenj.gelatinui.OpenTestScreenPacket;
 import io.github.currenj.gelatinui.command.CommandUtils;
 
 import java.util.HashMap;
@@ -25,9 +25,6 @@ public final class GelatinUiModFabric implements ModInitializer {
         // Run our common setup.
         GelatinUi.init();
 
-        // Register packet
-        PayloadTypeRegistry.playS2C().register(OpenTestScreenPacket.TYPE, OpenTestScreenPacket.CODEC);
-
         // Register commands
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             var gelatinCommand = Commands.literal("gelatin");
@@ -36,8 +33,7 @@ public final class GelatinUiModFabric implements ModInitializer {
             Map<String, LiteralArgumentBuilder<CommandSourceStack>> commandTree = new HashMap<>();
 
             // Build screen commands using common utility
-            CommandUtils.buildScreenCommandTree(commandTree, (player, screenId) ->
-                ServerPlayNetworking.send(player, new OpenTestScreenPacket(screenId)));
+            CommandUtils.buildScreenCommandTree(commandTree, MenuRegistration::openMenuById);
 
             // Add tooltip example command
             CommandUtils.addTooltipExampleCommand(commandTree);

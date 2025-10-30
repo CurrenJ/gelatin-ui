@@ -1,21 +1,23 @@
-package io.github.currenj.gelatinui;
+package io.github.currenj.gelatinui.example;
 
-import io.github.currenj.gelatinui.extension.IGuiGraphicsExtension;
+import io.github.currenj.gelatinui.GelatinUIScreen;
+import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.gui.UI;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import io.github.currenj.gelatinui.gui.GelatinMenu;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.List;
 import java.util.ArrayList;
 
-public class TabsTestScreen extends GelatinUIScreen {
-    public TabsTestScreen() {
-        super(Component.literal("Tabs Test"));
+public class TabsTestScreen extends GelatinUIScreen<GelatinMenu> {
+    public TabsTestScreen(GelatinMenu menu, Inventory inv) {
+        super(menu, inv, Component.literal("Tabs Test"));
     }
 
     @Override

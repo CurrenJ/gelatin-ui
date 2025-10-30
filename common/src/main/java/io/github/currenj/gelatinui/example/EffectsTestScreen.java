@@ -1,6 +1,6 @@
-package io.github.currenj.gelatinui;
+package io.github.currenj.gelatinui.example;
 
-import io.github.currenj.gelatinui.gui.IRenderContext;
+import io.github.currenj.gelatinui.GelatinUIScreen;
 import io.github.currenj.gelatinui.gui.UI;
 import io.github.currenj.gelatinui.gui.UIElement;
 import io.github.currenj.gelatinui.gui.components.*;
@@ -8,8 +8,10 @@ import io.github.currenj.gelatinui.gui.effects.*;
 import io.github.currenj.gelatinui.gui.animation.FloatKeyframeAnimation;
 import io.github.currenj.gelatinui.gui.animation.Keyframe;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import io.github.currenj.gelatinui.gui.GelatinMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;
@@ -18,7 +20,7 @@ import java.util.List;
 /**
  * Demo screen showcasing the effects system with interactive examples.
  */
-public class EffectsTestScreen extends GelatinUIScreen {
+public class EffectsTestScreen extends GelatinUIScreen<GelatinMenu> {
 
     // Demo elements
     private SpriteButton clickBounceButton;
@@ -34,8 +36,8 @@ public class EffectsTestScreen extends GelatinUIScreen {
     private boolean breatheEnabled = false;
     private boolean wanderEnabled = false;
 
-    public EffectsTestScreen() {
-        super(Component.literal("Effects System Demo"));
+    public EffectsTestScreen(GelatinMenu menu, Inventory inv) {
+        super(menu, inv, Component.literal("Effects System Demo"));
     }
 
     @Override
@@ -260,8 +262,8 @@ public class EffectsTestScreen extends GelatinUIScreen {
     }
 
     @Override
-    public void tick() {
-        super.tick();
+    public void containerTick() {
+        super.containerTick();
 
         // Update effect counters for demo
         if (demoPanel != null) {

@@ -1,16 +1,20 @@
-package io.github.currenj.gelatinui;
+package io.github.currenj.gelatinui.example;
 
+import io.github.currenj.gelatinui.GelatinUIScreen;
+import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.gui.UI;
 import io.github.currenj.gelatinui.gui.UIElement;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import io.github.currenj.gelatinui.gui.GelatinMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
 
-public class SizeAlignmentTestScreen extends GelatinUIScreen {
-    public SizeAlignmentTestScreen() {
-        super(Component.literal("Size Alignment Test"));
+public class SizeAlignmentTestScreen extends GelatinUIScreen<GelatinMenu> {
+    public SizeAlignmentTestScreen(GelatinMenu menu, Inventory inv) {
+        super(menu, inv, Component.literal("Size Alignment Test"));
     }
 
     private UIElement<?> uiElement;

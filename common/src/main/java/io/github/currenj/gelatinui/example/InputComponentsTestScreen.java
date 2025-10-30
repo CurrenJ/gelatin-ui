@@ -1,14 +1,17 @@
-package io.github.currenj.gelatinui;
+package io.github.currenj.gelatinui.example;
 
+import io.github.currenj.gelatinui.GelatinUIScreen;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import io.github.currenj.gelatinui.gui.GelatinMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
 
 /**
  * Demo screen showcasing the TextInput and Checkbox components.
  */
-public class InputComponentsTestScreen extends GelatinUIScreen {
+public class InputComponentsTestScreen extends GelatinUIScreen<GelatinMenu> {
 
     private TextInput usernameInput;
     private TextInput emailInput;
@@ -16,8 +19,8 @@ public class InputComponentsTestScreen extends GelatinUIScreen {
     private Checkbox agreeToTerms;
     private Label statusLabel;
 
-    public InputComponentsTestScreen() {
-        super(Component.literal("Input Components Demo"));
+    public InputComponentsTestScreen(GelatinMenu menu, Inventory inv) {
+        super(menu, inv, Component.literal("Input Components Demo"));
     }
 
     @Override
