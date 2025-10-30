@@ -78,7 +78,7 @@ public final class CommandUtils {
 
                     // Send chat message with hover tooltip
                     Component message = Component.literal("Hover over this message to see item stacks tooltip!")
-                        .withStyle(style -> style.withHoverEvent(new HoverEvent(ItemStacksTooltip.SHOW_ITEM_STACKS, info)));
+                        .withStyle(style -> style.withHoverEvent(new HoverEvent(ItemStacksTooltip.getShowItemStacksAction(), info)));
 
                     source.getPlayer().sendSystemMessage(message);
                 }

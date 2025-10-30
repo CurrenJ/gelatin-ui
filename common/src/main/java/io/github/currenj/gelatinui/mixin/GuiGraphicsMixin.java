@@ -78,7 +78,7 @@ public abstract class GuiGraphicsMixin implements IGuiGraphicsExtension {
         if (style != null && style.getHoverEvent() != null)
         {
             HoverEvent hoverEvent = style.getHoverEvent();
-            if (hoverEvent.getValue(ItemStacksTooltip.SHOW_ITEM_STACKS) instanceof ItemStacksInfo itemStacksInfo) {
+            if (hoverEvent.getValue(ItemStacksTooltip.getShowItemStacksAction()) instanceof ItemStacksInfo itemStacksInfo) {
                 ItemStacksTooltip tooltipComponent = new ItemStacksTooltip(
                         itemStacksInfo.getItemStacks(),
                         false

@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.serialization.Codec;
 import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.tooltip.ItemStacksInfo;
-import io.github.currenj.gelatinui.tooltip.ItemStacksTooltip;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.util.StringRepresentable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,6 +15,10 @@ import java.util.function.Supplier;
 
 @Mixin(HoverEvent.Action.class)
 public class HoverEventActionMixin {
+    @Unique
+    private static final HoverEvent.Action<ItemStacksInfo> gelatinui$SHOW_ITEM_STACKS = 
+        new HoverEvent.Action<>("show_item_stacks", true, ItemStacksInfo.CODEC, ItemStacksInfo::legacyCreate);
+
     @WrapOperation(
             method = "<clinit>",
             at = @At(
@@ -47,6 +50,6 @@ public class HoverEventActionMixin {
 
     @Unique
     private static HoverEvent.Action<?>[] gelatinui$getAdditionalActions() {
-        return new HoverEvent.Action<?>[]{ItemStacksTooltip.SHOW_ITEM_STACKS};
+        return new HoverEvent.Action<?>[]{gelatinui$SHOW_ITEM_STACKS};
     }
 }

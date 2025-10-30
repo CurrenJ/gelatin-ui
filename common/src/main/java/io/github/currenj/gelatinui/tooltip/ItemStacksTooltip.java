@@ -8,9 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record ItemStacksTooltip(List<ItemStack> items, boolean renderItemDecorations) implements TooltipComponent {
-    public static final HoverEvent.Action<ItemStacksInfo> SHOW_ITEM_STACKS = new HoverEvent.Action<>(
-            "show_item_stacks", true, ItemStacksInfo.CODEC, ItemStacksInfo::legacyCreate
-    );
+    /**
+     * Gets the SHOW_ITEM_STACKS action. This is lazily initialized to avoid
+     * issues with enum instantiation during class loading.
+     * The action is created and added to the enum by HoverEventActionMixin.
+     */
+    public static HoverEvent.Action<ItemStacksInfo> getShowItemStacksAction() {
+        // Find the action by name in the enum values
+        for (HoverEvent.Action<?> action : HoverEvent.Action.values()) {
+            if (action.getName().equals("show_item_stacks")) {
+                @SuppressWarnings("unchecked")
+                HoverEvent.Action<ItemStacksInfo> typedAction = (HoverEvent.Action<ItemStacksInfo>) action;
+                return typedAction;
+            }
+        }
+        throw new IllegalStateException("SHOW_ITEM_STACKS action not found in HoverEvent.Action values. Is HoverEventActionMixin applied?");
+    }
 
     public static ItemStacksTooltip of(List<List<ItemStack>> items, boolean renderItemDecorations) {
         List<ItemStack> displayStacks = new ArrayList<>();
