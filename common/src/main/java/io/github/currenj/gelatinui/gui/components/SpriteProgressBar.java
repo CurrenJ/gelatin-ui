@@ -1,6 +1,5 @@
 package io.github.currenj.gelatinui.gui.components;
 
-import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.gui.DirtyFlag;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import io.github.currenj.gelatinui.gui.UIEvent;
@@ -12,13 +11,15 @@ import org.joml.Vector2f;
  * Renders a layered sprite-based progress bar with optional decorations based on skill level.
  */
 public class SpriteProgressBar extends SpriteRectangle<SpriteProgressBar> {
+    private static final String MOD_ID = "gelatinui";
+    
     // Texture resources
-    public static final ResourceLocation BAR_BACKGROUND = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_background.png");
-    public static final ResourceLocation BAR_GOLD_OUTLINE = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_gold_outline.png");
-    public static final ResourceLocation BAR_FILLED_METER = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_filled_meter.png");
-    public static final ResourceLocation BAR_EMBELLISHMENT_1 = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_embellishment_1.png");
-    public static final ResourceLocation BAR_EMBELLISHMENT_2 = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_embellishment_2.png");
-    public static final ResourceLocation BAR_EMBELLISHMENT_3 = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_embellishment_3.png");
+    public static final ResourceLocation BAR_BACKGROUND = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/progress_bar_background.png");
+    public static final ResourceLocation BAR_GOLD_OUTLINE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/progress_bar_gold_outline.png");
+    public static final ResourceLocation BAR_FILLED_METER = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/progress_bar_filled_meter.png");
+    public static final ResourceLocation BAR_EMBELLISHMENT_1 = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/progress_bar_embellishment_1.png");
+    public static final ResourceLocation BAR_EMBELLISHMENT_2 = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/progress_bar_embellishment_2.png");
+    public static final ResourceLocation BAR_EMBELLISHMENT_3 = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/gui/progress_bar_embellishment_3.png");
 
     // Default dimensions
     public static final int DEFAULT_WIDTH = 63;
