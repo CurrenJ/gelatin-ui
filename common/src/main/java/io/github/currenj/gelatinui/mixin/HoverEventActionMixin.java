@@ -15,10 +15,6 @@ import java.util.function.Supplier;
 
 @Mixin(HoverEvent.Action.class)
 public class HoverEventActionMixin {
-    @Unique
-    private static final HoverEvent.Action<ItemStacksInfo> gelatinui$SHOW_ITEM_STACKS = 
-        new HoverEvent.Action<>("show_item_stacks", true, ItemStacksInfo.CODEC, ItemStacksInfo::legacyCreate);
-
     @WrapOperation(
             method = "<clinit>",
             at = @At(
@@ -50,6 +46,9 @@ public class HoverEventActionMixin {
 
     @Unique
     private static HoverEvent.Action<?>[] gelatinui$getAdditionalActions() {
-        return new HoverEvent.Action<?>[]{gelatinui$SHOW_ITEM_STACKS};
+        // Create the action instance here, during the enum's <clinit>, when it's safe to do so
+        HoverEvent.Action<ItemStacksInfo> showItemStacks = 
+            new HoverEvent.Action<>("show_item_stacks", true, ItemStacksInfo.CODEC, ItemStacksInfo::legacyCreate);
+        return new HoverEvent.Action<?>[]{showItemStacks};
     }
 }
