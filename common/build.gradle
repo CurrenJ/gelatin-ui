@@ -1,22 +1,30 @@
+plugins {
+    id 'org.spongepowered.gradle.vanilla' version '0.2.1-SNAPSHOT'
+}
+
 architectury {
     common rootProject.enabled_platforms.split(',')
 }
 
-loom {
-    accessWidenerPath = file("src/main/resources/gelatinui.accesswidener")
-    mixin {
-        defaultRefmapName = "gelatinui-common.refmap.json"
+minecraft {
+    version(rootProject.minecraft_version)
+    if (file("src/main/resources/gelatinui.accesswidener").exists()) {
+        accessWideners(project.file("src/main/resources/gelatinui.accesswidener"))
     }
 }
 
 dependencies {
+    // Mixin annotation processor
+    compileOnly group:'org.spongepowered', name: 'mixin', version: '0.8.5'
+    annotationProcessor group:'org.spongepowered', name: 'mixin', version: '0.8.5:processor'
+    
     // We depend on Fabric Loader here to use the Fabric @Environment annotations,
     // which get remapped to the correct annotations on each platform.
     // Do NOT use other classes from Fabric Loader.
-    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    compileOnly "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
     // Architectury API. This is optional, and you can comment it out if you don't need it.
-    modImplementation "dev.architectury:architectury:$rootProject.architectury_api_version"
+    compileOnly "dev.architectury:architectury:$rootProject.architectury_api_version"
 
     // Unit testing
     testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'

@@ -29,6 +29,9 @@ dependencies {
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
+    
+    // Mixin annotation processor
+    annotationProcessor group:'org.spongepowered', name: 'mixin', version: '0.8.5:processor'
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
@@ -68,6 +71,9 @@ remapJar {
 }
 
 loom {
+    mixin {
+        defaultRefmapName.set("gelatinui.refmap.json")
+    }
     runs {
         datagen {
             inherit client

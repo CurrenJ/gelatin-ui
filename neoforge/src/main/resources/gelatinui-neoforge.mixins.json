@@ -1,7 +1,8 @@
 {
   "required": true,
-  "package": "grill24.gelatinui.neoforge.mixin",
+  "package": "io.github.currenj.gelatinui.neoforge.mixin",
   "compatibilityLevel": "JAVA_21",
+  "refmap": "gelatinui.refmap.json",
   "minVersion": "0.8",
   "client": [
   ],
