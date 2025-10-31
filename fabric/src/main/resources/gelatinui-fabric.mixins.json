@@ -2,6 +2,7 @@
   "required": true,
   "package": "io.github.currenj.gelatinui.mixin",
   "compatibilityLevel": "JAVA_21",
+  "refmap": "gelatinui-refmap.json",
   "minVersion": "0.8",
   "client": [
     "GuiGraphicsMixin"

@@ -25,7 +25,7 @@
     ]
   },
   "mixins": [
-    "gelatinui.mixins.json"
+    "gelatinui-fabric.mixins.json"
   ],
   "accessWidener": "gelatinui.accesswidener",
   "depends": {

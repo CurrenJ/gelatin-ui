@@ -1,11 +1,13 @@
 {
   "required": true,
-  "package": "grill24.gelatinui.neoforge.mixin",
+  "package": "io.github.currenj.gelatinui.mixin",
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
   "client": [
+    "GuiGraphicsMixin"
   ],
   "mixins": [
+    "HoverEventActionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

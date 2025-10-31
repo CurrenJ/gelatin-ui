@@ -1,3 +1,8 @@
 accessWidener v2 named
 
 accessible class net/minecraft/client/gui/screens/MenuScreens$ScreenConstructor
+mutable field net/minecraft/network/chat/HoverEvent$Action UNSAFE_CODEC Lcom/mojang/serialization/Codec;
+accessible field net/minecraft/network/chat/HoverEvent$Action UNSAFE_CODEC Lcom/mojang/serialization/Codec;
+mutable field net/minecraft/network/chat/HoverEvent$Action CODEC Lcom/mojang/serialization/Codec;
+accessible field net/minecraft/network/chat/HoverEvent$Action CODEC Lcom/mojang/serialization/Codec;
+accessible method net/minecraft/network/chat/HoverEvent$Action filterForSerialization (Lnet/minecraft/network/chat/HoverEvent$Action;)Lcom/mojang/serialization/DataResult;

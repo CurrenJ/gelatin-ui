@@ -45,9 +45,6 @@ processResources {
     inputs.property 'version', project.version
 
     from project(":common").sourceSets.main.resources
-    from(project(":common").buildDir) {
-        include "resources/main/gelatinui.refmap.json"
-    }
 
     filesMatching('META-INF/neoforge.mods.toml') {
         expand([
