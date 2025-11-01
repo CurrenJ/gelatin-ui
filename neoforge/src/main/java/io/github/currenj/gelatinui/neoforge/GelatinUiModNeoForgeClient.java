@@ -30,7 +30,7 @@ public final class GelatinUiModNeoForgeClient {
     }
 
     private void registerMenuScreens(final RegisterMenuScreensEvent event) {
-        ScreenRegistration.applyRegistrations(event::register);
+        ScreenRegistration.fireRegistrationEvent(event::register);
     }
 }
 

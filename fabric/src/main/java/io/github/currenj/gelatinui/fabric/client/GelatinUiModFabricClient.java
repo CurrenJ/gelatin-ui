@@ -26,6 +26,6 @@ public final class GelatinUiModFabricClient implements ClientModInitializer {
             return null;
         });
 
-        ScreenRegistration.applyRegistrations(MenuScreens::register);
+        ScreenRegistration.fireRegistrationEvent(MenuScreens::register);
     }
 }
