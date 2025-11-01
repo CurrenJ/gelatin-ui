@@ -1,5 +1,6 @@
 package io.github.currenj.gelatinui.registration.menu;
 
+import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,6 +23,7 @@ public class MenuRegistration {
      */
     public static void fireRegistrationEvent() {
         MenuRegistrationEvent.fire(MenuRegistration::registerDebugMenu);
+        GelatinUi.LOGGER.info("Fired menu registration event; registered {} debug menus.", DEBUG_MENUS.size());
     }
 
     /**

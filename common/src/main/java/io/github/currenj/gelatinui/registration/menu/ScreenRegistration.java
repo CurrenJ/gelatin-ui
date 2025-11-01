@@ -1,6 +1,7 @@
 package io.github.currenj.gelatinui.registration.menu;
 
 import io.github.currenj.gelatinui.GelatinUIScreen;
+import io.github.currenj.gelatinui.GelatinUi;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -45,6 +46,7 @@ public class ScreenRegistration {
 
         // Fire the event to all listeners
         ScreenRegistrationEvent.fire(registrar);
+        GelatinUi.LOGGER.info("Fired screen registration event; registered {} screens.", pendingRegistrations.size());
 
         // Apply all pending registrations to the platform-specific registerer
         applyRegistrations(registerer);
