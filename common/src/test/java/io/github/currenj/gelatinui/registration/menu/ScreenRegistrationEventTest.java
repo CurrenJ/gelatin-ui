@@ -18,9 +18,9 @@ public class ScreenRegistrationEventTest {
     public void testScreenRegistrationEventFires() {
         List<String> registeredScreens = new ArrayList<>();
 
-        // Register a listener
+        // Register a listener that uses the registrar
         ScreenRegistrationEvent.registerListener(registrar -> {
-            registeredScreens.add("test_screen_1");
+            registrar.register("test_screen_1", (MenuScreens.ScreenConstructor<AbstractContainerMenu, Screen>) null);
         });
 
         // Create a test registrar that records registrations
@@ -47,7 +47,7 @@ public class ScreenRegistrationEventTest {
         // Fire the event
         ScreenRegistrationEvent.fire(testRegistrar);
 
-        // Verify that the listener was called
+        // Verify that the listener was called and used the registrar
         assertTrue(registeredScreens.contains("test_screen_1"), "Screen should be registered");
     }
 
@@ -55,13 +55,13 @@ public class ScreenRegistrationEventTest {
     public void testMultipleScreenListeners() {
         List<String> registeredScreens = new ArrayList<>();
 
-        // Register multiple listeners
+        // Register multiple listeners that use the registrar
         ScreenRegistrationEvent.registerListener(registrar -> {
-            registeredScreens.add("screen_a");
+            registrar.register("screen_a", (MenuScreens.ScreenConstructor<AbstractContainerMenu, Screen>) null);
         });
 
         ScreenRegistrationEvent.registerListener(registrar -> {
-            registeredScreens.add("screen_b");
+            registrar.register("screen_b", (MenuScreens.ScreenConstructor<AbstractContainerMenu, Screen>) null);
         });
 
         // Create a test registrar

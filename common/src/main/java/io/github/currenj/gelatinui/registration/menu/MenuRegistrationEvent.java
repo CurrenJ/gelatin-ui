@@ -1,7 +1,7 @@
 package io.github.currenj.gelatinui.registration.menu;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 /**
@@ -9,7 +9,7 @@ import java.util.function.Consumer;
  * Listeners can register their custom menus by calling methods on the registrar.
  */
 public class MenuRegistrationEvent {
-    private static final List<Consumer<MenuRegistrar>> listeners = new ArrayList<>();
+    private static final List<Consumer<MenuRegistrar>> listeners = new CopyOnWriteArrayList<>();
 
     /**
      * Register a listener to be called when menu registration happens.

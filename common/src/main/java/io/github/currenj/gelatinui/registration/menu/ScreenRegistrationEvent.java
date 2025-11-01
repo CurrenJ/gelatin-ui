@@ -6,8 +6,8 @@ import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 /**
@@ -15,7 +15,7 @@ import java.util.function.Consumer;
  * Listeners can register their custom screens by calling methods on the registrar.
  */
 public class ScreenRegistrationEvent {
-    private static final List<Consumer<ScreenRegistrar>> listeners = new ArrayList<>();
+    private static final List<Consumer<ScreenRegistrar>> listeners = new CopyOnWriteArrayList<>();
 
     /**
      * Register a listener to be called when screen registration happens.

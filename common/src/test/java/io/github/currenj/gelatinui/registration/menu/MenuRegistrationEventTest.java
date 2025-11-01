@@ -21,19 +21,18 @@ public class MenuRegistrationEventTest {
     public void testMenuRegistrationEventFires() {
         List<String> registeredMenus = new ArrayList<>();
         
-        // Register a listener
+        // Register a listener that uses the registrar
         MenuRegistrationEvent.registerListener(registrar -> {
             registrar.registerDebugMenu("test_menu_1");
-            registeredMenus.add("test_menu_1");
         });
 
-        // Create a simple registrar that records calls
+        // Create a test registrar that records calls
         MenuRegistrationEvent.MenuRegistrar testRegistrar = registeredMenus::add;
 
         // Fire the event
         MenuRegistrationEvent.fire(testRegistrar);
 
-        // Verify that the listener was called
+        // Verify that the listener was called and used the registrar
         assertTrue(registeredMenus.contains("test_menu_1"), "Menu should be registered");
     }
 
@@ -43,14 +42,14 @@ public class MenuRegistrationEventTest {
         
         // Register multiple listeners
         MenuRegistrationEvent.registerListener(registrar -> {
-            registeredMenus.add("menu_a");
+            registrar.registerDebugMenu("menu_a");
         });
         
         MenuRegistrationEvent.registerListener(registrar -> {
-            registeredMenus.add("menu_b");
+            registrar.registerDebugMenu("menu_b");
         });
 
-        // Create a simple registrar
+        // Create a test registrar
         MenuRegistrationEvent.MenuRegistrar testRegistrar = registeredMenus::add;
 
         // Fire the event
