@@ -1,5 +1,7 @@
 package io.github.currenj.gelatinui.registration.menu;
 
+import io.github.currenj.gelatinui.GelatinUIScreen;
+import io.github.currenj.gelatinui.gui.GelatinMenu;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -20,7 +22,7 @@ public class ScreenRegistrationEventTest {
 
         // Register a listener that uses the registrar
         ScreenRegistrationEvent.registerListener(registrar -> {
-            registrar.register("test_screen_1", (MenuScreens.ScreenConstructor<AbstractContainerMenu, Screen>) null);
+            registrar.register("test_screen_1", (MenuScreens.ScreenConstructor<GelatinMenu, GelatinUIScreen<GelatinMenu>>) null);
         });
 
         // Create a test registrar that records registrations
@@ -57,11 +59,11 @@ public class ScreenRegistrationEventTest {
 
         // Register multiple listeners that use the registrar
         ScreenRegistrationEvent.registerListener(registrar -> {
-            registrar.register("screen_a", (MenuScreens.ScreenConstructor<AbstractContainerMenu, Screen>) null);
+            registrar.register("screen_a", (MenuScreens.ScreenConstructor<GelatinMenu, GelatinUIScreen<GelatinMenu>>) null);
         });
 
         ScreenRegistrationEvent.registerListener(registrar -> {
-            registrar.register("screen_b", (MenuScreens.ScreenConstructor<AbstractContainerMenu, Screen>) null);
+            registrar.register("screen_b", (MenuScreens.ScreenConstructor<GelatinMenu, GelatinUIScreen<GelatinMenu>>) null);
         });
 
         // Create a test registrar
