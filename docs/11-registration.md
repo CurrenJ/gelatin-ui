@@ -15,23 +15,22 @@ import io.github.currenj.gelatinui.registration.menu.MenuRegistrationEvent;
 
 public class MyMod {
     public static void init() {
-        // Register listener before the event fires
+        // Register listener - the event will fire automatically after all mods initialize
         MenuRegistrationEvent.registerListener(registrar -> {
             // Register your menus here
             registrar.registerDebugMenu("my_menu_id");
             registrar.registerDebugMenu("another_menu_id");
         });
-        
-        // Fire the event (usually done by the framework)
-        MenuRegistration.fireRegistrationEvent();
     }
 }
 ```
 
+**Note**: The Gelatin UI framework automatically fires the menu registration event during its initialization. You only need to register your listener; you don't need to call `MenuRegistration.fireRegistrationEvent()` yourself.
+
 ### When to Register Listeners
 
-- **Register listeners**: During your mod's common initialization (before the registration event fires)
-- **Event fires**: After all mods have had a chance to register their listeners
+- **Register listeners**: During your mod's common initialization (in your mod's `init()` method)
+- **Event fires**: Automatically after Gelatin UI's initialization completes
 - **Platform-specific**: The actual registration is handled by platform-specific implementations (Fabric/NeoForge)
 
 ## Screen Registration (Client-Only)
@@ -44,11 +43,10 @@ To register screens, add a listener to the `ScreenRegistrationEvent` during your
 
 ```java
 import io.github.currenj.gelatinui.registration.menu.ScreenRegistrationEvent;
-import io.github.currenj.gelatinui.registration.menu.ScreenRegistration;
 
 public class MyModClient {
     public static void init() {
-        // Register listener before the event fires
+        // Register listener - the event will fire automatically during client initialization
         ScreenRegistrationEvent.registerListener(registrar -> {
             // Register your screens here
             
@@ -66,12 +64,16 @@ public class MyModClient {
 }
 ```
 
+**Note**: The Gelatin UI framework automatically fires the screen registration event during platform-specific client initialization. You only need to register your listener in your client init method.
+
 ### Platform-Specific Firing
 
 The screen registration event is automatically fired by the platform-specific client initialization:
 
 - **Fabric**: `GelatinUiModFabricClient.onInitializeClient()` calls `ScreenRegistration.fireRegistrationEvent()`
 - **NeoForge**: `GelatinUiModNeoForgeClient.registerMenuScreens()` calls `ScreenRegistration.fireRegistrationEvent()`
+
+You don't need to call these methods yourself - they are handled by the framework.
 
 ## Complete Example
 
@@ -81,11 +83,10 @@ Here's a complete example showing how to register both menus and screens:
 // Common initialization
 public class MyMod {
     public static void init() {
+        // Register menu listener - event fires automatically
         MenuRegistrationEvent.registerListener(registrar -> {
             registrar.registerDebugMenu("example_menu");
         });
-        
-        MenuRegistration.fireRegistrationEvent();
     }
 }
 
