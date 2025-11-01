@@ -13,6 +13,7 @@ Start here:
 - Extending the framework: 08-extending.md
 - Debugging and performance: 09-debugging-and-performance.md
 - Recipes and examples: 10-recipes.md
+- Menu and screen registration: 11-registration.md
 - FAQ: faq.md
 
 If you prefer reading in your IDE, every file is Markdown and in this folder. Links are relative.
