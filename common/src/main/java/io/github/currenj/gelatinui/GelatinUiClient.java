@@ -1,7 +1,6 @@
 package io.github.currenj.gelatinui;
 
 import io.github.currenj.gelatinui.example.*;
-import io.github.currenj.gelatinui.registration.menu.ScreenRegistration;
 import io.github.currenj.gelatinui.registration.menu.ScreenRegistrationEvent;
 
 public final class GelatinUiClient {
@@ -9,10 +8,10 @@ public final class GelatinUiClient {
     public static void init() {
         // Write client-specific, platform-agnostic init code here.
 
-        registerScreenRegistrationListener();
+        registerExampleScreens();
     }
 
-    private static void registerScreenRegistrationListener() {
+    private static void registerExampleScreens() {
         ScreenRegistrationEvent.registerListener(registrar -> {
             registrar.register(ExampleViews.EXAMPLE_TEST_VIEW_ID.getPath(), TestScreen::new);
             registrar.register(ExampleViews.EXAMPLE_TABS_VIEW_ID.getPath(), TabsTestScreen::new);

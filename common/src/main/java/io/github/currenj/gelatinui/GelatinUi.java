@@ -13,13 +13,12 @@ public final class GelatinUi {
 
 
     public static void init() {
-        // Write common, platform-agnostic init code here.
+        registerExampleMenus();
 
-        registerMenuRegistrationListener();
         MenuRegistration.fireRegistrationEvent();
     }
 
-    private static void registerMenuRegistrationListener() {
+    private static void registerExampleMenus() {
         MenuRegistrationEvent.registerListener(registrar -> {
             for (ResourceLocation viewId : ExampleViews.EXAMPLE_VIEWS) {
                 registrar.registerDebugMenu(viewId.getPath());
