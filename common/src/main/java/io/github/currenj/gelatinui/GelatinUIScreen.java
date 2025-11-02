@@ -279,6 +279,11 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
     }
 
     @Override
+    protected void renderLabels(GuiGraphics guiGraphics, int i, int j) {
+        // No label rendering here; handled in renderContent
+    }
+
+    @Override
     protected void renderBg(GuiGraphics guiGraphics, float f, int i, int j) {
         // No background rendering here; handled in renderContent
     }
