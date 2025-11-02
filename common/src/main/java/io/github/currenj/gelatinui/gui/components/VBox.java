@@ -20,7 +20,10 @@ public class VBox extends PanelBase<VBox> {
 
     private Alignment alignment = Alignment.LEFT;
     private float spacing = 0;
-    private float padding = 0;
+    private float paddingTop = 0;
+    private float paddingBottom = 0;
+    private float paddingLeft = 0;
+    private float paddingRight = 0;
 
     // When true, the VBox will attempt to fill the width of its parent
     private boolean fillWidth = false;
@@ -69,8 +72,48 @@ public class VBox extends PanelBase<VBox> {
     }
 
     public VBox padding(float padding) {
-        if (this.padding != padding) {
-            this.padding = padding;
+        return padding(padding, padding, padding, padding);
+    }
+
+    public VBox padding(float top, float bottom, float left, float right) {
+        if (this.paddingTop != top || this.paddingBottom != bottom || 
+            this.paddingLeft != left || this.paddingRight != right) {
+            this.paddingTop = top;
+            this.paddingBottom = bottom;
+            this.paddingLeft = left;
+            this.paddingRight = right;
+            markDirty(DirtyFlag.LAYOUT);
+        }
+        return this;
+    }
+
+    public VBox paddingTop(float paddingTop) {
+        if (this.paddingTop != paddingTop) {
+            this.paddingTop = paddingTop;
+            markDirty(DirtyFlag.LAYOUT);
+        }
+        return this;
+    }
+
+    public VBox paddingBottom(float paddingBottom) {
+        if (this.paddingBottom != paddingBottom) {
+            this.paddingBottom = paddingBottom;
+            markDirty(DirtyFlag.LAYOUT);
+        }
+        return this;
+    }
+
+    public VBox paddingLeft(float paddingLeft) {
+        if (this.paddingLeft != paddingLeft) {
+            this.paddingLeft = paddingLeft;
+            markDirty(DirtyFlag.LAYOUT);
+        }
+        return this;
+    }
+
+    public VBox paddingRight(float paddingRight) {
+        if (this.paddingRight != paddingRight) {
+            this.paddingRight = paddingRight;
             markDirty(DirtyFlag.LAYOUT);
         }
         return this;
@@ -135,7 +178,7 @@ public class VBox extends PanelBase<VBox> {
     @Override
     protected void performLayout() {
         if (children.isEmpty()) {
-            setSize(padding * 2, padding * 2);
+            setSize(paddingLeft + paddingRight, paddingTop + paddingBottom);
             layoutDirty = false;
             animatePositions = false;
             return;
@@ -152,7 +195,7 @@ public class VBox extends PanelBase<VBox> {
 
         // First pass: calculate baseline content size from children's unscaled sizes
         float baseMaxWidth = 0f;
-        float baseTotalHeight = padding;
+        float baseTotalHeight = paddingTop;
 
         for (IUIElement child : children) {
             if (!child.isVisible()) continue;
@@ -162,13 +205,13 @@ public class VBox extends PanelBase<VBox> {
         }
 
         // Remove extra spacing after last element
-        if (baseTotalHeight > padding) {
+        if (baseTotalHeight > paddingTop) {
             baseTotalHeight -= spacing;
         }
-        baseTotalHeight += padding;
+        baseTotalHeight += paddingBottom;
 
         // Decide initial finalWidth/finalHeight (unscaled baseline)
-        float finalWidth = baseMaxWidth + padding * 2;
+        float finalWidth = baseMaxWidth + paddingLeft + paddingRight;
         if (fillWidth) {
             if (parent != null) {
                 finalWidth = parent.getSize().x;
@@ -189,11 +232,11 @@ public class VBox extends PanelBase<VBox> {
         // Compute scaleFactor if needed (based on baseline content)
         float scaleFactor = 1.0f;
         if (scaleToWidth > 0 || scaleToHeight > 0) {
-            float availableWidth = (scaleToWidth > 0 ? scaleToWidth : finalWidth) - padding * 2;
-            float availableHeight = (scaleToHeight > 0 ? scaleToHeight : finalHeight) - padding * 2;
+            float availableWidth = (scaleToWidth > 0 ? scaleToWidth : finalWidth) - paddingLeft - paddingRight;
+            float availableHeight = (scaleToHeight > 0 ? scaleToHeight : finalHeight) - paddingTop - paddingBottom;
 
             float contentWidth = baseMaxWidth;
-            float contentHeight = baseTotalHeight - padding * 2;
+            float contentHeight = baseTotalHeight - paddingTop - paddingBottom;
 
             float widthScale = availableWidth > 0 && contentWidth > 0 ? availableWidth / contentWidth : 1.0f;
             float heightScale = availableHeight > 0 && contentHeight > 0 ? availableHeight / contentHeight : 1.0f;
@@ -217,7 +260,7 @@ public class VBox extends PanelBase<VBox> {
             float w = childSize.x * childScale;
             float h = childSize.y * childScale;
             if (first) {
-                scaledTotalHeight = padding + h;
+                scaledTotalHeight = paddingTop + h;
                 first = false;
             } else {
                 scaledTotalHeight += (scaleToWidth > 0 || scaleToHeight > 0 ? spacing * scaleFactor : spacing) + h;
@@ -227,15 +270,15 @@ public class VBox extends PanelBase<VBox> {
 
         if (first) {
             // no visible children
-            scaledTotalHeight = padding * 2;
-            scaledMaxWidth = padding * 2;
+            scaledTotalHeight = paddingTop + paddingBottom;
+            scaledMaxWidth = paddingLeft + paddingRight;
         } else {
-            scaledTotalHeight += padding;
+            scaledTotalHeight += paddingBottom;
         }
 
         // Use scaled content to set final container size unless fill flags force other sizes
         if (!fillWidth) {
-            finalWidth = scaledMaxWidth + padding * 2;
+            finalWidth = scaledMaxWidth + paddingLeft + paddingRight;
         }
 
         if (!fillHeight) {
@@ -265,7 +308,7 @@ public class VBox extends PanelBase<VBox> {
         }
 
         // Second pass: position children with correct alignment using effective scales
-        float yOffset = padding;
+        float yOffset = paddingTop;
 
         for (IUIElement child : children) {
             if (!child.isVisible()) continue;
@@ -278,15 +321,15 @@ public class VBox extends PanelBase<VBox> {
             // Apply horizontal alignment based on calculated size
             switch (alignment) {
                 case CENTER:
-                    float contentWidth = size.x - padding * 2;
-                    xOffsetLocal = padding + (contentWidth - scaledChildWidth) / 2f;
+                    float contentWidth = size.x - paddingLeft - paddingRight;
+                    xOffsetLocal = paddingLeft + (contentWidth - scaledChildWidth) / 2f;
                     break;
                 case RIGHT:
-                    xOffsetLocal = size.x - scaledChildWidth - padding;
+                    xOffsetLocal = size.x - scaledChildWidth - paddingRight;
                     break;
                 case LEFT:
                 default:
-                    xOffsetLocal = padding;
+                    xOffsetLocal = paddingLeft;
                     break;
             }
 
@@ -351,6 +394,23 @@ public class VBox extends PanelBase<VBox> {
     }
 
     public float getPadding() {
-        return padding;
+        // For backward compatibility, return the top padding (or could return average)
+        return paddingTop;
+    }
+
+    public float getPaddingTop() {
+        return paddingTop;
+    }
+
+    public float getPaddingBottom() {
+        return paddingBottom;
+    }
+
+    public float getPaddingLeft() {
+        return paddingLeft;
+    }
+
+    public float getPaddingRight() {
+        return paddingRight;
     }
 }
