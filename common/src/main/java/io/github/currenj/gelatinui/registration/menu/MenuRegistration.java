@@ -1,5 +1,6 @@
 package io.github.currenj.gelatinui.registration.menu;
 
+import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,6 +17,19 @@ public class MenuRegistration {
     private static final Map<String, MenuType<GelatinMenu>> DEBUG_MENUS = new HashMap<>();
     private static final Map<String, String[]> ID_PARTS = new HashMap<>();
 
+    /**
+     * Fires the menu registration event, allowing all listeners to register their menus.
+     * This should be called at the appropriate time during mod initialization.
+     */
+    public static void fireRegistrationEvent() {
+        MenuRegistrationEvent.fire(MenuRegistration::registerDebugMenu);
+        GelatinUi.LOGGER.info("Fired menu registration event; registered {} debug menus.", DEBUG_MENUS.size());
+    }
+
+    /**
+     * Register a debug menu. This is typically called by event listeners during the registration event.
+     * @param id The menu id
+     */
     public static void registerDebugMenu(String id) {
         MenuType<GelatinMenu> menuType = createDebugMenuType(id);
         SidedRegistrationHelper.getMenuRegistrationHandler().register(id, menuType);
