@@ -178,8 +178,8 @@ public class BoxPaddingTest {
     @Test
     public void testVBoxCenterAlignmentWithAsymmetricPadding() {
         VBox vbox = new VBox();
-        vbox.padding(10, 10, 5, 25) // top, bottom, left, right - asymmetric horizontal
-            .alignment(VBox.Alignment.CENTER);
+        vbox.padding(10, 10, 5, 25); // top, bottom, left, right - asymmetric horizontal
+        vbox.alignment(VBox.Alignment.CENTER);
         
         Panel child = new Panel();
         child.setSize(20, 30);
@@ -187,22 +187,22 @@ public class BoxPaddingTest {
         vbox.add(child);
         vbox.forceLayout();
         
-        // Total width: left (5) + right (25) + child (20) = 50
+        // Total width: max child width (20) + left padding (5) + right padding (25) = 50
         assertEquals(50f, vbox.getSize().x, 0.01f);
         
         // Child should be centered in content area
         // Content area width: 50 - 5 - 25 = 20
-        // Child x position: left padding (5) + (content width (20) - child width (20)) / 2 = 5
+        // Child x position: left padding (5) + (content width (20) - child width (20)) / 2 = 5 + 0 = 5
         Vector2f childPos = child.getPosition();
-        assertEquals(15f, childPos.x, 0.01f);
+        assertEquals(5f, childPos.x, 0.01f);
         assertEquals(10f, childPos.y, 0.01f); // top padding
     }
 
     @Test
     public void testHBoxCenterAlignmentWithAsymmetricPadding() {
         HBox hbox = new HBox();
-        hbox.padding(5, 25, 10, 10) // top, bottom, left, right - asymmetric vertical
-            .alignment(HBox.Alignment.CENTER);
+        hbox.padding(5, 25, 10, 10); // top, bottom, left, right - asymmetric vertical
+        hbox.alignment(HBox.Alignment.CENTER);
         
         Panel child = new Panel();
         child.setSize(30, 20);
@@ -210,15 +210,15 @@ public class BoxPaddingTest {
         hbox.add(child);
         hbox.forceLayout();
         
-        // Total height: top (5) + bottom (25) + child (20) = 50
+        // Total height: max child height (20) + top padding (5) + bottom padding (25) = 50
         assertEquals(50f, hbox.getSize().y, 0.01f);
         
         // Child should be centered in content area
         // Content area height: 50 - 5 - 25 = 20
-        // Child y position: top padding (5) + (content height (20) - child height (20)) / 2 = 5
+        // Child y position: top padding (5) + (content height (20) - child height (20)) / 2 = 5 + 0 = 5
         Vector2f childPos = child.getPosition();
         assertEquals(10f, childPos.x, 0.01f); // left padding
-        assertEquals(15f, childPos.y, 0.01f);
+        assertEquals(5f, childPos.y, 0.01f);
     }
 
     @Test
