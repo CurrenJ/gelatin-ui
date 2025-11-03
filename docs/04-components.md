@@ -11,6 +11,13 @@ Layout containers
 - HBox: Horizontal row.
   - spacing(float), padding(float), alignment(HBox.Alignment), fillWidth(boolean), fillHeight(boolean)
   - scaleToFit(boolean), maxWidth(float), maxHeight(float)
+- ManualContainer: Fixed-size container with manual child positioning.
+  - addChildAt(child, x, y): Add child centered at specific coordinates
+  - updateChildPosition(child, x, y): Update position of existing child
+  - maxChildren(int): Limit maximum number of children (0 for unlimited)
+  - Children auto-reposition when their size changes
+  - Fixed container size (auto-size to children disabled by default)
+  - Ideal for sprite backgrounds with specific item slots
 
 Text and shapes
 - Label: Auto-sized text.
