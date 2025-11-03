@@ -1,7 +1,7 @@
 package io.github.currenj.gelatinui.mixin;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import io.github.currenj.gelatinui.extension.IGuiGraphicsExtension;
 import io.github.currenj.gelatinui.tooltip.ItemStacksInfo;
 import io.github.currenj.gelatinui.tooltip.ItemStacksTooltip;
@@ -11,11 +11,13 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
@@ -100,5 +102,28 @@ public abstract class GuiGraphicsMixin implements IGuiGraphicsExtension {
         List<ClientTooltipComponent> list = new ArrayList<>();
         tooltipComponent.ifPresent(t -> list.addFirst(ClientTooltipComponent.create(t)));
         this.renderTooltipInternal(font, list, i, j, DefaultTooltipPositioner.INSTANCE);
+    }
+
+    @Override
+    public void gelatinui$blit(ResourceLocation resourceLocation, float x, float y, float width, float height, float u, float v, float regionWidth, float regionHeight, int textureWidth, int textureHeight) {
+        this.gelatinui$blit(resourceLocation, x, x + width, y, y + height, 0, regionWidth, regionHeight, u, v, textureWidth, textureHeight);
+    }
+
+    @Override
+    public void gelatinui$blit(ResourceLocation resourceLocation, float x1, float x2, float y1, float y2, float z, float regionWidth, float regionHeight, float f, float g, int p, int q) {
+        this.gelatinui$innerBlit(resourceLocation, x1, x2, y1, y2, z, (f + 0.0F) / p, (f + regionWidth) / p, (g + 0.0F) / q, (g + regionHeight) / q);
+    }
+
+    @Override
+    public void gelatinui$innerBlit(ResourceLocation resourceLocation, float x1, float x2, float y1, float y2, float z, float u1, float u2, float v1, float v2) {
+        RenderSystem.setShaderTexture(0, resourceLocation);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        Matrix4f matrix4f = this.pose.last().pose();
+        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferBuilder.addVertex(matrix4f, x1, y1, z).setUv(u1, v1);
+        bufferBuilder.addVertex(matrix4f, x1, y2, z).setUv(u1, v2);
+        bufferBuilder.addVertex(matrix4f, x2, y2, z).setUv(u2, v2);
+        bufferBuilder.addVertex(matrix4f, x2, y1, z).setUv(u2, v1);
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
     }
 }

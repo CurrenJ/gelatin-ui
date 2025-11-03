@@ -1,12 +1,11 @@
 package io.github.currenj.gelatinui.gui.minecraft;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import io.github.currenj.gelatinui.extension.IGuiGraphicsExtension;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
 
 /**
  * Minecraft-specific implementation of IRenderContext.
@@ -67,17 +66,18 @@ public class MinecraftRenderContext implements IRenderContext {
     }
 
     @Override
-    public void drawTexture(ResourceLocation texture, int x, int y, int width, int height) {
-        graphics.blit(texture, x, y, 0, 0, 0, width, height, width, height);
+    public void drawTexture(ResourceLocation texture, float x, float y, int width, int height) {
+        drawTexture(texture, x, y, width, height, 0, 0, width, height, width, height);
     }
 
     @Override
-    public void drawTexture(ResourceLocation texture, int x, int y, int width, int height, int u, int v, int regionWidth, int regionHeight, int textureWidth, int textureHeight) {
+    public void drawTexture(ResourceLocation texture, float x, float y, float width, float height, float u, float v, float regionWidth, float regionHeight, int textureWidth, int textureHeight) {
         // GuiGraphics.blit signature: blit(ResourceLocation, int x, int y, int z, float u, float v, int width, int height, int textureWidth, int textureHeight)
         // where width/height are destination size, and textureWidth/textureHeight are the total atlas dimensions
         // Note: texWidth and texHeight (source region size) are implicitly the same as width and height when using this blit overload
         // So we need to use the innerBlit method instead for proper UV mapping
-        graphics.blit(texture, x, y, width, height, (float) u, (float) v, regionWidth, regionHeight, textureWidth, textureHeight);
+        IGuiGraphicsExtension ext = (IGuiGraphicsExtension) graphics;
+        ext.gelatinui$blit(texture, x, y, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
     }
 
     /**

@@ -18,6 +18,7 @@ public abstract class PanelBase<T extends PanelBase<T>> extends UIContainer<T> {
     private boolean drawBackground = false;
     private SpriteData backgroundSprite = null;
     private boolean autoSizeToChildren = false;
+    private boolean centerBackgroundSprite = false; // When true, draw sprite at actual size centered in container
 
     public PanelBase() {
     }
@@ -53,6 +54,18 @@ public abstract class PanelBase<T extends PanelBase<T>> extends UIContainer<T> {
     public T autoSizeToChildren(boolean autoSize) {
         this.autoSizeToChildren = autoSize;
         markDirty(DirtyFlag.SIZE);
+        return self();
+    }
+
+    /**
+     * Set whether the background sprite should be drawn at its actual size and centered in the container.
+     * When true, the sprite will be drawn at the size specified in its sprite data (actualW x actualH or regionW x regionH)
+     * and positioned in the center of the panel, rather than being stretched to fit the panel's dimensions.
+     * When false (default), the sprite is stretched to fill the entire panel.
+     */
+    public T centerBackgroundSprite(boolean center) {
+        this.centerBackgroundSprite = center;
+        markDirty(DirtyFlag.CONTENT);
         return self();
     }
 
@@ -100,20 +113,39 @@ public abstract class PanelBase<T extends PanelBase<T>> extends UIContainer<T> {
     @Override
     protected void renderSelf(IRenderContext context) {
         if (drawBackground) {
-            int w = (int) Math.ceil(size.x);
-            int h = (int) Math.ceil(size.y);
+            float w = size.x;
+            float h = size.y;
 
             // Render sprite if available using unified drawSprite method
             if (backgroundSprite != null && backgroundSprite.texture() != null) {
-                // Update the background sprite's actual size to match the panel's current size
-                SpriteData sizedSprite = backgroundSprite.actualSize(w, h);
-                context.enableBlend();
-                context.drawSprite(sizedSprite, 0, 0, w, h);
-                context.disableBlend();
+                if (centerBackgroundSprite) {
+                    // Draw sprite at its actual size, centered in the container
+                    // Use actualW/actualH if set, otherwise use regionW/regionH
+                    int spriteW = backgroundSprite.actualW() > 0 ? backgroundSprite.actualW() : backgroundSprite.regionW();
+                    int spriteH = backgroundSprite.actualH() > 0 ? backgroundSprite.actualH() : backgroundSprite.regionH();
+                    
+                    // Calculate centered position
+                    float x = (w - spriteW) / 2f;
+                    float y = (h - spriteH) / 2f;
+                    
+                    context.enableBlend();
+                    context.drawSprite(backgroundSprite, x, y, spriteW, spriteH);
+                    context.disableBlend();
+                } else {
+                    // Default behavior: stretch sprite to match panel's size
+                    int wi = (int) Math.ceil(w);
+                    int hi = (int) Math.ceil(h);
+                    SpriteData sizedSprite = backgroundSprite.actualSize(wi, hi);
+                    context.enableBlend();
+                    context.drawSprite(sizedSprite, 0, 0, wi, hi);
+                    context.disableBlend();
+                }
             }
             // Fall back to solid color
             else {
-                context.fill(0, 0, w, h, backgroundColor);
+                int wi = (int) Math.ceil(w);
+                int hi = (int) Math.ceil(h);
+                context.fill(0, 0, wi, hi, backgroundColor);
             }
         }
     }
@@ -134,5 +166,9 @@ public abstract class PanelBase<T extends PanelBase<T>> extends UIContainer<T> {
 
     public boolean isAutoSizeToChildren() {
         return autoSizeToChildren;
+    }
+
+    public boolean isCenterBackgroundSprite() {
+        return centerBackgroundSprite;
     }
 }

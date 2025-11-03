@@ -365,18 +365,28 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
 
         if (debugShowPadding) {
             // If this element exposes a padding measure (like VBox/HBox), draw the padding strips
-            float pad = 0f;
-            if (this instanceof io.github.currenj.gelatinui.gui.components.VBox) {
-                pad = ((io.github.currenj.gelatinui.gui.components.VBox) this).getPadding();
-            } else if (this instanceof io.github.currenj.gelatinui.gui.components.HBox) {
-                pad = ((io.github.currenj.gelatinui.gui.components.HBox) this).getPadding();
+            float padTop = 0f, padBottom = 0f, padLeft = 0f, padRight = 0f;
+            if (this instanceof io.github.currenj.gelatinui.gui.components.VBox vbox) {
+                padTop = vbox.getPaddingTop();
+                padBottom = vbox.getPaddingBottom();
+                padLeft = vbox.getPaddingLeft();
+                padRight = vbox.getPaddingRight();
+            } else if (this instanceof io.github.currenj.gelatinui.gui.components.HBox hbox) {
+                padTop = hbox.getPaddingTop();
+                padBottom = hbox.getPaddingBottom();
+                padLeft = hbox.getPaddingLeft();
+                padRight = hbox.getPaddingRight();
             }
-            if (pad > 0f) {
-                int p = Math.max(0, (int) Math.round(pad));
-                int cx1 = x1 + p;
-                int cy1 = y1 + p;
-                int cx2 = x2 - p;
-                int cy2 = y2 - p;
+            if (padTop > 0f || padBottom > 0f || padLeft > 0f || padRight > 0f) {
+                int pTop = Math.max(0, (int) Math.round(padTop));
+                int pBottom = Math.max(0, (int) Math.round(padBottom));
+                int pLeft = Math.max(0, (int) Math.round(padLeft));
+                int pRight = Math.max(0, (int) Math.round(padRight));
+                
+                int cx1 = x1 + pLeft;
+                int cy1 = y1 + pTop;
+                int cx2 = x2 - pRight;
+                int cy2 = y2 - pBottom;
 
                 // Draw the padding area (the strips between bounds and content)
                 int padColor = 0x60FF8800; // semi-transparent orange to distinguish from bounds

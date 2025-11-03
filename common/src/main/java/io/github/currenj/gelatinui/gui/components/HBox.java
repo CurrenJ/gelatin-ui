@@ -20,7 +20,10 @@ public class HBox extends PanelBase<HBox> {
 
     private Alignment alignment = Alignment.TOP;
     private float spacing = 0;
-    private float padding = 0;
+    private float paddingTop = 0;
+    private float paddingBottom = 0;
+    private float paddingLeft = 0;
+    private float paddingRight = 0;
 
     // When true, the HBox will attempt to fill the width of its parent
     private boolean fillWidth = false;
@@ -69,8 +72,48 @@ public class HBox extends PanelBase<HBox> {
     }
 
     public HBox padding(float padding) {
-        if (this.padding != padding) {
-            this.padding = padding;
+        return padding(padding, padding, padding, padding);
+    }
+
+    public HBox padding(float top, float bottom, float left, float right) {
+        if (this.paddingTop != top || this.paddingBottom != bottom || 
+            this.paddingLeft != left || this.paddingRight != right) {
+            this.paddingTop = top;
+            this.paddingBottom = bottom;
+            this.paddingLeft = left;
+            this.paddingRight = right;
+            markDirty(DirtyFlag.LAYOUT);
+        }
+        return this;
+    }
+
+    public HBox paddingTop(float paddingTop) {
+        if (this.paddingTop != paddingTop) {
+            this.paddingTop = paddingTop;
+            markDirty(DirtyFlag.LAYOUT);
+        }
+        return this;
+    }
+
+    public HBox paddingBottom(float paddingBottom) {
+        if (this.paddingBottom != paddingBottom) {
+            this.paddingBottom = paddingBottom;
+            markDirty(DirtyFlag.LAYOUT);
+        }
+        return this;
+    }
+
+    public HBox paddingLeft(float paddingLeft) {
+        if (this.paddingLeft != paddingLeft) {
+            this.paddingLeft = paddingLeft;
+            markDirty(DirtyFlag.LAYOUT);
+        }
+        return this;
+    }
+
+    public HBox paddingRight(float paddingRight) {
+        if (this.paddingRight != paddingRight) {
+            this.paddingRight = paddingRight;
             markDirty(DirtyFlag.LAYOUT);
         }
         return this;
@@ -135,7 +178,7 @@ public class HBox extends PanelBase<HBox> {
     @Override
     protected void performLayout() {
         if (children.isEmpty()) {
-            setSize(padding * 2, padding * 2);
+            setSize(paddingLeft + paddingRight, paddingTop + paddingBottom);
             layoutDirty = false;
             animatePositions = false;
             return;
@@ -152,7 +195,7 @@ public class HBox extends PanelBase<HBox> {
 
         // First pass: calculate base content size from children's unscaled sizes
         float baseMaxHeight = 0f;
-        float baseTotalWidth = padding;
+        float baseTotalWidth = paddingLeft;
 
         for (IUIElement child : children) {
             if (!child.isVisible()) continue;
@@ -162,10 +205,10 @@ public class HBox extends PanelBase<HBox> {
         }
 
         // Remove extra spacing after last element
-        if (baseTotalWidth > padding) {
+        if (baseTotalWidth > paddingLeft) {
             baseTotalWidth -= spacing;
         }
-        baseTotalWidth += padding;
+        baseTotalWidth += paddingRight;
 
         // Decide initial finalWidth/finalHeight (unscaled baseline)
         float finalWidth = baseTotalWidth;
@@ -177,7 +220,7 @@ public class HBox extends PanelBase<HBox> {
             }
         }
 
-        float finalHeight = baseMaxHeight + padding * 2;
+        float finalHeight = baseMaxHeight + paddingTop + paddingBottom;
         if (fillHeight) {
             if (parent != null) {
                 finalHeight = parent.getSize().y;
@@ -189,10 +232,10 @@ public class HBox extends PanelBase<HBox> {
         // Compute scaleFactor if needed (based on baseline content)
         float scaleFactor = 1.0f;
         if (scaleToWidth > 0 || scaleToHeight > 0) {
-            float availableWidth = (this.scaleToWidth > 0 ? this.scaleToWidth : finalWidth) - padding * 2;
-            float availableHeight = (this.scaleToHeight > 0 ? this.scaleToHeight : finalHeight) - padding * 2;
+            float availableWidth = (this.scaleToWidth > 0 ? this.scaleToWidth : finalWidth) - paddingLeft - paddingRight;
+            float availableHeight = (this.scaleToHeight > 0 ? this.scaleToHeight : finalHeight) - paddingTop - paddingBottom;
 
-            float contentWidth = baseTotalWidth - padding * 2;
+            float contentWidth = baseTotalWidth - paddingLeft - paddingRight;
             float contentHeight = baseMaxHeight;
 
             float widthScale = availableWidth > 0 && contentWidth > 0 ? availableWidth / contentWidth : 1.0f;
@@ -217,7 +260,7 @@ public class HBox extends PanelBase<HBox> {
             float w = childSize.x * childScale;
             float h = childSize.y * childScale;
             if (first) {
-                scaledTotalWidth = padding + w;
+                scaledTotalWidth = paddingLeft + w;
                 first = false;
             } else {
                 scaledTotalWidth += (scaleToWidth > 0 || scaleToHeight > 0 ? spacing * scaleFactor : spacing) + w;
@@ -227,10 +270,10 @@ public class HBox extends PanelBase<HBox> {
 
         if (first) {
             // no visible children
-            scaledTotalWidth = padding * 2;
-            scaledMaxHeight = padding * 2;
+            scaledTotalWidth = paddingLeft + paddingRight;
+            scaledMaxHeight = paddingTop + paddingBottom;
         } else {
-            scaledTotalWidth += padding;
+            scaledTotalWidth += paddingRight;
         }
 
         // Use scaled content to set final container size unless fill flags force other sizes
@@ -243,7 +286,7 @@ public class HBox extends PanelBase<HBox> {
         if (fillHeight) {
             // keep finalHeight
         } else {
-            finalHeight = scaledMaxHeight + padding * 2;
+            finalHeight = scaledMaxHeight + paddingTop + paddingBottom;
         }
 
         // Ensure we respect configured max bounds when scaleToFit is enabled
@@ -269,8 +312,8 @@ public class HBox extends PanelBase<HBox> {
         }
 
         // Position children using effective scale (scaleFactor if scaleToFit, otherwise child's currentScale)
-        float xOffset = padding;
-        float contentHeight = size.y - padding * 2;
+        float xOffset = paddingLeft;
+        float contentHeight = size.y - paddingTop - paddingBottom;
 
         for (IUIElement child : children) {
             if (!child.isVisible()) continue;
@@ -282,14 +325,14 @@ public class HBox extends PanelBase<HBox> {
 
             switch (alignment) {
                 case CENTER:
-                    yOffsetLocal = padding + (contentHeight - scaledChildHeight) / 2f;
+                    yOffsetLocal = paddingTop + (contentHeight - scaledChildHeight) / 2f;
                     break;
                 case BOTTOM:
-                    yOffsetLocal = size.y - scaledChildHeight - padding;
+                    yOffsetLocal = size.y - scaledChildHeight - paddingBottom;
                     break;
                 case TOP:
                 default:
-                    yOffsetLocal = padding;
+                    yOffsetLocal = paddingTop;
                     break;
             }
 
@@ -352,6 +395,23 @@ public class HBox extends PanelBase<HBox> {
     }
 
     public float getPadding() {
-        return padding;
+        // For backward compatibility, return the top padding (or could return average)
+        return paddingTop;
+    }
+
+    public float getPaddingTop() {
+        return paddingTop;
+    }
+
+    public float getPaddingBottom() {
+        return paddingBottom;
+    }
+
+    public float getPaddingLeft() {
+        return paddingLeft;
+    }
+
+    public float getPaddingRight() {
+        return paddingRight;
     }
 }
