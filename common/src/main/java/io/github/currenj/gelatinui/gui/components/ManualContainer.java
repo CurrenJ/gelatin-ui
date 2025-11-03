@@ -38,8 +38,15 @@ import java.util.Map;
  */
 public class ManualContainer extends PanelBase<ManualContainer> {
     /**
+     * Tolerance for floating-point comparisons when detecting size changes.
+     */
+    private static final float FLOAT_TOLERANCE = 0.001f;
+    
+    /**
      * Map storing the manual position for each child.
      * The position represents the center point where the child should be positioned.
+     * During layout, the child's top-left corner is calculated as:
+     * (centerX - childWidth/2, centerY - childHeight/2)
      */
     private final Map<IUIElement, Vector2f> childPositions = new HashMap<>();
     
@@ -196,7 +203,7 @@ public class ManualContainer extends PanelBase<ManualContainer> {
             
             // Check if child size has changed
             Vector2f prevSize = previousChildSizes.get(child);
-            boolean sizeChanged = prevSize == null || !prevSize.equals(childSize, 0.001f);
+            boolean sizeChanged = prevSize == null || !prevSize.equals(childSize, FLOAT_TOLERANCE);
             
             if (sizeChanged) {
                 // Update the stored size
@@ -228,7 +235,7 @@ public class ManualContainer extends PanelBase<ManualContainer> {
             Vector2f currentSize = child.getSize();
             Vector2f prevSize = previousChildSizes.get(child);
             
-            if (prevSize != null && !prevSize.equals(currentSize, 0.001f)) {
+            if (prevSize != null && !prevSize.equals(currentSize, FLOAT_TOLERANCE)) {
                 needsRelayout = true;
                 break;
             }
