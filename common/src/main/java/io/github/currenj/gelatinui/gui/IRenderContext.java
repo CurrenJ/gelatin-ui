@@ -83,7 +83,7 @@ public interface IRenderContext {
      * @param width Width in pixels
      * @param height Height in pixels
      */
-    default void drawTexture(ResourceLocation texture, int x, int y, int width, int height) {
+    default void drawTexture(ResourceLocation texture, float x, float y, int width, int height) {
         // Default implementation delegates to the UV-aware method using a full-region copy
         drawTexture(texture, x, y, width, height, 0, 0, width, height, 256, 256);
     }
@@ -103,7 +103,7 @@ public interface IRenderContext {
      * @param textureWidth Total width of the texture atlas
      * @param textureHeight Total height of the texture atlas
      */
-    void drawTexture(ResourceLocation texture, int x, int y, int width, int height, int u, int v, int regionWidth, int regionHeight, int textureWidth, int textureHeight);
+    void drawTexture(ResourceLocation texture, float x, float y, float width, float height, float u, float v, float regionWidth, float regionHeight, int textureWidth, int textureHeight);
 
     /**
      * Draw a 9-slice sprite that scales while preserving corners and edges.
@@ -179,7 +179,7 @@ public interface IRenderContext {
      * @param width Destination width
      * @param height Destination height
      */
-    default void drawSprite(SpriteData sprite, int x, int y, int width, int height) {
+    default void drawSprite(SpriteData sprite, float x, float y, int width, int height) {
         if (sprite == null || sprite.texture() == null) {
             return;
         }
@@ -222,7 +222,7 @@ public interface IRenderContext {
      * @param textureWidth  Total width of the texture atlas
      * @param textureHeight Total height of the texture atlas
      */
-    default void drawRepeatingTexture(ResourceLocation texture, int x, int y, int width, int height,
+    default void drawRepeatingTexture(ResourceLocation texture, float x, float y, int width, int height,
                                       int u, int v, int regionWidth, int regionHeight,
                                       int textureWidth, int textureHeight) {
         // Calculate how many times to tile horizontally and vertically
@@ -231,8 +231,8 @@ public interface IRenderContext {
 
         for (int ty = 0; ty < tilesY; ty++) {
             for (int tx = 0; tx < tilesX; tx++) {
-                int drawX = x + tx * regionWidth;
-                int drawY = y + ty * regionHeight;
+                float drawX = x + tx * regionWidth;
+                float drawY = y + ty * regionHeight;
 
                 // Calculate how much of this tile to draw (for edge tiles)
                 int drawW = Math.min(regionWidth, width - tx * regionWidth);
@@ -264,7 +264,7 @@ public interface IRenderContext {
      * @param textureH Total height of the texture atlas
      * @param tileScale Scale factor for tiles (1.0 = original size)
      */
-    default void drawSlicedTexture(ResourceLocation texture, int x, int y, int width, int height,
+    default void drawSlicedTexture(ResourceLocation texture, float x, float y, int width, int height,
                                    int u, int v, int regionW, int regionH,
                                    int left, int right, int top, int bottom,
                                    int textureW, int textureH, float tileScale) {
@@ -337,17 +337,17 @@ public interface IRenderContext {
      * @param textureH Total height of the texture atlas
      * @param tileScale Scale factor for tiles (1.0 = original size, 2.0 = double size, 0.5 = half size)
      */
-    default void drawTiledTexture(ResourceLocation texture, int x, int y, int width, int height,
+    default void drawTiledTexture(ResourceLocation texture, float x, float y, int width, int height,
                                   int u, int v, int regionW, int regionH,
                                   int left, int right, int top, int bottom,
                                   int textureW, int textureH, float tileScale) {
         // Calculate center dimensions in source texture
-        int centerW = regionW - left - right;
-        int centerH = regionH - top - bottom;
+        float centerW = regionW - left - right;
+        float centerH = regionH - top - bottom;
 
         // Calculate destination center area
-        int destCenterW = width - left - right;
-        int destCenterH = height - top - bottom;
+        float destCenterW = width - left - right;
+        float destCenterH = height - top - bottom;
 
         // Don't render if the destination is too small for the edges
         if (destCenterW < 0 || destCenterH < 0) {
@@ -355,12 +355,10 @@ public interface IRenderContext {
         }
 
         // Apply tile scaling to the source tile sizes
-        int scaledCenterW = Math.max(1, (int)(centerW * tileScale));
-        int scaledCenterH = Math.max(1, (int)(centerH * tileScale));
-        int scaledLeft = Math.max(1, (int)(left * tileScale));
-        int scaledRight = Math.max(1, (int)(right * tileScale));
-        int scaledTop = Math.max(1, (int)(top * tileScale));
-        int scaledBottom = Math.max(1, (int)(bottom * tileScale));
+        float scaledLeft = Math.max(1, (left * tileScale));
+        float scaledRight = Math.max(1, (right * tileScale));
+        float scaledTop = Math.max(1, (top * tileScale));
+        float scaledBottom = Math.max(1, (bottom * tileScale));
 
         // Recalculate destination areas with scaled corners
         destCenterW = width - scaledLeft - scaledRight;
@@ -418,34 +416,34 @@ public interface IRenderContext {
      * @param tileScale Scale factor for tiles
      * @param horizontal If true, tile horizontally; if false, tile vertically
      */
-    default void drawTiledEdge(ResourceLocation texture, int x, int y, int width, int height,
-                               int u, int v, int regionW, int regionH,
+    default void drawTiledEdge(ResourceLocation texture, float x, float y, float width, float height,
+                               float u, float v, float regionW, float regionH,
                                int textureW, int textureH, float tileScale, boolean horizontal) {
         if (horizontal) {
             // Tile horizontally
             int scaledTileW = Math.max(1, (int)(regionW * tileScale));
-            int tilesX = (width + scaledTileW - 1) / scaledTileW; // ceiling division
+            float tilesX = (width + scaledTileW - 1) / scaledTileW; // ceiling division
 
             for (int tx = 0; tx < tilesX; tx++) {
-                int drawX = x + tx * scaledTileW;
-                int drawW = Math.min(scaledTileW, width - tx * scaledTileW);
+                float drawX = x + tx * scaledTileW;
+                float drawW = Math.min(scaledTileW, width - tx * scaledTileW);
 
                 // Calculate proportional source region width to avoid squishing
-                int srcW = (drawW == scaledTileW) ? regionW : (int)((drawW / (float)scaledTileW) * regionW);
+                float srcW = (drawW == scaledTileW) ? regionW : ((drawW / (float)scaledTileW) * regionW);
 
                 drawTexture(texture, drawX, y, drawW, height, u, v, srcW, regionH, textureW, textureH);
             }
         } else {
             // Tile vertically
             int scaledTileH = Math.max(1, (int)(regionH * tileScale));
-            int tilesY = (height + scaledTileH - 1) / scaledTileH; // ceiling division
+            float tilesY = (height + scaledTileH - 1) / scaledTileH; // ceiling division
 
             for (int ty = 0; ty < tilesY; ty++) {
-                int drawY = y + ty * scaledTileH;
-                int drawH = Math.min(scaledTileH, height - ty * scaledTileH);
+                float drawY = y + ty * scaledTileH;
+                float drawH = Math.min(scaledTileH, height - ty * scaledTileH);
 
                 // Calculate proportional source region height to avoid squishing
-                int srcH = (drawH == scaledTileH) ? regionH : (int)((drawH / (float)scaledTileH) * regionH);
+                float srcH = (drawH == scaledTileH) ? regionH : ((drawH / (float)scaledTileH) * regionH);
 
                 drawTexture(texture, x, drawY, width, drawH, u, v, regionW, srcH, textureW, textureH);
             }
@@ -468,27 +466,27 @@ public interface IRenderContext {
      * @param textureH Total height of the texture atlas
      * @param tileScale Scale factor for tiles
      */
-    default void drawTiledCenter(ResourceLocation texture, int x, int y, int width, int height,
-                                 int u, int v, int regionW, int regionH,
+    default void drawTiledCenter(ResourceLocation texture, float x, float y, float width, float height,
+                                 float u, float v, float regionW, float regionH,
                                  int textureW, int textureH, float tileScale) {
         int scaledTileW = Math.max(1, (int)(regionW * tileScale));
         int scaledTileH = Math.max(1, (int)(regionH * tileScale));
 
-        int tilesX = (width + scaledTileW - 1) / scaledTileW; // ceiling division
-        int tilesY = (height + scaledTileH - 1) / scaledTileH; // ceiling division
+        float tilesX = (width + scaledTileW - 1) / scaledTileW; // ceiling division
+        float tilesY = (height + scaledTileH - 1) / scaledTileH; // ceiling division
 
         for (int ty = 0; ty < tilesY; ty++) {
             for (int tx = 0; tx < tilesX; tx++) {
-                int drawX = x + tx * scaledTileW;
-                int drawY = y + ty * scaledTileH;
+                float drawX = x + tx * scaledTileW;
+                float drawY = y + ty * scaledTileH;
 
                 // Calculate how much of this tile to draw (for edge tiles)
-                int drawW = Math.min(scaledTileW, width - tx * scaledTileW);
-                int drawH = Math.min(scaledTileH, height - ty * scaledTileH);
+                float drawW = Math.min(scaledTileW, width - tx * scaledTileW);
+                float drawH = Math.min(scaledTileH, height - ty * scaledTileH);
 
                 // Calculate proportional source region sizes to avoid squishing
-                int srcW = (drawW == scaledTileW) ? regionW : (int)((drawW / (float)scaledTileW) * regionW);
-                int srcH = (drawH == scaledTileH) ? regionH : (int)((drawH / (float)scaledTileH) * regionH);
+                float srcW = (drawW == scaledTileW) ? regionW : ((drawW / (float)scaledTileW) * regionW);
+                float srcH = (drawH == scaledTileH) ? regionH : ((drawH / (float)scaledTileH) * regionH);
 
                 drawTexture(texture, drawX, drawY, drawW, drawH, u, v, srcW, srcH, textureW, textureH);
             }

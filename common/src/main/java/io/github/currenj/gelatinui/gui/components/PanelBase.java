@@ -113,8 +113,8 @@ public abstract class PanelBase<T extends PanelBase<T>> extends UIContainer<T> {
     @Override
     protected void renderSelf(IRenderContext context) {
         if (drawBackground) {
-            int w = (int) Math.ceil(size.x);
-            int h = (int) Math.ceil(size.y);
+            float w = size.x;
+            float h = size.y;
 
             // Render sprite if available using unified drawSprite method
             if (backgroundSprite != null && backgroundSprite.texture() != null) {
@@ -125,23 +125,27 @@ public abstract class PanelBase<T extends PanelBase<T>> extends UIContainer<T> {
                     int spriteH = backgroundSprite.actualH() > 0 ? backgroundSprite.actualH() : backgroundSprite.regionH();
                     
                     // Calculate centered position
-                    int x = (w - spriteW) / 2;
-                    int y = (h - spriteH) / 2;
+                    float x = (w - spriteW) / 2f;
+                    float y = (h - spriteH) / 2f;
                     
                     context.enableBlend();
                     context.drawSprite(backgroundSprite, x, y, spriteW, spriteH);
                     context.disableBlend();
                 } else {
                     // Default behavior: stretch sprite to match panel's size
-                    SpriteData sizedSprite = backgroundSprite.actualSize(w, h);
+                    int wi = (int) Math.ceil(w);
+                    int hi = (int) Math.ceil(h);
+                    SpriteData sizedSprite = backgroundSprite.actualSize(wi, hi);
                     context.enableBlend();
-                    context.drawSprite(sizedSprite, 0, 0, w, h);
+                    context.drawSprite(sizedSprite, 0, 0, wi, hi);
                     context.disableBlend();
                 }
             }
             // Fall back to solid color
             else {
-                context.fill(0, 0, w, h, backgroundColor);
+                int wi = (int) Math.ceil(w);
+                int hi = (int) Math.ceil(h);
+                context.fill(0, 0, wi, hi, backgroundColor);
             }
         }
     }
