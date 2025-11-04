@@ -2,6 +2,7 @@ package io.github.currenj.gelatinui.gui.components;
 
 import io.github.currenj.gelatinui.gui.DirtyFlag;
 import io.github.currenj.gelatinui.gui.IUIElement;
+import io.github.currenj.gelatinui.gui.UIElement;
 import org.joml.Vector2f;
 
 import java.util.HashMap;
@@ -199,20 +200,24 @@ public class ManualContainer extends PanelBase<ManualContainer> {
                 continue;
             }
             
-            Vector2f childSize = child.getSize();
+            float childScale = 1.0f;
+            if (child instanceof UIElement<?> uiElement) {
+                childScale = uiElement.getCurrentScale();
+            }
+            Vector2f scaledChildSize = new Vector2f(child.getSize()).mul(childScale);
             
             // Check if child size has changed
             Vector2f prevSize = previousChildSizes.get(child);
-            boolean sizeChanged = prevSize == null || !prevSize.equals(childSize, FLOAT_TOLERANCE);
-            
+            boolean sizeChanged = prevSize == null || !prevSize.equals(scaledChildSize, FLOAT_TOLERANCE);
+
             if (sizeChanged) {
                 // Update the stored size
-                previousChildSizes.put(child, new Vector2f(childSize));
+                previousChildSizes.put(child, new Vector2f(scaledChildSize));
             }
-            
+
             // Calculate top-left position to center the child at the manual position
-            float childX = centerPos.x - (childSize.x / 2f);
-            float childY = centerPos.y - (childSize.y / 2f);
+            float childX = centerPos.x - (scaledChildSize.x / 2f);
+            float childY = centerPos.y - (scaledChildSize.y / 2f);
             
             child.setPosition(new Vector2f(childX, childY));
         }
@@ -276,3 +281,4 @@ public class ManualContainer extends PanelBase<ManualContainer> {
         return Math.max(0, maxChildren - children.size());
     }
 }
+

@@ -20,6 +20,7 @@ public final class GelatinUiClient {
             registrar.register(ExampleViews.EXAMPLE_EFFECTS_VIEW_ID.getPath(), EffectsTestScreen::new);
             registrar.register(ExampleViews.EXAMPLE_EXTENSION_VIEW_ID.getPath(), GraphicsExtensionTestScreen::new);
             registrar.register(ExampleViews.EXAMPLE_ALIGNMENT_VIEW_ID.getPath(), SizeAlignmentTestScreen::new);
+            registrar.register(ExampleViews.EXAMPLE_MANUAL_CONTAINER_VIEW_ID.getPath(), ManualContainerTestScreen::new);
         });
     }
 }
