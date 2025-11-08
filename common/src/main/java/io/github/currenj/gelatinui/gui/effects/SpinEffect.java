@@ -2,10 +2,13 @@ package io.github.currenj.gelatinui.gui.effects;
 
 import io.github.currenj.gelatinui.gui.UIElement;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 /**
  * Continuous rotation animation for spinning items.
  * Can be configured for single spin or continuous looping.
+ * For 3D items like ItemRenderer, uses true 3D rotation around Y-axis.
+ * For 2D elements, uses Z-axis (in-plane) rotation.
  */
 public class SpinEffect extends AbstractEffect {
     private float rotationSpeed = 360f; // Degrees per second (1 full rotation)
@@ -38,7 +41,14 @@ public class SpinEffect extends AbstractEffect {
             rotation = -rotation;
         }
         
-        return new TransformDelta(new Vector2f(0, 0), 1.0f, rotation, 1.0f);
+        // For 3D items, rotate around Y-axis (vertical axis for item showcase)
+        if (element.supports3DRotation()) {
+            Vector3f rotation3D = new Vector3f(0, rotation, 0);
+            return new TransformDelta(new Vector2f(0, 0), 1.0f, rotation, 1.0f, rotation3D);
+        } else {
+            // For 2D elements, use Z-axis (in-plane) rotation
+            return new TransformDelta(new Vector2f(0, 0), 1.0f, rotation, 1.0f);
+        }
     }
 
     /**

@@ -2,14 +2,17 @@ package io.github.currenj.gelatinui.gui.effects;
 
 import io.github.currenj.gelatinui.gui.UIElement;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 /**
- * Flashy coin spin animation with rotation and scale oscillation.
- * Creates a 3D coin flip effect by varying scale on one axis while rotating.
+ * Flashy coin spin animation with 3D rotation.
+ * Creates a realistic 3D coin flip effect by rotating around the Y-axis.
+ * For 3D items like ItemRenderer, this uses true 3D rotation.
+ * For 2D elements, falls back to scale simulation.
  */
 public class CoinSpinEffect extends AbstractEffect {
     private float rotationSpeed = 720f; // Degrees per second (2 full rotations)
-    private float scaleAmplitude = 0.3f; // How much to vary scale (simulates 3D depth)
+    private float scaleAmplitude = 0.3f; // How much to vary scale (for 2D fallback)
     private float glowPulse = 0.15f; // Alpha variation for flashy effect
 
     public CoinSpinEffect() {
@@ -24,19 +27,33 @@ public class CoinSpinEffect extends AbstractEffect {
     protected TransformDelta calculateDelta(UIElement<?> element) {
         float t = getNormalizedTime();
         
-        // Rotation: linear spin
-        float rotation = rotationSpeed * t;
+        // Rotation: linear spin around Y-axis for 3D coin flip
+        float yRotation = rotationSpeed * t;
         
-        // Scale: cosine wave to simulate 3D flip (narrow at 90°, full at 0°/180°)
-        // Absolute cosine to always keep positive scale
-        float scaleT = (float) Math.abs(Math.cos(t * Math.PI * 2.0)); // 0 to 1 to 0 twice
-        float scale = 1.0f - scaleAmplitude + (scaleAmplitude * scaleT);
-        
-        // Alpha: slight pulse for flashy effect using sine wave
-        float alphaPulse = 1.0f + glowPulse * (float) Math.sin(t * Math.PI * 4.0); // Faster pulse
-        alphaPulse = Math.max(0.7f, Math.min(1.3f, alphaPulse)); // Clamp for visibility
-        
-        return new TransformDelta(new Vector2f(0, 0), scale, rotation, alphaPulse);
+        // For 3D items, use true 3D rotation
+        if (element.supports3DRotation()) {
+            // True 3D rotation around Y-axis
+            Vector3f rotation3D = new Vector3f(0, yRotation, 0);
+            
+            // Alpha pulse for flashy effect
+            float alphaPulse = 1.0f + glowPulse * (float) Math.sin(t * Math.PI * 4.0);
+            alphaPulse = Math.max(0.7f, Math.min(1.3f, alphaPulse));
+            
+            // No scale manipulation needed for 3D rotation
+            return new TransformDelta(new Vector2f(0, 0), 1.0f, yRotation, alphaPulse, rotation3D);
+        } else {
+            // Fallback for 2D elements: simulate 3D with scale
+            // Scale: cosine wave to simulate 3D flip (narrow at 90°, full at 0°/180°)
+            float scaleT = (float) Math.abs(Math.cos(t * Math.PI * 2.0));
+            float scale = 1.0f - scaleAmplitude + (scaleAmplitude * scaleT);
+            
+            // Alpha pulse
+            float alphaPulse = 1.0f + glowPulse * (float) Math.sin(t * Math.PI * 4.0);
+            alphaPulse = Math.max(0.7f, Math.min(1.3f, alphaPulse));
+            
+            // Use Z-axis rotation for 2D spin
+            return new TransformDelta(new Vector2f(0, 0), scale, yRotation, alphaPulse);
+        }
     }
 
     /**

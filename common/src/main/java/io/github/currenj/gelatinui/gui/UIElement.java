@@ -319,6 +319,22 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
             float combinedScale = currentScale * effectScale * combinedEffectDelta.getScaleMultiplier();
             pose.scale(combinedScale, combinedScale, 1.0f);
 
+            // Apply rotation if element supports it
+            if (supports3DRotation() && combinedEffectDelta.has3DRotation()) {
+                // Apply 3D rotation for items and other 3D content
+                org.joml.Vector3f rot3D = combinedEffectDelta.getRotation3D();
+                // Apply rotations in order: X (pitch), Y (yaw), Z (roll)
+                if (Math.abs(rot3D.x) > 0.001f) {
+                    pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(rot3D.x));
+                }
+                if (Math.abs(rot3D.y) > 0.001f) {
+                    pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rot3D.y));
+                }
+                if (Math.abs(rot3D.z) > 0.001f) {
+                    pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rot3D.z));
+                }
+            }
+
             // render self and children under same transform so children inherit the parent's transform
             renderSelf(context);
             renderChildren(context, viewport);
@@ -765,6 +781,16 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
      */
     protected void renderChildren(IRenderContext context, Rectangle2D viewport) {
         // Default: no children (leaf element)
+    }
+
+    /**
+     * Check if this element supports 3D rendering transformations.
+     * Elements that render 3D content (like ItemRenderer) should override this to return true.
+     * When true, the framework will apply 3D rotation from effects.
+     * @return true if this element should use 3D rotation transformations
+     */
+    protected boolean supports3DRotation() {
+        return false;
     }
 
     /**

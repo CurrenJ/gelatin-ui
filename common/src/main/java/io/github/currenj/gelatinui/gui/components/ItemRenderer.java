@@ -107,6 +107,12 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
     }
 
     @Override
+    protected boolean supports3DRotation() {
+        // ItemRenderer renders 3D items, so it supports 3D rotation
+        return true;
+    }
+
+    @Override
     protected void renderSelf(IRenderContext context) {
         if (itemStack.isEmpty()) {
             return;
