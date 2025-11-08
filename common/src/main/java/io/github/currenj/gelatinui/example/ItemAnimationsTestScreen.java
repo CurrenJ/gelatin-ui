@@ -195,7 +195,7 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
                 .text("Advanced Demo", 0xFFFFFFFF)
                 .onClick(e -> {
                     // Coin spin with custom parameters
-                    CoinSpinEffect customCoin = new CoinSpinEffect("custom-coin", 0, 1.5f);
+                    CoinSpinEffect customCoin = new CoinSpinEffect("custom-coin", 0, 5f);
                     customCoin.setRotationSpeed(1080f); // 3 full rotations
                     customCoin.setGlowPulse(0.3f);
                     coinSpinItem.addEffect(customCoin);

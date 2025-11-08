@@ -71,8 +71,8 @@ public class SpinEffect extends AbstractEffect {
     /**
      * Set easing power for acceleration/deceleration.
      * 1.0 = linear (default)
-     * > 1.0 = ease out (fast start, slow end)
-     * < 1.0 = ease in (slow start, fast end)
+     * &gt; 1.0 = ease out (fast start, slow end)
+     * &lt; 1.0 = ease in (slow start, fast end)
      */
     public SpinEffect setEasingPower(float power) {
         this.easingPower = Math.max(0.1f, power);

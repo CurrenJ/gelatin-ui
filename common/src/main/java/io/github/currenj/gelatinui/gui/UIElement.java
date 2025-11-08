@@ -1,6 +1,8 @@
 package io.github.currenj.gelatinui.gui;
 
 import org.joml.Vector2f;
+import org.joml.Vector3f;
+import org.joml.Quaternionf;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -321,28 +323,22 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
 
             // Apply rotation if element supports it
             if (supports3DRotation() && combinedEffectDelta.has3DRotation()) {
-                // For 3D rotation, we need to rotate around the center of the element
-                // Translate to center, rotate, then translate back
-                float centerX = size.x / 2.0f;
-                float centerY = size.y / 2.0f;
-                
-                pose.translate(centerX, centerY, 0);
-                
-                // Apply 3D rotation for items and other 3D content
+                // Rotate around element center in current local space (after translate & scale)
+                float pivotX = size.x * 0.5f;
+                float pivotY = size.y * 0.5f;
+                final int DEPTH_OFFSET = 150; // GuiGraphics renders items at z=150 (magic number), so mirror that here. Otherwise, items do big spin.
                 org.joml.Vector3f rot3D = combinedEffectDelta.getRotation3D();
-                // Apply rotations in order: X (pitch), Y (yaw), Z (roll)
+
+                // Apply rotations (pitch, yaw, roll) around the same pivot
                 if (Math.abs(rot3D.x) > 0.001f) {
-                    pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(rot3D.x));
+                    pose.rotateAround(com.mojang.math.Axis.XP.rotationDegrees(rot3D.x), pivotX, pivotY, DEPTH_OFFSET);
                 }
                 if (Math.abs(rot3D.y) > 0.001f) {
-                    pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rot3D.y));
+                    pose.rotateAround(com.mojang.math.Axis.YP.rotationDegrees(rot3D.y), pivotX, pivotY, DEPTH_OFFSET);
                 }
                 if (Math.abs(rot3D.z) > 0.001f) {
-                    pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rot3D.z));
+                    pose.rotateAround(com.mojang.math.Axis.ZP.rotationDegrees(rot3D.z), pivotX, pivotY, DEPTH_OFFSET);
                 }
-                
-                // Translate back from center
-                pose.translate(-centerX, -centerY, 0);
             }
 
             // render self and children under same transform so children inherit the parent's transform
@@ -799,7 +795,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
      * When true, the framework will apply 3D rotation from effects.
      * @return true if this element should use 3D rotation transformations
      */
-    protected boolean supports3DRotation() {
+    public boolean supports3DRotation() {
         return false;
     }
 
