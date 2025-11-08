@@ -997,6 +997,60 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     }
 
     /**
+     * Convenience: add a coin spin effect with flashy rotation and scale.
+     * @return this element for method chaining
+     */
+    public T addCoinSpinEffect() {
+        addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.CoinSpinEffect("coin-spin", 0, 1.0f));
+        return self();
+    }
+
+    /**
+     * Convenience: add a jump and bounce effect.
+     * @return this element for method chaining
+     */
+    public T addJumpBounceEffect() {
+        addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.JumpBounceEffect("jump-bounce", 0, 1.2f));
+        return self();
+    }
+
+    /**
+     * Convenience: add a spin effect (full rotation).
+     * @return this element for method chaining
+     */
+    public T addSpinEffect() {
+        addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.SpinEffect("spin", 0, 1.0f));
+        return self();
+    }
+
+    /**
+     * Convenience: add a flip effect (card-flip style).
+     * @return this element for method chaining
+     */
+    public T addFlipEffect() {
+        addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.FlipEffect("flip", 0, 0.6f));
+        return self();
+    }
+
+    /**
+     * Convenience: add a fall from above and bounce into place effect.
+     * @return this element for method chaining
+     */
+    public T addFallBounceEffect() {
+        addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.FallBounceEffect("fall-bounce", 0, 1.5f));
+        return self();
+    }
+
+    /**
+     * Convenience: add a pulsing glow effect (continuous).
+     * @return this element for method chaining
+     */
+    public T addPulseGlowEffect() {
+        addEffect(new io.github.currenj.gelatinui.gui.effects.PulseGlowEffect("pulse-glow", 0));
+        return self();
+    }
+
+    /**
      * Interface for event listeners.
      */
     public interface UIEventListener {
