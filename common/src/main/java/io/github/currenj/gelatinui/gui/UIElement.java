@@ -321,6 +321,13 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
 
             // Apply rotation if element supports it
             if (supports3DRotation() && combinedEffectDelta.has3DRotation()) {
+                // For 3D rotation, we need to rotate around the center of the element
+                // Translate to center, rotate, then translate back
+                float centerX = size.x / 2.0f;
+                float centerY = size.y / 2.0f;
+                
+                pose.translate(centerX, centerY, 0);
+                
                 // Apply 3D rotation for items and other 3D content
                 org.joml.Vector3f rot3D = combinedEffectDelta.getRotation3D();
                 // Apply rotations in order: X (pitch), Y (yaw), Z (roll)
@@ -333,6 +340,9 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
                 if (Math.abs(rot3D.z) > 0.001f) {
                     pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rot3D.z));
                 }
+                
+                // Translate back from center
+                pose.translate(-centerX, -centerY, 0);
             }
 
             // render self and children under same transform so children inherit the parent's transform
