@@ -17,7 +17,7 @@ Click bounce
 Implement your own
 - Build keyframes, then call element.playAnimation(new FloatKeyframeAnimation("myChannel", frames, value -> { /* apply */ }, () -> { /* onComplete */ }));
 - You can cancel specific channels via cancelAnimationChannel("myChannel") or clear all with clearAnimations().
+- Check if an animation is finished with animation.isFinished().
 
 Performance tips
 - Animations keep an element updating until they finish (needsUpdate returns true while animating), so avoid long-lived no-op animations.
-

@@ -18,6 +18,7 @@ public class FloatKeyframeAnimation implements Animation {
 
     private float elapsed = 0f;
     private boolean started = false;
+    private boolean finished = false;
 
     public FloatKeyframeAnimation(String channel, List<Keyframe> keyframes, Consumer<Float> apply, Runnable onComplete) {
         this.channel = channel;
@@ -55,6 +56,7 @@ public class FloatKeyframeAnimation implements Animation {
         if (elapsed >= last.time) {
             apply.accept(last.value);
             if (onComplete != null) onComplete.run();
+            finished = true;
             return false;
         }
 
@@ -70,6 +72,7 @@ public class FloatKeyframeAnimation implements Animation {
         if (i + 1 >= frames.size()) {
             apply.accept(last.value);
             if (onComplete != null) onComplete.run();
+            finished = true;
             return false;
         }
 
@@ -86,5 +89,9 @@ public class FloatKeyframeAnimation implements Animation {
         apply.accept(value);
         return true;
     }
-}
 
+    @Override
+    public boolean isFinished() {
+        return finished;
+    }
+}

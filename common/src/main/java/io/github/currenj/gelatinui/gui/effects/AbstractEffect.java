@@ -22,6 +22,8 @@ public abstract class AbstractEffect implements Effect {
     protected boolean loop = false;
     protected boolean pingPong = false;
     protected boolean cancelled = false;
+    protected boolean finished = false;
+    protected boolean started = false;
     protected boolean forward = true; // for ping-pong
 
     // Cached delta
@@ -81,6 +83,8 @@ public abstract class AbstractEffect implements Effect {
 
     @Override
     public boolean update(float deltaTime, UIElement<?> element) {
+        started = true;
+
         if (cancelled) {
             return false;
         }
@@ -99,6 +103,7 @@ public abstract class AbstractEffect implements Effect {
                         forward = true;
                         elapsed = 0;
                     } else {
+                        finished = true;
                         return false; // finished
                     }
                 }
@@ -111,6 +116,7 @@ public abstract class AbstractEffect implements Effect {
                         elapsed = duration;
                         // Calculate final delta and finish
                         currentDelta = calculateDelta(element);
+                        finished = true;
                         return false;
                     }
                 }
@@ -175,6 +181,16 @@ public abstract class AbstractEffect implements Effect {
             t = 1.0f - (elapsed / duration);
         }
         return Math.max(0f, Math.min(1f, t));
+    }
+
+    @Override
+    public boolean isFinished() {
+        return finished;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return started;
     }
 
     // Builder-style setters
