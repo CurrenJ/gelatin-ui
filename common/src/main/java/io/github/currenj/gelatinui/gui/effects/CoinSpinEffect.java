@@ -1,6 +1,7 @@
 package io.github.currenj.gelatinui.gui.effects;
 
 import io.github.currenj.gelatinui.gui.UIElement;
+import io.github.currenj.gelatinui.gui.animation.Easing;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -14,6 +15,7 @@ public class CoinSpinEffect extends AbstractEffect {
     private float rotationSpeed = 720f; // Degrees per second (2 full rotations)
     private float scaleAmplitude = 0.3f; // How much to vary scale (for 2D fallback)
     private float glowPulse = 0.15f; // Alpha variation for flashy effect
+    private Easing.Func easingFunc = Easing.LINEAR;
 
     public CoinSpinEffect() {
         this(null, 0, 1.0f); // Default 1 second spin
@@ -27,8 +29,11 @@ public class CoinSpinEffect extends AbstractEffect {
     protected TransformDelta calculateDelta(UIElement<?> element) {
         float t = getNormalizedTime();
         
-        // Rotation: linear spin around Y-axis for 3D coin flip
-        float yRotation = rotationSpeed * t;
+        // Apply easing function
+        float easedT = easingFunc.ease(t);
+        
+        // Rotation: spin around Y-axis for 3D coin flip
+        float yRotation = rotationSpeed * easedT;
         
         // For 3D items, use true 3D rotation
         if (element.supports3DRotation()) {
@@ -40,7 +45,7 @@ public class CoinSpinEffect extends AbstractEffect {
             alphaPulse = Math.max(0.7f, Math.min(1.3f, alphaPulse));
             
             // No scale manipulation needed for 3D rotation
-            return new TransformDelta(new Vector2f(0, 0), 1.0f, yRotation, alphaPulse, rotation3D);
+            return new TransformDelta(new Vector2f(0, 0), 1.0f, alphaPulse, rotation3D);
         } else {
             // Fallback for 2D elements: simulate 3D with scale
             // Scale: cosine wave to simulate 3D flip (narrow at 90°, full at 0°/180°)
@@ -52,7 +57,8 @@ public class CoinSpinEffect extends AbstractEffect {
             alphaPulse = Math.max(0.7f, Math.min(1.3f, alphaPulse));
             
             // Use Z-axis rotation for 2D spin
-            return new TransformDelta(new Vector2f(0, 0), scale, yRotation, alphaPulse);
+            Vector3f rotation3D = new Vector3f(0, 0, yRotation);
+            return new TransformDelta(new Vector2f(0, 0), scale, alphaPulse, rotation3D);
         }
     }
 
@@ -66,7 +72,7 @@ public class CoinSpinEffect extends AbstractEffect {
 
     /**
      * Set how much the scale varies (0 to 1).
-     * Higher values create a more pronounced 3D effect.
+     * Higher values create a more pronounced 3D effect (for 2D fallback only).
      */
     public CoinSpinEffect setScaleAmplitude(float amplitude) {
         this.scaleAmplitude = Math.max(0f, Math.min(1f, amplitude));
@@ -78,6 +84,15 @@ public class CoinSpinEffect extends AbstractEffect {
      */
     public CoinSpinEffect setGlowPulse(float intensity) {
         this.glowPulse = Math.max(0f, Math.min(1f, intensity));
+        return this;
+    }
+
+    /**
+     * Set the easing function for this coin spin effect.
+     * Use Easing.LINEAR, Easing.EASE_IN_OUT_SINE, etc.
+     */
+    public CoinSpinEffect setEasing(Easing.Func easingFunc) {
+        this.easingFunc = easingFunc != null ? easingFunc : Easing.LINEAR;
         return this;
     }
 }

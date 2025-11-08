@@ -80,7 +80,7 @@ public class FallBounceEffect extends AbstractEffect {
             currentRotation = rotation;
         }
         
-        return new TransformDelta(new Vector2f(0, yOffset), squash, currentRotation, 1.0f);
+        return new TransformDelta(new Vector2f(0, yOffset), squash, 1.0f, new org.joml.Vector3f(0, 0, currentRotation));
     }
 
     /**

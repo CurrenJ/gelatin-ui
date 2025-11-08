@@ -1,6 +1,7 @@
 package io.github.currenj.gelatinui.gui.effects;
 
 import io.github.currenj.gelatinui.gui.UIElement;
+import io.github.currenj.gelatinui.gui.animation.Easing;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -13,7 +14,7 @@ import org.joml.Vector3f;
 public class SpinEffect extends AbstractEffect {
     private float rotationSpeed = 360f; // Degrees per second (1 full rotation)
     private boolean clockwise = true;
-    private float easingPower = 1.0f; // 1.0 = linear, >1 = ease out, <1 = ease in
+    private Easing.Func easingFunc = Easing.LINEAR;
 
     public SpinEffect() {
         this(null, 0, 1.0f); // Default 1 second for one full rotation
@@ -27,11 +28,8 @@ public class SpinEffect extends AbstractEffect {
     protected TransformDelta calculateDelta(UIElement<?> element) {
         float t = getNormalizedTime();
         
-        // Apply easing if configured
-        float easedT = t;
-        if (easingPower != 1.0f) {
-            easedT = (float) Math.pow(t, easingPower);
-        }
+        // Apply easing function
+        float easedT = easingFunc.ease(t);
         
         // Calculate rotation based on speed and time
         float rotation = rotationSpeed * easedT;
@@ -44,10 +42,11 @@ public class SpinEffect extends AbstractEffect {
         // For 3D items, rotate around Y-axis (vertical axis for item showcase)
         if (element.supports3DRotation()) {
             Vector3f rotation3D = new Vector3f(0, rotation, 0);
-            return new TransformDelta(new Vector2f(0, 0), 1.0f, rotation, 1.0f, rotation3D);
+            return new TransformDelta(new Vector2f(0, 0), 1.0f, 1.0f, rotation3D);
         } else {
             // For 2D elements, use Z-axis (in-plane) rotation
-            return new TransformDelta(new Vector2f(0, 0), 1.0f, rotation, 1.0f);
+            Vector3f rotation3D = new Vector3f(0, 0, rotation);
+            return new TransformDelta(new Vector2f(0, 0), 1.0f, 1.0f, rotation3D);
         }
     }
 
@@ -69,13 +68,11 @@ public class SpinEffect extends AbstractEffect {
     }
 
     /**
-     * Set easing power for acceleration/deceleration.
-     * 1.0 = linear (default)
-     * &gt; 1.0 = ease out (fast start, slow end)
-     * &lt; 1.0 = ease in (slow start, fast end)
+     * Set the easing function for this spin effect.
+     * Use Easing.LINEAR, Easing.EASE_IN_OUT_SINE, etc.
      */
-    public SpinEffect setEasingPower(float power) {
-        this.easingPower = Math.max(0.1f, power);
+    public SpinEffect setEasing(Easing.Func easingFunc) {
+        this.easingFunc = easingFunc != null ? easingFunc : Easing.LINEAR;
         return this;
     }
 

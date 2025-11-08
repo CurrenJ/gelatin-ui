@@ -51,7 +51,7 @@ public class PulseGlowEffect extends AbstractEffect {
         float secondaryPulse = (float) Math.sin(pulsePhase * 2.0f) * 0.05f;
         scale += secondaryPulse;
         
-        return new TransformDelta(new Vector2f(0, 0), scale, rotation, alpha);
+        return new TransformDelta(new Vector2f(0, 0), scale, alpha, new org.joml.Vector3f(0, 0, rotation));
     }
 
     /**

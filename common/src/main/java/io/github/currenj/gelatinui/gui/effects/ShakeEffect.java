@@ -43,7 +43,7 @@ public class ShakeEffect extends AbstractEffect {
             currentOffset.set(offsetX, offsetY);
         }
 
-        return new TransformDelta(currentOffset, 1.0f, 0f, 1.0f);
+        return new TransformDelta(currentOffset, 1.0f, 1.0f, new org.joml.Vector3f(0, 0, 0));
     }
 
     public void setAmplitude(float amplitude) {

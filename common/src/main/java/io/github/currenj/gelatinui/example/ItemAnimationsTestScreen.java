@@ -2,6 +2,7 @@ package io.github.currenj.gelatinui.example;
 
 import io.github.currenj.gelatinui.GelatinUIScreen;
 import io.github.currenj.gelatinui.gui.UI;
+import io.github.currenj.gelatinui.gui.animation.Easing;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.effects.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
@@ -112,15 +113,19 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
         SpriteButton coinSpinButton = new SpriteButton(110, 28, 0xFFFFD700)
                 .text("Coin Spin", 0xFF000000)
                 .onClick(e -> {
-                    coinSpinItem.addCoinSpinEffect();
-                    updateStatus("Coin spin effect triggered (3D Y-axis rotation)!");
+                    CoinSpinEffect coinSpin = new CoinSpinEffect("coin-spin", 0, 1.0f);
+                    coinSpin.setEasing(Easing.EASE_IN_OUT_SINE);
+                    coinSpinItem.addEffect(coinSpin);
+                    updateStatus("Coin spin effect triggered (3D Y-axis rotation with ease-in-out sine)!");
                 });
 
         SpriteButton spinButton = new SpriteButton(110, 28, 0xFF1E90FF)
                 .text("Spin", 0xFFFFFFFF)
                 .onClick(e -> {
-                    spinItem.addSpinEffect();
-                    updateStatus("Spin effect triggered (3D showcase rotation)!");
+                    SpinEffect spin = new SpinEffect("spin", 0, 1.0f);
+                    spin.setEasing(Easing.EASE_IN_OUT_SINE);
+                    spinItem.addEffect(spin);
+                    updateStatus("Spin effect triggered (3D showcase rotation with ease-in-out sine)!");
                 });
 
         SpriteButton jumpBounceButton = new SpriteButton(110, 28, 0xFF32CD32)
@@ -170,8 +175,14 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
         SpriteButton triggerAllButton = new SpriteButton(110, 28, 0xFF4682B4)
                 .text("Trigger All", 0xFFFFFFFF)
                 .onClick(e -> {
-                    coinSpinItem.addCoinSpinEffect();
-                    spinItem.addSpinEffect();
+                    CoinSpinEffect coinSpin = new CoinSpinEffect("coin-spin", 0, 1.0f);
+                    coinSpin.setEasing(Easing.EASE_IN_OUT_SINE);
+                    coinSpinItem.addEffect(coinSpin);
+                    
+                    SpinEffect spin = new SpinEffect("spin", 0, 1.0f);
+                    spin.setEasing(Easing.EASE_IN_OUT_SINE);
+                    spinItem.addEffect(spin);
+                    
                     jumpBounceItem.addJumpBounceEffect();
                     flipItem.addFlipEffect();
                     fallBounceItem.addFallBounceEffect();
@@ -194,17 +205,19 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
         SpriteButton advancedButton = new SpriteButton(110, 28, 0xFFB44682)
                 .text("Advanced Demo", 0xFFFFFFFF)
                 .onClick(e -> {
-                    // Coin spin with custom parameters
-                    CoinSpinEffect customCoin = new CoinSpinEffect("custom-coin", 0, 5f);
+                    // Coin spin with custom parameters and easing
+                    CoinSpinEffect customCoin = new CoinSpinEffect("custom-coin", 0, 1.5f);
                     customCoin.setRotationSpeed(1080f); // 3 full rotations
                     customCoin.setGlowPulse(0.3f);
+                    customCoin.setEasing(Easing.EASE_IN_OUT_SINE);
                     coinSpinItem.addEffect(customCoin);
 
-                    // Continuous slow spin
+                    // Continuous slow spin with easing
                     SpinEffect continuousSpin = SpinEffect.continuous(0.5f);
+                    continuousSpin.setEasing(Easing.EASE_IN_OUT_SINE);
                     spinItem.addEffect(continuousSpin);
 
-                    updateStatus("Advanced effects: fast coin spin + continuous rotation!");
+                    updateStatus("Advanced effects: fast coin spin + continuous rotation with ease-in-out sine!");
                 });
 
         buttonRow3.addChild(triggerAllButton);

@@ -61,7 +61,7 @@ public class FlipEffect extends AbstractEffect {
             // (In a real 3D flip, the back face might be different)
         }
         
-        return new TransformDelta(new Vector2f(0, 0), scale, rotation, 1.0f);
+        return new TransformDelta(new Vector2f(0, 0), scale, 1.0f, new org.joml.Vector3f(0, 0, rotation));
     }
 
     /**
