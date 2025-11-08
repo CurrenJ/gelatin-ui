@@ -262,8 +262,20 @@ Effects modify:
 - **Rotation**: Angle in degrees
 - **Alpha**: Opacity multiplier (0.0 - 1.0+)
 
+## Interactive Demo
+
+Try the **Item Animations Test Screen** to see all effects in action:
+- Access via command: `/gelatinui example/item_animations`
+- Features 6 item renderers with different items
+- Individual buttons for each animation type
+- "Trigger All", "Clear All", and "Advanced Demo" buttons
+- Status feedback for each action
+
+The demo screen showcases true 3D rotation on actual ItemRenderer components with various Minecraft items (Gold Ingot, Diamond, Emerald, Iron Ingot, Netherite Ingot, Nether Star).
+
 ## See Also
 
+- `ItemAnimationsTestScreen.java` - Dedicated demo screen for item animations
 - `EffectsTestScreen.java` - Interactive demo of all effects
 - `AbstractEffect.java` - Base class for creating custom effects
 - `TransformDelta.java` - Transform modification container
