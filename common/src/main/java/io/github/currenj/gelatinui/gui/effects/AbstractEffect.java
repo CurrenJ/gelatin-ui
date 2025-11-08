@@ -159,7 +159,7 @@ public abstract class AbstractEffect implements Effect {
         float epsilon = 0.001f;
         return a.getPositionOffset().distance(b.getPositionOffset()) < epsilon
                 && Math.abs(a.getScaleMultiplier() - b.getScaleMultiplier()) < epsilon
-                && Math.abs(a.getRotationDeg() - b.getRotationDeg()) < epsilon
+                && a.getRotation3D().distanceSquared(b.getRotation3D()) < epsilon
                 && Math.abs(a.getAlphaMultiplier() - b.getAlphaMultiplier()) < epsilon;
     }
 
@@ -188,4 +188,3 @@ public abstract class AbstractEffect implements Effect {
         return this;
     }
 }
-

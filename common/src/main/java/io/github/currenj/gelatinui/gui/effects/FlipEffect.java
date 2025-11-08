@@ -2,6 +2,7 @@ package io.github.currenj.gelatinui.gui.effects;
 
 import io.github.currenj.gelatinui.gui.UIElement;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 /**
  * Card-flip style animation that rotates and scales to create a 3D flip effect.
@@ -33,35 +34,53 @@ public class FlipEffect extends AbstractEffect {
         // Ease in-out for smoother flip
         float easedT = easeInOutCubic(t);
         
-        // Calculate rotation
-        float rotation = 0f;
+        // Calculate rotation and scale
+        Vector3f rotation3D = new Vector3f(0, 0, 0);
         float scale = 1.0f;
-        
-        if (flipAxis == Axis.Z) {
-            // Simple rotation in plane (no scale effect)
-            rotation = flipRotation * easedT;
-        } else {
-            // Simulate 3D flip with scale
-            // At t=0: scale=1, at t=0.5: scale=perspectiveScale (edge view), at t=1: scale=1
-            float flipProgress = easedT * 2.0f; // 0 to 2
-            
-            if (flipProgress < 1.0f) {
-                // First half: scale down to edge
-                scale = 1.0f - (1.0f - perspectiveScale) * flipProgress;
-            } else {
-                // Second half: scale back up from edge
-                scale = perspectiveScale + (1.0f - perspectiveScale) * (flipProgress - 1.0f);
+        float alpha = 1.0f;
+
+        if (element.supports3DRotation()) {
+            // True 3D rotation
+            float rotation = flipRotation * easedT;
+            switch (flipAxis) {
+                case X:
+                    rotation3D.x = rotation;
+                    break;
+                case Y:
+                    rotation3D.y = rotation;
+                    break;
+                case Z:
+                    rotation3D.z = rotation;
+                    break;
             }
-            
-            // For visual effect, we can add subtle rotation even though we're simulating 3D with 2D scale
-            // This helps sell the effect
-            rotation = flipRotation * easedT;
-            
-            // Adjust alpha slightly at the flip point for more realism
-            // (In a real 3D flip, the back face might be different)
+            // For 3D, no scale simulation needed
+            scale = 1.0f;
+        } else {
+            // Fallback for 2D elements: simulate 3D with scale
+            if (flipAxis == Axis.Z) {
+                // Simple rotation in plane (no scale effect)
+                rotation3D.z = flipRotation * easedT;
+                scale = 1.0f;
+            } else {
+                // Simulate 3D flip with scale
+                // At t=0: scale=1, at t=0.5: scale=perspectiveScale (edge view), at t=1: scale=1
+                float flipProgress = easedT * 2.0f; // 0 to 2
+
+                if (flipProgress < 1.0f) {
+                    // First half: scale down to edge
+                    scale = 1.0f - (1.0f - perspectiveScale) * flipProgress;
+                } else {
+                    // Second half: scale back up from edge
+                    scale = perspectiveScale + (1.0f - perspectiveScale) * (flipProgress - 1.0f);
+                }
+
+                // For visual effect, we can add subtle rotation even though we're simulating 3D with 2D scale
+                // This helps sell the effect
+                rotation3D.z = flipRotation * easedT;
+            }
         }
         
-        return new TransformDelta(new Vector2f(0, 0), scale, 1.0f, new org.joml.Vector3f(0, 0, rotation));
+        return new TransformDelta(new Vector2f(0, 0), scale, alpha, rotation3D);
     }
 
     /**
