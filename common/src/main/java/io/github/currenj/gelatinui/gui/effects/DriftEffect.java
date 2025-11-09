@@ -28,7 +28,7 @@ public class DriftEffect extends AbstractEffect {
     protected TransformDelta calculateDelta(UIElement<?> element) {
         // Calculate offset based on elapsed time and velocity
         currentOffset.set(velocity).mul(elapsed);
-        return new TransformDelta(currentOffset, 1.0f, 0f, 1.0f);
+        return new TransformDelta(currentOffset, 1.0f, 1.0f, new org.joml.Vector3f(0, 0, 0));
     }
 
     public void setVelocity(Vector2f velocity) {

@@ -1,6 +1,8 @@
 package io.github.currenj.gelatinui.gui;
 
 import org.joml.Vector2f;
+import org.joml.Vector3f;
+import org.joml.Quaternionf;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -318,6 +320,26 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
             // Apply combined scale (base * effectScale * effect delta scale)
             float combinedScale = currentScale * effectScale * combinedEffectDelta.getScaleMultiplier();
             pose.scale(combinedScale, combinedScale, 1.0f);
+
+            // Apply rotation if element supports it
+            if (supports3DRotation() && combinedEffectDelta.has3DRotation()) {
+                // Rotate around element center in current local space (after translate & scale)
+                float pivotX = size.x * 0.5f;
+                float pivotY = size.y * 0.5f;
+                final int DEPTH_OFFSET = 150; // GuiGraphics renders items at z=150 (magic number), so mirror that here. Otherwise, items do big spin.
+                org.joml.Vector3f rot3D = combinedEffectDelta.getRotation3D();
+
+                // Apply rotations (pitch, yaw, roll) around the same pivot
+                if (Math.abs(rot3D.x) > 0.001f) {
+                    pose.rotateAround(com.mojang.math.Axis.XP.rotationDegrees(rot3D.x), pivotX, pivotY, DEPTH_OFFSET);
+                }
+                if (Math.abs(rot3D.y) > 0.001f) {
+                    pose.rotateAround(com.mojang.math.Axis.YP.rotationDegrees(rot3D.y), pivotX, pivotY, DEPTH_OFFSET);
+                }
+                if (Math.abs(rot3D.z) > 0.001f) {
+                    pose.rotateAround(com.mojang.math.Axis.ZP.rotationDegrees(rot3D.z), pivotX, pivotY, DEPTH_OFFSET);
+                }
+            }
 
             // render self and children under same transform so children inherit the parent's transform
             renderSelf(context);
@@ -768,6 +790,16 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     }
 
     /**
+     * Check if this element supports 3D rendering transformations.
+     * Elements that render 3D content (like ItemRenderer) should override this to return true.
+     * When true, the framework will apply 3D rotation from effects.
+     * @return true if this element should use 3D rotation transformations
+     */
+    public boolean supports3DRotation() {
+        return false;
+    }
+
+    /**
      * Handle an event locally. Override to implement event handling.
      * @return true if event was consumed
      */
@@ -993,6 +1025,60 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
      */
     public T addWanderEffect() {
         addEffect(new io.github.currenj.gelatinui.gui.effects.WanderEffect("wander", 0));
+        return self();
+    }
+
+    /**
+     * Convenience: add a coin spin effect with flashy rotation and scale.
+     * @return this element for method chaining
+     */
+    public T addCoinSpinEffect() {
+        addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.CoinSpinEffect("coin-spin", 0, 1.0f));
+        return self();
+    }
+
+    /**
+     * Convenience: add a jump and bounce effect.
+     * @return this element for method chaining
+     */
+    public T addJumpBounceEffect() {
+        addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.JumpBounceEffect("jump-bounce", 0, 1.2f));
+        return self();
+    }
+
+    /**
+     * Convenience: add a spin effect (full rotation).
+     * @return this element for method chaining
+     */
+    public T addSpinEffect() {
+        addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.SpinEffect("spin", 0, 1.0f));
+        return self();
+    }
+
+    /**
+     * Convenience: add a flip effect (card-flip style).
+     * @return this element for method chaining
+     */
+    public T addFlipEffect() {
+        addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.FlipEffect("flip", 0, 0.6f));
+        return self();
+    }
+
+    /**
+     * Convenience: add a fall from above and bounce into place effect.
+     * @return this element for method chaining
+     */
+    public T addFallBounceEffect() {
+        addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.FallBounceEffect("fall-bounce", 0, 1.5f));
+        return self();
+    }
+
+    /**
+     * Convenience: add a pulsing glow effect (continuous).
+     * @return this element for method chaining
+     */
+    public T addPulseGlowEffect() {
+        addEffect(new io.github.currenj.gelatinui.gui.effects.PulseGlowEffect("pulse-glow", 0));
         return self();
     }
 

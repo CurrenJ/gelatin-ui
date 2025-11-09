@@ -231,6 +231,67 @@ public class EffectsTestScreen extends GelatinUIScreen<GelatinMenu> {
         mainContainer.addChild(buttonRow2);
         mainContainer.addChild(buttonRow3);
 
+        // New Item Animations section
+        mainContainer.addChild(UI.label(tempContext, "Item Animations:", 0xFFC8C8FF));
+
+        HBox itemRow1 = new HBox().spacing(10);
+        HBox itemRow2 = new HBox().spacing(10);
+
+        // Item animations - Row 1
+        SpriteButton coinSpinButton = new SpriteButton(120, 30, 0xFFFFD700)
+                .text("Coin Spin", 0xFF000000)
+                .onClick(e -> {
+                    demoPanel.addCoinSpinEffect();
+                    updateStatus("Added flashy coin spin effect!");
+                });
+
+        SpriteButton jumpBounceButton = new SpriteButton(120, 30, 0xFF32CD32)
+                .text("Jump Bounce", 0xFFFFFFFF)
+                .onClick(e -> {
+                    demoPanel.addJumpBounceEffect();
+                    updateStatus("Added jump and bounce effect!");
+                });
+
+        SpriteButton spinButton = new SpriteButton(120, 30, 0xFF1E90FF)
+                .text("Spin", 0xFFFFFFFF)
+                .onClick(e -> {
+                    demoPanel.addSpinEffect();
+                    updateStatus("Added spin effect!");
+                });
+
+        itemRow1.addChild(coinSpinButton);
+        itemRow1.addChild(jumpBounceButton);
+        itemRow1.addChild(spinButton);
+
+        // Item animations - Row 2
+        SpriteButton flipButton = new SpriteButton(120, 30, 0xFF9370DB)
+                .text("Flip", 0xFFFFFFFF)
+                .onClick(e -> {
+                    demoPanel.addFlipEffect();
+                    updateStatus("Added card flip effect!");
+                });
+
+        SpriteButton fallBounceButton = new SpriteButton(120, 30, 0xFFFF6347)
+                .text("Fall Bounce", 0xFFFFFFFF)
+                .onClick(e -> {
+                    demoPanel.addFallBounceEffect();
+                    updateStatus("Added fall from above effect!");
+                });
+
+        SpriteButton pulseGlowButton = new SpriteButton(120, 30, 0xFFFF1493)
+                .text("Pulse Glow", 0xFFFFFFFF)
+                .onClick(e -> {
+                    demoPanel.addPulseGlowEffect();
+                    updateStatus("Added pulsing glow effect!");
+                });
+
+        itemRow2.addChild(flipButton);
+        itemRow2.addChild(fallBounceButton);
+        itemRow2.addChild(pulseGlowButton);
+
+        mainContainer.addChild(itemRow1);
+        mainContainer.addChild(itemRow2);
+
         // Status display
         statusLabel = UI.label(tempContext, "Click buttons to test effects!", 0xFF969696);
         VBox statusBox = new VBox().spacing(5);

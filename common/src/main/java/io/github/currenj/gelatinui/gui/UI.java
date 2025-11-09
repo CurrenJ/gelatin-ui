@@ -31,6 +31,13 @@ public class UI {
     }
 
     /**
+     * Create a new ManualContainer for fixed-size layouts with manual child positioning.
+     */
+    public static ManualContainer manualContainer() {
+        return new ManualContainer();
+    }
+
+    /**
      * Create a new Label with text and color.
      */
     public static Label label(IRenderContext context, String text, int color) {

@@ -38,7 +38,7 @@ public class ClickBounceEffect extends AbstractEffect {
             scale = 1.0f + overshoot * (1.0f - easeInOutCubic(settleT));
         }
 
-        return new TransformDelta(new Vector2f(0, 0), scale, 0f, 1.0f);
+        return new TransformDelta(new Vector2f(0, 0), scale, 1.0f, new org.joml.Vector3f(0, 0, 0));
     }
 
     public void setAmplitude(float amplitude) {

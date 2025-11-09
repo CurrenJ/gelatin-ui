@@ -30,3 +30,11 @@
 8) Responsive scale-to-fit block
 - VBox/HBox with scaleToFit(true) and maxHeight(viewportH) to keep content within the screen.
 
+9) Fixed-layout item slots with background sprite
+- Use ManualContainer for sprite backgrounds with specific item positions (e.g., inventory UI with predefined slots).
+- Set container size to match the sprite: `.setSize(spriteWidth, spriteHeight)`
+- Set background sprite: `.backgroundSprite(mySpriteData)`
+- Add children at exact positions (they'll be centered): `.addChildAt(itemRenderer, x, y)`
+- Optional: limit slots with `.maxChildren(n)` to match visual design
+- Children auto-reposition if their size changes, staying centered at their designated spots
+

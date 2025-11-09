@@ -36,6 +36,11 @@ public final class Easing {
     public static final Func EASE_OUT_BACK = easeOutBack(1.70158f);
     public static final Func EASE_IN_CUBIC = t -> (float) Math.pow(clamp01(t), 3);
 
+    public static final Func EASE_IN_OUT_SINE = t -> {
+        t = clamp01(t);
+        return -(float) Math.cos(t * Math.PI) / 2f + 0.5f;
+    };
+
     private static float clamp01(float t) {
         if (t < 0f) return 0f;
         if (t > 1f) return 1f;

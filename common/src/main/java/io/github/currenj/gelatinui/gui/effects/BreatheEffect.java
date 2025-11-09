@@ -33,7 +33,7 @@ public class BreatheEffect extends AbstractEffect {
         // Average for uniform scale (or could expose separate X/Y in future)
         float scale = (scaleX + scaleY) / 2.0f;
 
-        return new TransformDelta(new Vector2f(0, 0), scale, 0f, 1.0f);
+        return new TransformDelta(new Vector2f(0, 0), scale, 1.0f, new org.joml.Vector3f(0, 0, 0));
     }
 
     public void setAmplitude(float amplitude) {

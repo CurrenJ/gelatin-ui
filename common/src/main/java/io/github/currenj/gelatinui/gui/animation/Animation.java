@@ -22,4 +22,10 @@ public interface Animation {
      * Implementations may perform cleanup.
      */
     default void cancel() {}
+
+    /**
+     * Check if the animation has finished.
+     * @return true if the animation has completed, false otherwise
+     */
+    boolean isFinished();
 }
