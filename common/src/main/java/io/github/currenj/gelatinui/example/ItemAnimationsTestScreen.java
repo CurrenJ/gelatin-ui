@@ -26,6 +26,7 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
     private ItemRenderer.ItemRendererImpl fallBounceItem;
     private ItemRenderer.ItemRendererImpl pulseGlowItem;
     private Label statusLabel;
+    private io.github.currenj.gelatinui.gui.particles.ParticleSystem particleSystem;
 
     public ItemAnimationsTestScreen(GelatinMenu menu, Inventory inv) {
         super(menu, inv, Component.literal("Item Animations Demo"));
@@ -225,6 +226,36 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
         buttonRow3.addChild(advancedButton);
         mainContainer.addChild(buttonRow3);
 
+        // Particle System Section
+        mainContainer.addChild(UI.label(tempContext, "Particle Effects:", 0xFFC8C8FF));
+        
+        // Create particle system overlay (positioned at the center of the screen)
+        particleSystem = UI.particleSystem(400, 300).setMaxParticles(500);
+        
+        // Particle burst button
+        HBox particleRow = new HBox().spacing(10).alignment(HBox.Alignment.CENTER);
+        
+        SpriteButton particleBurstButton = new SpriteButton(150, 28, 0xFFFF6B35)
+                .text("Particle Burst!", 0xFFFFFFFF)
+                .onClick(e -> {
+                    triggerParticleBurst();
+                    updateStatus("Gravity-affected particle burst triggered!");
+                });
+        
+        SpriteButton clearParticlesButton = new SpriteButton(150, 28, 0xFF646464)
+                .text("Clear Particles", 0xFFFFFFFF)
+                .onClick(e -> {
+                    particleSystem.clear();
+                    updateStatus("Particles cleared");
+                });
+        
+        particleRow.addChild(particleBurstButton);
+        particleRow.addChild(clearParticlesButton);
+        mainContainer.addChild(particleRow);
+        
+        // Add particle system to the container (will render on top)
+        mainContainer.addChild(particleSystem);
+
         // Status display
         VBox statusBox = new VBox().spacing(5);
         statusBox.addChild(UI.label(tempContext, "Status:", 0xFFC8C8FF));
@@ -238,10 +269,50 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
                 "• Coin Spin and Spin use true 3D rotation (Y-axis) for items\n" +
                 "• Items are rendered as 3D models with realistic rotation\n" +
                 "• Pulse Glow is continuous - click Clear All to stop\n" +
-                "• Try Advanced Demo for customized effects",
+                "• Try Advanced Demo for customized effects\n" +
+                "• Particle Burst demonstrates gravity-affected 2D particle system",
                 0xFFB4B4B4));
 
         uiScreen.setRoot(mainContainer);
+    }
+
+    /**
+     * Trigger a gravity-affected particle burst with various item types.
+     */
+    private void triggerParticleBurst() {
+        // Create a burst at the center of the particle system
+        float centerX = particleSystem.getSize().x / 2;
+        float centerY = particleSystem.getSize().y / 2;
+        
+        // Create different emitters for variety
+        net.minecraft.world.item.Item[] items = {
+            Items.GOLD_INGOT,
+            Items.DIAMOND,
+            Items.EMERALD,
+            Items.IRON_INGOT,
+            Items.NETHER_STAR
+        };
+        
+        // Emit particles with different items and properties
+        for (int i = 0; i < 50; i++) {
+            net.minecraft.world.item.Item randomItem = items[new java.util.Random().nextInt(items.length)];
+            
+            io.github.currenj.gelatinui.gui.particles.ParticleEmitter emitter = 
+                new io.github.currenj.gelatinui.gui.particles.ParticleEmitter()
+                    .setPosition(centerX, centerY)
+                    .setVelocity(0, -150) // Initial upward velocity
+                    .setVelocityRange(100, 50) // Random spread
+                    .setGravity(0, 200) // Gravity pulling down
+                    .setAngularVelocity(0, 360, 0) // Y-axis rotation for 3D items
+                    .setAngularVelocityRange(0, 180, 0) // Random rotation speeds
+                    .setScale(1.5f, 0.5f) // Start large, shrink over time
+                    .setAlpha(1.0f, 0.0f) // Fade out
+                    .setLifetime(2.0f)
+                    .setLifetimeRange(0.5f)
+                    .setItemStack(new ItemStack(randomItem, 1));
+            
+            particleSystem.emit(emitter);
+        }
     }
 
     /**
