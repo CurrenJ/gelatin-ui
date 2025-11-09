@@ -99,9 +99,25 @@ element.removeEffect("effect-id");
 
 // Cancel all effects on a channel
 element.cancelEffectChannel("bounce");
+```
 
-// Clear all effects
-element.clearEffects();
+### Checking Effect State
+
+```java
+// Check if an effect is finished
+if (effect.isFinished()) {
+    // Effect has completed naturally
+}
+
+// Check if an effect was cancelled
+if (effect.isCancelled()) {
+    // Effect was cancelled early
+}
+
+// Check if an effect has started
+if (effect.isStarted()) {
+    // Effect has begun updating
+}
 ```
 
 ### Stacking Effects
@@ -362,6 +378,8 @@ boolean update(float deltaTime, UIElement<?> element)
 TransformDelta getDelta()
 void cancel()
 boolean isCancelled()
+boolean isFinished()
+boolean isStarted()
 ```
 
 ### AbstractEffect Methods
@@ -372,4 +390,3 @@ AbstractEffect setLoop(boolean loop)
 AbstractEffect setPingPong(boolean pingPong)
 float getNormalizedTime()  // 0 to 1 for current position
 ```
-

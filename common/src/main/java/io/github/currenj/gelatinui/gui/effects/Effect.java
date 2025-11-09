@@ -56,5 +56,16 @@ public interface Effect {
      * Check if this effect is cancelled.
      */
     boolean isCancelled();
-}
 
+    /**
+     * Check if the effect has finished.
+     * @return true if the effect has completed, false otherwise
+     */
+    boolean isFinished();
+
+    /**
+     * Check if the effect has started.
+     * @return true if the effect has begun updating, false otherwise
+     */
+    boolean isStarted();
+}

@@ -37,7 +37,7 @@ public class WanderEffect extends AbstractEffect {
         float offsetX = (float) (Math.sin(angle1) + 0.3 * Math.sin(angle1 * 2.3)) * radius * 0.5f;
         float offsetY = (float) (Math.sin(angle2) + 0.3 * Math.sin(angle2 * 1.7)) * radius * 0.5f;
 
-        return new TransformDelta(new Vector2f(offsetX, offsetY), 1.0f, 0f, 1.0f);
+        return new TransformDelta(new Vector2f(offsetX, offsetY), 1.0f, 1.0f, new org.joml.Vector3f(0, 0, 0));
     }
 
     public void setRadius(float radius) {

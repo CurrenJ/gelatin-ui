@@ -22,6 +22,8 @@ public abstract class AbstractEffect implements Effect {
     protected boolean loop = false;
     protected boolean pingPong = false;
     protected boolean cancelled = false;
+    protected boolean finished = false;
+    protected boolean started = false;
     protected boolean forward = true; // for ping-pong
 
     // Cached delta
@@ -81,6 +83,8 @@ public abstract class AbstractEffect implements Effect {
 
     @Override
     public boolean update(float deltaTime, UIElement<?> element) {
+        started = true;
+
         if (cancelled) {
             return false;
         }
@@ -99,6 +103,7 @@ public abstract class AbstractEffect implements Effect {
                         forward = true;
                         elapsed = 0;
                     } else {
+                        finished = true;
                         return false; // finished
                     }
                 }
@@ -111,6 +116,7 @@ public abstract class AbstractEffect implements Effect {
                         elapsed = duration;
                         // Calculate final delta and finish
                         currentDelta = calculateDelta(element);
+                        finished = true;
                         return false;
                     }
                 }
@@ -159,7 +165,7 @@ public abstract class AbstractEffect implements Effect {
         float epsilon = 0.001f;
         return a.getPositionOffset().distance(b.getPositionOffset()) < epsilon
                 && Math.abs(a.getScaleMultiplier() - b.getScaleMultiplier()) < epsilon
-                && Math.abs(a.getRotationDeg() - b.getRotationDeg()) < epsilon
+                && a.getRotation3D().distanceSquared(b.getRotation3D()) < epsilon
                 && Math.abs(a.getAlphaMultiplier() - b.getAlphaMultiplier()) < epsilon;
     }
 
@@ -177,6 +183,16 @@ public abstract class AbstractEffect implements Effect {
         return Math.max(0f, Math.min(1f, t));
     }
 
+    @Override
+    public boolean isFinished() {
+        return finished;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return started;
+    }
+
     // Builder-style setters
     public AbstractEffect setLoop(boolean loop) {
         this.loop = loop;
@@ -188,4 +204,3 @@ public abstract class AbstractEffect implements Effect {
         return this;
     }
 }
-
