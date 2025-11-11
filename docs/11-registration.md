@@ -1,6 +1,56 @@
-# Menu and Screen Registration
+# Registration System
 
-Gelatin UI provides an event-based registration system for menus (common/server) and screens (client-only). This allows mods to register their custom menus and screens at the appropriate time during initialization.
+Gelatin UI provides a registration system for menus, screens, and items. This allows mods to register their custom objects at the appropriate time during initialization.
+
+## Item Registration
+
+Items can be registered for rendering purposes using the item registration handler. This is useful when you need custom items to use with the ITEM sprite render mode.
+
+### Using the Item Registration Handler
+
+```java
+import io.github.currenj.gelatinui.registration.item.SidedItemRegistrationHelper;
+import net.minecraft.world.item.Item;
+
+public class MyMod {
+    public static void init() {
+        // Get the platform-specific registration handler
+        var handler = SidedItemRegistrationHelper.getItemRegistrationHandler();
+        
+        // Register custom items
+        handler.register("custom_ui_item", new Item(new Item.Properties()));
+        handler.register("another_item", new Item(new Item.Properties()));
+    }
+}
+```
+
+### Using Registered Items with ITEM Render Mode
+
+Once registered, items can be used with the ITEM sprite render mode:
+
+```java
+import io.github.currenj.gelatinui.gui.components.SpriteData;
+import net.minecraft.resources.ResourceLocation;
+
+// Use your registered item
+SpriteData sprite = SpriteData.item(
+    ResourceLocation.fromNamespaceAndPath("your_mod_id", "custom_ui_item")
+);
+
+// Or use vanilla items
+SpriteData vanillaSprite = SpriteData.item(
+    ResourceLocation.fromNamespaceAndPath("minecraft", "diamond")
+);
+```
+
+### Platform-Specific Implementation
+
+The item registration system uses the ExpectPlatform pattern to provide platform-specific implementations:
+
+- **Fabric**: Uses `Registry.register()` with `BuiltInRegistries.ITEM`
+- **NeoForge**: Uses `DeferredRegister.create()` with automatic registration via mod event bus
+
+The `DeferredRegister` for NeoForge is automatically registered in `GelatinUiModNeoForge` initialization.
 
 ## Menu Registration (Common/Server)
 
