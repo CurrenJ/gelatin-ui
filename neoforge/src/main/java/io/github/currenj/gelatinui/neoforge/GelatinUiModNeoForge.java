@@ -1,5 +1,6 @@
 package io.github.currenj.gelatinui.neoforge;
 
+import io.github.currenj.gelatinui.registration.item.neoforge.ItemRegistrationHandlerNeoForge;
 import io.github.currenj.gelatinui.registration.menu.MenuRegistration;
 import io.github.currenj.gelatinui.registration.menu.neoforge.MenuRegistrationHandlerNeoForge;
 import net.neoforged.bus.api.IEventBus;
@@ -28,6 +29,7 @@ public final class GelatinUiModNeoForge {
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
 
         MenuRegistrationHandlerNeoForge.MENU_TYPES.register(modEventBus);
+        ItemRegistrationHandlerNeoForge.ITEMS.register(modEventBus);
     }
 
     private void registerCommands(final RegisterCommandsEvent event) {

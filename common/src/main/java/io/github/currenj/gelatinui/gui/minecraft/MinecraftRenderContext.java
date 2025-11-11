@@ -3,9 +3,13 @@ package io.github.currenj.gelatinui.gui.minecraft;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.currenj.gelatinui.extension.IGuiGraphicsExtension;
 import io.github.currenj.gelatinui.gui.IRenderContext;
+import io.github.currenj.gelatinui.gui.components.SpriteData;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Minecraft-specific implementation of IRenderContext.
@@ -92,5 +96,77 @@ public class MinecraftRenderContext implements IRenderContext {
      */
     public Font getFont() {
         return font;
+    }
+
+    @Override
+    public void drawItemSprite(SpriteData sprite, float x, float y, int width, int height) {
+        if (sprite == null || sprite.itemId() == null) {
+            return;
+        }
+
+        // Look up the item from the registry
+        Item item = BuiltInRegistries.ITEM.get(sprite.itemId());
+        if (item == null) {
+            return;
+        }
+
+        ItemStack itemStack = new ItemStack(item);
+        if (itemStack.isEmpty()) {
+            return;
+        }
+
+        graphics.pose().pushPose();
+        
+        // Translate to the destination position
+        graphics.pose().translate(x, y, 0);
+
+        // Apply rotation if specified
+        float rotationY = sprite.itemRotationY();
+        float rotationZ = sprite.itemRotationZ();
+        
+        // Scale the item to fit the destination size
+        // Standard item size is 16x16, so scale accordingly
+        float scale = Math.min(width / 16.0f, height / 16.0f);
+        graphics.pose().scale(scale, scale, 1.0f);
+
+        // Center the item in the destination area if it doesn't fill it completely
+        float centerOffsetX = (width / scale - 16) / 2;
+        float centerOffsetY = (height / scale - 16) / 2;
+        graphics.pose().translate(centerOffsetX, centerOffsetY, 0);
+
+        // Apply Y-axis rotation (spin effect)
+        if (rotationY != 0) {
+            graphics.pose().translate(8, 8, 0); // Center of item
+            graphics.pose().mulPose(com.mojang.math.Axis.YP.rotationDegrees(rotationY));
+            graphics.pose().translate(-8, -8, 0);
+        }
+
+        // Apply Z-axis rotation (coin spin effect)
+        if (rotationZ != 0) {
+            graphics.pose().translate(8, 8, 0); // Center of item
+            graphics.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rotationZ));
+            graphics.pose().translate(-8, -8, 0);
+        }
+
+        // Handle UV bounds if specified
+        // If regionW and regionH are set, we need to scissor the rendered item
+        int regionW = sprite.regionW();
+        int regionH = sprite.regionH();
+        int u = sprite.u();
+        int v = sprite.v();
+        
+        if (regionW > 0 && regionH > 0) {
+            // Enable scissor to clip to the UV region
+            // Note: This is a simplification - proper UV clipping for 3D items is complex
+            // For now, we'll just render the full item within the bounds
+            pushScissor((int)x, (int)y, width, height);
+            graphics.renderItem(itemStack, 0, 0);
+            popScissor();
+        } else {
+            // Render the full item
+            graphics.renderItem(itemStack, 0, 0);
+        }
+
+        graphics.pose().popPose();
     }
 }

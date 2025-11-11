@@ -28,5 +28,13 @@ public enum SpriteRenderMode {
      * Perfect for pixel-art UI panels that need to scale cleanly with repeating patterns.
      * Requires slice dimensions to be set in SpriteData.
      */
-    TILE
+    TILE,
+
+    /**
+     * Render an itemstack model instead of blitting a sprite.
+     * This allows for semi-3D effects from item voxel rendering and item rotation.
+     * The bounds and UVs specify the target region within the item texture.
+     * Requires item data to be set in SpriteData.
+     */
+    ITEM
 }

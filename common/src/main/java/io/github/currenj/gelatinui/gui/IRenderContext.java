@@ -180,7 +180,17 @@ public interface IRenderContext {
      * @param height Destination height
      */
     default void drawSprite(SpriteData sprite, float x, float y, int width, int height) {
-        if (sprite == null || sprite.texture() == null) {
+        if (sprite == null) {
+            return;
+        }
+
+        // Handle ITEM render mode separately
+        if (sprite.renderMode() == SpriteRenderMode.ITEM) {
+            drawItemSprite(sprite, x, y, width, height);
+            return;
+        }
+
+        if (sprite.texture() == null) {
             return;
         }
 
@@ -206,6 +216,19 @@ public interface IRenderContext {
             default -> drawTexture(sprite.texture(), x, y, width, height, u, v, regionW, regionH, textureW, textureH);
         }
     }
+
+    /**
+     * Draw an item as a sprite with optional rotation and UV bounds.
+     * This renders an itemstack model instead of blitting a sprite to the screen,
+     * allowing for semi-3D effects from item voxel rendering.
+     *
+     * @param sprite The sprite data containing item ID, UV coords, and rotation
+     * @param x Destination X
+     * @param y Destination Y
+     * @param width Destination width
+     * @param height Destination height
+     */
+    void drawItemSprite(SpriteData sprite, float x, float y, int width, int height);
 
     /**
      * Draw a repeating (tiling) texture.
