@@ -120,52 +120,56 @@ public class MinecraftRenderContext implements IRenderContext {
         // Translate to the destination position
         graphics.pose().translate(x, y, 0);
 
-        // Apply rotation if specified
+        // Get region information
+        int regionW = sprite.regionW();
+        int regionH = sprite.regionH();
+        int textureW = sprite.textureW();
+        int textureH = sprite.textureH();
+        
+        // Determine the source region size
+        // If regionW/H are not specified (0), use full item texture (16x16)
+        float sourceWidth = (regionW > 0) ? regionW : 16;
+        float sourceHeight = (regionH > 0) ? regionH : 16;
+        
+        // Calculate scale to fit the region (not the full item texture) into destination bounds
+        // Items are rendered as 16x16, but our region might be smaller/larger
+        // The region should take up the full width/height specified
+        float scaleX = width / sourceWidth;
+        float scaleY = height / sourceHeight;
+        float scale = Math.min(scaleX, scaleY);
+        
+        graphics.pose().scale(scale, scale, 1.0f);
+
+        // Calculate the center of the region in the scaled coordinate space
+        // This is where we want to rotate around
+        float regionCenterX = sourceWidth / 2.0f;
+        float regionCenterY = sourceHeight / 2.0f;
+
+        // Apply rotations around the center of the region using rotateAround
+        // Magic number 150 is the z-offset used by GuiGraphics for items to avoid big spin
+        final float ITEM_DEPTH_OFFSET = 150f;
+        
         float rotationY = sprite.itemRotationY();
         float rotationZ = sprite.itemRotationZ();
         
-        // Scale the item to fit the destination size
-        // Standard item size is 16x16, so scale accordingly
-        float scale = Math.min(width / 16.0f, height / 16.0f);
-        graphics.pose().scale(scale, scale, 1.0f);
-
-        // Center the item in the destination area if it doesn't fill it completely
-        float centerOffsetX = (width / scale - 16) / 2;
-        float centerOffsetY = (height / scale - 16) / 2;
-        graphics.pose().translate(centerOffsetX, centerOffsetY, 0);
-
-        // Apply Y-axis rotation (spin effect)
-        if (rotationY != 0) {
-            graphics.pose().translate(8, 8, 0); // Center of item
-            graphics.pose().mulPose(com.mojang.math.Axis.YP.rotationDegrees(rotationY));
-            graphics.pose().translate(-8, -8, 0);
+        if (Math.abs(rotationY) > 0.001f) {
+            graphics.pose().rotateAround(
+                com.mojang.math.Axis.YP.rotationDegrees(rotationY),
+                regionCenterX, regionCenterY, ITEM_DEPTH_OFFSET
+            );
         }
-
-        // Apply Z-axis rotation (coin spin effect)
-        if (rotationZ != 0) {
-            graphics.pose().translate(8, 8, 0); // Center of item
-            graphics.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rotationZ));
-            graphics.pose().translate(-8, -8, 0);
-        }
-
-        // Handle UV bounds if specified
-        // If regionW and regionH are set, we need to scissor the rendered item
-        int regionW = sprite.regionW();
-        int regionH = sprite.regionH();
-        int u = sprite.u();
-        int v = sprite.v();
         
-        if (regionW > 0 && regionH > 0) {
-            // Enable scissor to clip to the UV region
-            // Note: This is a simplification - proper UV clipping for 3D items is complex
-            // For now, we'll just render the full item within the bounds
-            pushScissor((int)x, (int)y, width, height);
-            graphics.renderItem(itemStack, 0, 0);
-            popScissor();
-        } else {
-            // Render the full item
-            graphics.renderItem(itemStack, 0, 0);
+        if (Math.abs(rotationZ) > 0.001f) {
+            graphics.pose().rotateAround(
+                com.mojang.math.Axis.ZP.rotationDegrees(rotationZ),
+                regionCenterX, regionCenterY, ITEM_DEPTH_OFFSET
+            );
         }
+
+        // Render the item at origin
+        // The item will be rendered at 16x16, and any parts outside the region
+        // will be transparent/blank as per the texture design
+        graphics.renderItem(itemStack, 0, 0);
 
         graphics.pose().popPose();
     }
