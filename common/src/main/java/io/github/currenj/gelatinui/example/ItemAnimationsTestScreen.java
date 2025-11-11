@@ -1,6 +1,6 @@
 package io.github.currenj.gelatinui.example;
 
-import io.github.currenj.gelatinui.GelatinUIScreen;
+import io.github.currenj.gelatinui.GelatinUIScreenWithParticles;
 import io.github.currenj.gelatinui.gui.UI;
 import io.github.currenj.gelatinui.gui.animation.Easing;
 import io.github.currenj.gelatinui.gui.components.*;
@@ -16,8 +16,9 @@ import net.minecraft.world.item.Items;
 /**
  * Demo screen showcasing the new item animations with actual ItemRenderer components.
  * Demonstrates 3D rotation effects on items including coin spin, regular spin, and more.
+ * Now uses GelatinUIScreenWithParticles for built-in particle system support.
  */
-public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
+public class ItemAnimationsTestScreen extends GelatinUIScreenWithParticles<GelatinMenu> {
 
     private ItemRenderer.ItemRendererImpl coinSpinItem;
     private ItemRenderer.ItemRendererImpl spinItem;
@@ -26,7 +27,6 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
     private ItemRenderer.ItemRendererImpl fallBounceItem;
     private ItemRenderer.ItemRendererImpl pulseGlowItem;
     private Label statusLabel;
-    private io.github.currenj.gelatinui.gui.particles.ParticleSystem particleSystem;
 
     public ItemAnimationsTestScreen(GelatinMenu menu, Inventory inv) {
         super(menu, inv, Component.literal("Item Animations Demo"));
@@ -229,9 +229,9 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
         // Particle System Section
         mainContainer.addChild(UI.label(tempContext, "Particle Effects:", 0xFFC8C8FF));
         
-        // Create particle system overlay (positioned at the center of the screen)
-        particleSystem = UI.particleSystem(400, 300).setMaxParticles(500);
-        
+        // Note: Particle system is now provided automatically by GelatinUIScreenWithParticles
+        // and covers the entire screen as an overlay
+
         // Particle burst button
         HBox particleRow = new HBox().spacing(10).alignment(HBox.Alignment.CENTER);
         
@@ -245,16 +245,13 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
         SpriteButton clearParticlesButton = new SpriteButton(150, 28, 0xFF646464)
                 .text("Clear Particles", 0xFFFFFFFF)
                 .onClick(e -> {
-                    particleSystem.clear();
+                    clearParticles(); // Use the base class method
                     updateStatus("Particles cleared");
                 });
         
         particleRow.addChild(particleBurstButton);
         particleRow.addChild(clearParticlesButton);
         mainContainer.addChild(particleRow);
-        
-        // Add particle system to the container (will render on top)
-        mainContainer.addChild(particleSystem);
 
         // Status display
         VBox statusBox = new VBox().spacing(5);
@@ -281,9 +278,9 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
      */
     private void triggerParticleBurst() {
         // Create a burst at the center of the particle system
-        float centerX = particleSystem.getSize().x / 2;
-        float centerY = particleSystem.getSize().y / 2;
-        
+        float centerX = getParticleSystem().getSize().x / 2;
+        float centerY = getParticleSystem().getSize().y / 2;
+
         // Create different emitters for variety
         net.minecraft.world.item.Item[] items = {
             Items.GOLD_INGOT,
@@ -311,7 +308,7 @@ public class ItemAnimationsTestScreen extends GelatinUIScreen<GelatinMenu> {
                     .setLifetimeRange(0.5f)
                     .setItemStack(new ItemStack(randomItem, 1));
             
-            particleSystem.emit(emitter);
+            getParticleSystem().emit(emitter);
         }
     }
 

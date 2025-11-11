@@ -140,16 +140,16 @@ public class ParticleSystem extends UIElement<ParticleSystem> {
         
         // Translate to particle position
         poseStack.translate(particle.getPosition().x, particle.getPosition().y, 0);
-        
+
         // Apply rotation
         if (particle.getRenderMode() == ParticleRenderMode.ITEMSTACK) {
-            // 3D rotation for items
-            applyItemRotation(poseStack, particle);
-            
             // Scale
             float scale = particle.getScale();
             poseStack.scale(scale, scale, scale);
-            
+
+            // 3D rotation for items
+            applyItemRotation(poseStack, particle);
+
             // Render itemstack
             if (!particle.getItemStack().isEmpty()) {
                 // Apply alpha through color multiplier if possible
@@ -162,11 +162,11 @@ public class ParticleSystem extends UIElement<ParticleSystem> {
             if (Math.abs(rotZ) > 0.001f) {
                 poseStack.mulPose(new Quaternionf().rotateZ((float) Math.toRadians(rotZ)));
             }
-            
+
             // Scale
             float scale = particle.getScale();
             poseStack.scale(scale, scale, 1.0f);
-            
+
             // Render sprite
             if (particle.getSpriteTexture() != null) {
                 // Apply alpha and color
@@ -203,16 +203,21 @@ public class ParticleSystem extends UIElement<ParticleSystem> {
         float rotX = particle.getRotation().x;
         float rotY = particle.getRotation().y;
         float rotZ = particle.getRotation().z;
+        final float scale = particle.getScale();
+
+        final float Z_OFFSET = 150f; // Small offset to avoid z-fighting
+        final float pivotX = scale * 8f;
+        final float pivotY = scale * 8f;
         
         // Apply rotations in order: Y, X, Z (similar to ItemRenderer effects)
         if (Math.abs(rotY) > 0.001f) {
-            poseStack.mulPose(new Quaternionf().rotateY((float) Math.toRadians(rotY)));
+            poseStack.rotateAround(new Quaternionf().rotateY((float) Math.toRadians(rotY)), pivotX, pivotY, Z_OFFSET);
         }
         if (Math.abs(rotX) > 0.001f) {
-            poseStack.mulPose(new Quaternionf().rotateX((float) Math.toRadians(rotX)));
+            poseStack.rotateAround(new Quaternionf().rotateX((float) Math.toRadians(rotX)), pivotX, pivotY, Z_OFFSET);
         }
         if (Math.abs(rotZ) > 0.001f) {
-            poseStack.mulPose(new Quaternionf().rotateZ((float) Math.toRadians(rotZ)));
+            poseStack.rotateAround(new Quaternionf().rotateZ((float) Math.toRadians(rotZ)), pivotX, pivotY, Z_OFFSET);
         }
     }
     
