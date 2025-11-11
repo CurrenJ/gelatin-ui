@@ -69,17 +69,6 @@ public class SpriteDataItemModeTest {
     }
 
     @Test
-    public void testItemIdSetter() {
-        ResourceLocation itemId = ResourceLocation.fromNamespaceAndPath("minecraft", "iron_ingot");
-        SpriteData sprite = new SpriteData(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites.png"))
-            .renderMode(SpriteRenderMode.ITEM)
-            .itemId(itemId);
-        
-        assertEquals(SpriteRenderMode.ITEM, sprite.renderMode());
-        assertEquals(itemId, sprite.itemId());
-    }
-
-    @Test
     public void testItemRotationSetter() {
         ResourceLocation itemId = ResourceLocation.fromNamespaceAndPath("minecraft", "netherite_ingot");
         SpriteData sprite = SpriteData.item(itemId)

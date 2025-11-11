@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "gelatinui:item/diamond-3-panel"
+  }
+}

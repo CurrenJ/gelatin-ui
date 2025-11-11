@@ -2,6 +2,7 @@ package io.github.currenj.gelatinui.gui;
 
 import io.github.currenj.gelatinui.gui.components.SlicedSpriteData;
 import io.github.currenj.gelatinui.gui.components.SpriteData;
+import io.github.currenj.gelatinui.gui.components.SpriteRenderMode;
 import net.minecraft.resources.ResourceLocation;
 
 /**

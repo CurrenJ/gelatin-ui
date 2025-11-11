@@ -128,22 +128,23 @@ public class MinecraftRenderContext implements IRenderContext {
         
         // Determine the source region size
         // If regionW/H are not specified (0), use full item texture (16x16)
-        float sourceWidth = (regionW > 0) ? regionW : 16;
-        float sourceHeight = (regionH > 0) ? regionH : 16;
+        final int baseWorldSize = 16;
+        float sourceWidthWorldSize = regionW / (float) textureW * baseWorldSize;
+        float sourceHeightWorldSize = regionH / (float) textureH * baseWorldSize;
         
         // Calculate scale to fit the region (not the full item texture) into destination bounds
         // Items are rendered as 16x16, but our region might be smaller/larger
         // The region should take up the full width/height specified
-        float scaleX = width / sourceWidth;
-        float scaleY = height / sourceHeight;
+        float scaleX = width / sourceWidthWorldSize;
+        float scaleY = height / sourceHeightWorldSize;
         float scale = Math.min(scaleX, scaleY);
         
         graphics.pose().scale(scale, scale, 1.0f);
 
         // Calculate the center of the region in the scaled coordinate space
         // This is where we want to rotate around
-        float regionCenterX = sourceWidth / 2.0f;
-        float regionCenterY = sourceHeight / 2.0f;
+        float regionCenterX = width / 2.0f;
+        float regionCenterY = height / 2.0f;
 
         // Apply rotations around the center of the region using rotateAround
         // Magic number 150 is the z-offset used by GuiGraphics for items to avoid big spin
