@@ -84,6 +84,12 @@ public class MinecraftRenderContext implements IRenderContext {
         ext.gelatinui$blit(texture, x, y, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
     }
 
+    @Override
+    public void drawTextureWithZ(ResourceLocation texture, float x, float y, float width, float height, float u, float v, float regionWidth, float regionHeight, int textureWidth, int textureHeight, float z) {
+        IGuiGraphicsExtension ext = (IGuiGraphicsExtension) graphics;
+        ext.gelatinui$blit(texture, x, x + width, y, y + height, z, regionWidth, regionHeight, u, v, textureWidth, textureHeight);
+    }
+
     /**
      * Get the underlying GuiGraphics for advanced rendering operations.
      */
@@ -117,8 +123,9 @@ public class MinecraftRenderContext implements IRenderContext {
 
         graphics.pose().pushPose();
         
-        // Translate to the destination position
-        graphics.pose().translate(x, y, 0);
+        // Translate to the destination position with z-offset
+        float zOffset = sprite.zOffset();
+        graphics.pose().translate(x, y, zOffset);
 
         // Get region information
         int regionW = sprite.regionW();

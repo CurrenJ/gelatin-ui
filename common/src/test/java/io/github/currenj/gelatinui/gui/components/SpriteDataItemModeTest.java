@@ -63,7 +63,8 @@ public class SpriteDataItemModeTest {
                 0, 0, 0, 0,
                 1.0f,
                 null,  // itemId is null - should fail validation
-                0, 0
+                0, 0,
+                0  // zOffset
             );
         });
     }
@@ -76,5 +77,24 @@ public class SpriteDataItemModeTest {
         
         assertEquals(180.0f, sprite.itemRotationY());
         assertEquals(270.0f, sprite.itemRotationZ());
+    }
+
+    @Test
+    public void testZOffsetSetter() {
+        ResourceLocation itemId = ResourceLocation.fromNamespaceAndPath("minecraft", "diamond");
+        SpriteData sprite = SpriteData.item(itemId)
+            .zOffset(100.0f);
+        
+        assertEquals(100.0f, sprite.zOffset());
+    }
+
+    @Test
+    public void testZOffsetWithRegularSprite() {
+        ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites.png");
+        SpriteData sprite = new SpriteData(texture)
+            .uv(0, 0, 32, 32)
+            .zOffset(50.0f);
+        
+        assertEquals(50.0f, sprite.zOffset());
     }
 }
