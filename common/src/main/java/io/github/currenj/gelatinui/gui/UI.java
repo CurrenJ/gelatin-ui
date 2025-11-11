@@ -163,6 +163,20 @@ public class UI {
         return new ItemTabs();
     }
 
+    /**
+     * Create a new ParticleSystem with default size.
+     */
+    public static io.github.currenj.gelatinui.gui.particles.ParticleSystem particleSystem() {
+        return new io.github.currenj.gelatinui.gui.particles.ParticleSystem();
+    }
+
+    /**
+     * Create a new ParticleSystem with custom size.
+     */
+    public static io.github.currenj.gelatinui.gui.particles.ParticleSystem particleSystem(float width, float height) {
+        return new io.github.currenj.gelatinui.gui.particles.ParticleSystem(width, height);
+    }
+
     // Color utility methods
 
     /**
