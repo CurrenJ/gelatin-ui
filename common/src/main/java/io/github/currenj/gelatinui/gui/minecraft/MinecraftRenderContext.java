@@ -148,10 +148,9 @@ public class MinecraftRenderContext implements IRenderContext {
         
         graphics.pose().scale(scale, scale, 1.0f);
 
-        // Calculate the center of the region in the scaled coordinate space
-        // This is where we want to rotate around
-        float regionCenterX = width / 2.0f;
-        float regionCenterY = height / 2.0f;
+        // Calculate the center of the item in world units for rotation
+        float itemCenterX = sourceWidthWorldSize / 2f;
+        float itemCenterY = sourceHeightWorldSize / 2f;
 
         // Apply rotations around the center of the region using rotateAround
         // Magic number 150 is the z-offset used by GuiGraphics for items to avoid big spin
@@ -163,14 +162,14 @@ public class MinecraftRenderContext implements IRenderContext {
         if (Math.abs(rotationY) > 0.001f) {
             graphics.pose().rotateAround(
                 com.mojang.math.Axis.YP.rotationDegrees(rotationY),
-                regionCenterX, regionCenterY, ITEM_DEPTH_OFFSET
+                itemCenterX, itemCenterY, ITEM_DEPTH_OFFSET
             );
         }
         
         if (Math.abs(rotationZ) > 0.001f) {
             graphics.pose().rotateAround(
                 com.mojang.math.Axis.ZP.rotationDegrees(rotationZ),
-                regionCenterX, regionCenterY, ITEM_DEPTH_OFFSET
+                itemCenterX, itemCenterY, ITEM_DEPTH_OFFSET
             );
         }
 
