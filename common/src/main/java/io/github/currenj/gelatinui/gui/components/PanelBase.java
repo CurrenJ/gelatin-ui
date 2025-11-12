@@ -118,24 +118,46 @@ public abstract class PanelBase<T extends PanelBase<T>> extends UIContainer<T> {
 
             // Render sprite if available using unified drawSprite method
             if (backgroundSprite != null && backgroundSprite.texture() != null) {
+                // Apply animation effects to ITEM mode sprites
+                SpriteData spriteToRender = backgroundSprite;
+                if (backgroundSprite.renderMode() == SpriteRenderMode.ITEM) {
+                    // Get the current effect delta rotation
+                    org.joml.Vector3f effectRotation = combinedEffectDelta.getRotation3D();
+                    
+                    // Add effect rotation to sprite's base rotation
+                    org.joml.Vector3f currentRotation = backgroundSprite.itemRotation();
+                    org.joml.Vector3f combinedRotation = new org.joml.Vector3f(
+                        currentRotation.x + effectRotation.x,
+                        currentRotation.y + effectRotation.y,
+                        currentRotation.z + effectRotation.z
+                    );
+                    
+                    // Create a new sprite with the combined rotation
+                    spriteToRender = backgroundSprite.itemRotation(
+                        combinedRotation.x, 
+                        combinedRotation.y, 
+                        combinedRotation.z
+                    );
+                }
+                
                 if (centerBackgroundSprite) {
                     // Draw sprite at its actual size, centered in the container
                     // Use actualW/actualH if set, otherwise use regionW/regionH
-                    int spriteW = backgroundSprite.actualW() > 0 ? backgroundSprite.actualW() : backgroundSprite.regionW();
-                    int spriteH = backgroundSprite.actualH() > 0 ? backgroundSprite.actualH() : backgroundSprite.regionH();
+                    int spriteW = spriteToRender.actualW() > 0 ? spriteToRender.actualW() : spriteToRender.regionW();
+                    int spriteH = spriteToRender.actualH() > 0 ? spriteToRender.actualH() : spriteToRender.regionH();
                     
                     // Calculate centered position
                     float x = (w - spriteW) / 2f;
                     float y = (h - spriteH) / 2f;
                     
                     context.enableBlend();
-                    context.drawSprite(backgroundSprite, x, y, spriteW, spriteH);
+                    context.drawSprite(spriteToRender, x, y, spriteW, spriteH);
                     context.disableBlend();
                 } else {
                     // Default behavior: stretch sprite to match panel's size
                     int wi = (int) Math.ceil(w);
                     int hi = (int) Math.ceil(h);
-                    SpriteData sizedSprite = backgroundSprite.actualSize(wi, hi);
+                    SpriteData sizedSprite = spriteToRender.actualSize(wi, hi);
                     context.enableBlend();
                     context.drawSprite(sizedSprite, 0, 0, wi, hi);
                     context.disableBlend();
