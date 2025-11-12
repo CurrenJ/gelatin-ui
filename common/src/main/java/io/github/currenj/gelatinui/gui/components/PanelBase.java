@@ -118,49 +118,59 @@ public abstract class PanelBase<T extends PanelBase<T>> extends UIContainer<T> {
 
             // Render sprite if available using unified drawSprite method
             if (backgroundSprite != null && backgroundSprite.texture() != null) {
-                // Apply animation effects to ITEM mode sprites
-                SpriteData spriteToRender = backgroundSprite;
+                // Store original rotation for ITEM mode sprites before applying animation effects
+                org.joml.Vector3f originalRotation = null;
                 if (backgroundSprite.renderMode() == SpriteRenderMode.ITEM) {
                     // Get the current effect delta rotation
                     org.joml.Vector3f effectRotation = combinedEffectDelta.getRotation3D();
                     
-                    // Add effect rotation to sprite's base rotation
+                    // Store original rotation to restore after rendering
                     org.joml.Vector3f currentRotation = backgroundSprite.itemRotation();
-                    org.joml.Vector3f combinedRotation = new org.joml.Vector3f(
+                    originalRotation = new org.joml.Vector3f(currentRotation);
+                    
+                    // Temporarily modify the sprite's rotation by adding effect rotation
+                    backgroundSprite.itemRotation(
                         currentRotation.x + effectRotation.x,
                         currentRotation.y + effectRotation.y,
                         currentRotation.z + effectRotation.z
                     );
-                    
-                    // Create a new sprite with the combined rotation
-                    spriteToRender = backgroundSprite.itemRotation(
-                        combinedRotation.x, 
-                        combinedRotation.y, 
-                        combinedRotation.z
-                    );
                 }
+                
+                // Store original actualW/H for non-centered sprites
+                int originalActualW = backgroundSprite.actualW();
+                int originalActualH = backgroundSprite.actualH();
                 
                 if (centerBackgroundSprite) {
                     // Draw sprite at its actual size, centered in the container
                     // Use actualW/actualH if set, otherwise use regionW/regionH
-                    int spriteW = spriteToRender.actualW() > 0 ? spriteToRender.actualW() : spriteToRender.regionW();
-                    int spriteH = spriteToRender.actualH() > 0 ? spriteToRender.actualH() : spriteToRender.regionH();
+                    int spriteW = backgroundSprite.actualW() > 0 ? backgroundSprite.actualW() : backgroundSprite.regionW();
+                    int spriteH = backgroundSprite.actualH() > 0 ? backgroundSprite.actualH() : backgroundSprite.regionH();
                     
                     // Calculate centered position
                     float x = (w - spriteW) / 2f;
                     float y = (h - spriteH) / 2f;
                     
                     context.enableBlend();
-                    context.drawSprite(spriteToRender, x, y, spriteW, spriteH);
+                    context.drawSprite(backgroundSprite, x, y, spriteW, spriteH);
                     context.disableBlend();
                 } else {
                     // Default behavior: stretch sprite to match panel's size
                     int wi = (int) Math.ceil(w);
                     int hi = (int) Math.ceil(h);
-                    SpriteData sizedSprite = spriteToRender.actualSize(wi, hi);
+                    
+                    // Temporarily set actualSize for rendering
+                    backgroundSprite.actualSize(wi, hi);
                     context.enableBlend();
-                    context.drawSprite(sizedSprite, 0, 0, wi, hi);
+                    context.drawSprite(backgroundSprite, 0, 0, wi, hi);
                     context.disableBlend();
+                    
+                    // Restore original actualSize
+                    backgroundSprite.actualSize(originalActualW, originalActualH);
+                }
+                
+                // Restore original rotation if it was modified
+                if (originalRotation != null) {
+                    backgroundSprite.itemRotation(originalRotation.x, originalRotation.y, originalRotation.z);
                 }
             }
             // Fall back to solid color
