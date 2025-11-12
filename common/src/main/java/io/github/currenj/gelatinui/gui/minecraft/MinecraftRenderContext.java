@@ -146,7 +146,7 @@ public class MinecraftRenderContext implements IRenderContext {
         float scaleY = height / sourceHeightWorldSize;
         float scale = Math.min(scaleX, scaleY);
         
-        graphics.pose().scale(scale, scale, 1.0f);
+        graphics.pose().scale(scale, scale, 1 / scale); // Scale Z inversely to avoid depth issues
 
         // Calculate the center of the item in world units for rotation
         float itemCenterX = sourceWidthWorldSize / 2f;
@@ -156,9 +156,17 @@ public class MinecraftRenderContext implements IRenderContext {
         // Magic number 150 is the z-offset used by GuiGraphics for items to avoid big spin
         final float ITEM_DEPTH_OFFSET = 150f;
         
-        float rotationY = sprite.itemRotationY();
-        float rotationZ = sprite.itemRotationZ();
-        
+        float rotationX = sprite.itemRotation().x();
+        float rotationY = sprite.itemRotation().y();
+        float rotationZ = sprite.itemRotation().z();
+
+        if (Math.abs(rotationX) > 0.001f) {
+            graphics.pose().rotateAround(
+                com.mojang.math.Axis.XP.rotationDegrees(rotationX),
+                itemCenterX, itemCenterY, ITEM_DEPTH_OFFSET
+            );
+        }
+
         if (Math.abs(rotationY) > 0.001f) {
             graphics.pose().rotateAround(
                 com.mojang.math.Axis.YP.rotationDegrees(rotationY),

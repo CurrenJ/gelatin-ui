@@ -1,6 +1,7 @@
 package io.github.currenj.gelatinui.gui.components;
 
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3f;
 
 /**
  * Data holder describing a sprite region within a texture atlas.
@@ -13,8 +14,7 @@ import net.minecraft.resources.ResourceLocation;
  * sliceLeft, sliceRight, sliceTop, sliceBottom: dimensions for 9-slice rendering (only used when renderMode is SLICE or TILE)
  * tileScale: scale factor for tiled sprites (default 1.0, can be 0.5 or 2.0 for nice repeating)
  * itemId: ResourceLocation of the item to render (only used when renderMode is ITEM)
- * itemRotationY: Y-axis rotation in degrees for item rendering (default 0)
- * itemRotationZ: Z-axis rotation in degrees for item rendering (default 0)
+ * itemRotation: rotation vector (X, Y, Z) in degrees for item rendering (default (0,0,0))
  * zOffset: Z-offset to apply to the rendered sprite (default 0)
  */
 public record SpriteData(
@@ -34,12 +34,11 @@ public record SpriteData(
     int sliceBottom,
     float tileScale,
     ResourceLocation itemId,
-    float itemRotationY,
-    float itemRotationZ,
+    Vector3f itemRotation,
     float zOffset
 ) {
     public SpriteData(ResourceLocation texture) {
-        this(texture, 0, 0, 0, 0, 0, 0, 256, 256, SpriteRenderMode.STRETCH, 0, 0, 0, 0, 1.0f, null, 0, 0, 0);
+        this(texture, 0, 0, 0, 0, 0, 0, 256, 256, SpriteRenderMode.STRETCH, 0, 0, 0, 0, 1.0f, null, new Vector3f(0, 0, 0), 0);
     }
 
     public static SpriteData texture(ResourceLocation texture) {
@@ -48,55 +47,62 @@ public record SpriteData(
 
     public SpriteData uv(int u)
     {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotationY, itemRotationZ, zOffset);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotation, zOffset);
     }
 
     public SpriteData uv(int u, int v) {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotationY, itemRotationZ, zOffset);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotation, zOffset);
     }
 
     public SpriteData uv(int u, int v, int regionW, int regionH) {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotationY, itemRotationZ, zOffset);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotation, zOffset);
     }
 
     public SpriteData renderMode(SpriteRenderMode renderMode) {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotationY, itemRotationZ, zOffset);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotation, zOffset);
     }
 
     public SpriteData slice(int left, int right, int top, int bottom) {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, left, right, top, bottom, tileScale, itemId, itemRotationY, itemRotationZ, zOffset);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, left, right, top, bottom, tileScale, itemId, itemRotation, zOffset);
     }
 
     public SpriteData textureSize(int textureSize) {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureSize, textureSize, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotationY, itemRotationZ, zOffset);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureSize, textureSize, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotation, zOffset);
     }
 
     public SpriteData textureSize(int textureSize, int textureHeight)
     {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureSize, textureHeight, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotationY, itemRotationZ, zOffset);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureSize, textureHeight, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotation, zOffset);
     }
 
     public SpriteData actualSize(int actualW, int actualH)
     {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotationY, itemRotationZ, zOffset);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotation, zOffset);
     }
 
     public SpriteData tileScale(float tileScale) {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotationY, itemRotationZ, zOffset);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotation, zOffset);
     }
 
     /**
      * Set the item to render (for ITEM render mode).
      */
     public SpriteData itemId(ResourceLocation itemId) {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotationY, itemRotationZ, zOffset);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotation, zOffset);
     }
 
     /**
      * Set item rotation angles (for ITEM render mode).
      */
+    public SpriteData itemRotation(float rotationX, float rotationY, float rotationZ) {
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, new Vector3f(rotationX, rotationY, rotationZ), zOffset);
+    }
+
+    /**
+     * Backwards-compatible 2-argument overload (rotationY, rotationZ) -> rotationX defaults to 0
+     */
     public SpriteData itemRotation(float rotationY, float rotationZ) {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, rotationY, rotationZ, zOffset);
+        return itemRotation(0.0f, rotationY, rotationZ);
     }
 
     /**
@@ -104,21 +110,28 @@ public record SpriteData(
      * This affects the rendering depth and can be used to control layering.
      */
     public SpriteData zOffset(float zOffset) {
-        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotationY, itemRotationZ, zOffset);
+        return new SpriteData(texture, u, v, regionW, regionH, actualW, actualH, textureW, textureH, renderMode, sliceLeft, sliceRight, sliceTop, sliceBottom, tileScale, itemId, itemRotation, zOffset);
     }
 
     /**
      * Convenience method to create an ITEM mode sprite data.
      */
     public static SpriteData item(ResourceLocation itemId) {
-        return new SpriteData(null, 0, 0, 0, 0, 0, 0, 256, 256, SpriteRenderMode.ITEM, 0, 0, 0, 0, 1.0f, itemId, 0, 0, 0);
+        return new SpriteData(null, 0, 0, 0, 0, 0, 0, 256, 256, SpriteRenderMode.ITEM, 0, 0, 0, 0, 1.0f, itemId, new Vector3f(0, 0, 0), 0);
     }
 
     /**
-     * Convenience method to create an ITEM mode sprite data with rotation.
+     * Backwards-compatible 2-argument convenience (rotationY, rotationZ)
      */
     public static SpriteData item(ResourceLocation itemId, float rotationY, float rotationZ) {
-        return new SpriteData(null, 0, 0, 0, 0, 0, 0, 256, 256, SpriteRenderMode.ITEM, 0, 0, 0, 0, 1.0f, itemId, rotationY, rotationZ, 0);
+        return item(itemId, 0.0f, rotationY, rotationZ);
+    }
+
+    /**
+     * Convenience method to create an ITEM mode sprite data with rotation (rotationX, rotationY, rotationZ).
+     */
+    public static SpriteData item(ResourceLocation itemId, float rotationX, float rotationY, float rotationZ) {
+        return new SpriteData(null, 0, 0, 0, 0, 0, 0, 256, 256, SpriteRenderMode.ITEM, 0, 0, 0, 0, 1.0f, itemId, new Vector3f(rotationX, rotationY, rotationZ), 0);
     }
 
     /**

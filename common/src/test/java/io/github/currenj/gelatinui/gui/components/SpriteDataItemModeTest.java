@@ -1,6 +1,7 @@
 package io.github.currenj.gelatinui.gui.components;
 
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,8 +19,9 @@ public class SpriteDataItemModeTest {
         assertNotNull(sprite);
         assertEquals(SpriteRenderMode.ITEM, sprite.renderMode());
         assertEquals(itemId, sprite.itemId());
-        assertEquals(0, sprite.itemRotationY());
-        assertEquals(0, sprite.itemRotationZ());
+        assertEquals(0, sprite.itemRotation().x());
+        assertEquals(0, sprite.itemRotation().y());
+        assertEquals(0, sprite.itemRotation().z());
     }
 
     @Test
@@ -30,8 +32,9 @@ public class SpriteDataItemModeTest {
         assertNotNull(sprite);
         assertEquals(SpriteRenderMode.ITEM, sprite.renderMode());
         assertEquals(itemId, sprite.itemId());
-        assertEquals(45.0f, sprite.itemRotationY());
-        assertEquals(90.0f, sprite.itemRotationZ());
+        assertEquals(0.0f, sprite.itemRotation().x());
+        assertEquals(45.0f, sprite.itemRotation().y());
+        assertEquals(90.0f, sprite.itemRotation().z());
     }
 
     @Test
@@ -44,8 +47,9 @@ public class SpriteDataItemModeTest {
         assertNotNull(sprite);
         assertEquals(SpriteRenderMode.ITEM, sprite.renderMode());
         assertEquals(itemId, sprite.itemId());
-        assertEquals(30.0f, sprite.itemRotationY());
-        assertEquals(60.0f, sprite.itemRotationZ());
+        assertEquals(0.0f, sprite.itemRotation().x());
+        assertEquals(30.0f, sprite.itemRotation().y());
+        assertEquals(60.0f, sprite.itemRotation().z());
         assertEquals(10, sprite.u());
         assertEquals(20, sprite.v());
         assertEquals(32, sprite.regionW());
@@ -63,7 +67,7 @@ public class SpriteDataItemModeTest {
                 0, 0, 0, 0,
                 1.0f,
                 null,  // itemId is null - should fail validation
-                0, 0,
+                new Vector3f(0, 0, 0),
                 0  // zOffset
             );
         });
@@ -75,8 +79,9 @@ public class SpriteDataItemModeTest {
         SpriteData sprite = SpriteData.item(itemId)
             .itemRotation(180.0f, 270.0f);
         
-        assertEquals(180.0f, sprite.itemRotationY());
-        assertEquals(270.0f, sprite.itemRotationZ());
+        assertEquals(0.0f, sprite.itemRotation().x());
+        assertEquals(180.0f, sprite.itemRotation().y());
+        assertEquals(270.0f, sprite.itemRotation().z());
     }
 
     @Test

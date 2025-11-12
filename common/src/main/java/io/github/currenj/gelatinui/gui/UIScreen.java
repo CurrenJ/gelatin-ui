@@ -332,9 +332,13 @@ public class UIScreen {
                 newHover = findElementAt(root, mouseX, mouseY);
             }
 
-            // If hover hasn't changed, cancel any pending transition and return
+            // If hover hasn't changed, cancel any pending transition and still send a MOUSE_MOVE event
             if (newHover == hoveredElement) {
                 pendingHover = null;
+                if (hoveredElement != null) {
+                    UIEvent moveEvent = new UIEvent(UIEvent.Type.MOUSE_MOVE, hoveredElement, mouseX, mouseY);
+                    hoveredElement.handleEvent(moveEvent);
+                }
                 return;
             }
 
@@ -504,8 +508,8 @@ public class UIScreen {
                     return found;
                 }
             }
-            // If no child contains the point, don't return the container
-            return null;
+            // If no child contains the point, return the container so it can be the target
+            return element;
         }
 
         return element;
