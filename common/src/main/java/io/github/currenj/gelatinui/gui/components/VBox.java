@@ -343,14 +343,14 @@ public class VBox extends PanelBase<VBox> {
                 }
             } else {
                 if (child instanceof UIElement<?> uiChild) {
-                    if (uiChild.isAnimating()) {
-                        Vector2f currentTarget = uiChild.getTargetPosition();
-                        if (!currentTarget.equals(targetPos, 0.001f)) {
-                            uiChild.setTargetPosition(targetPos, true);
-                        }
-                    } else {
-                        child.setPosition(targetPos);
+                    // Always animate position changes, even when animatePositions is false
+                    // This ensures smooth transitions when layout changes (e.g., tab content switching)
+                    Vector2f currentPos = uiChild.getPosition();
+                    if (!currentPos.equals(targetPos, 0.001f)) {
+                        // Position is changing - animate the transition
+                        uiChild.setTargetPosition(targetPos, true);
                     }
+                    // If position is already correct, no need to do anything
                 } else {
                     child.setPosition(targetPos);
                 }
@@ -361,8 +361,8 @@ public class VBox extends PanelBase<VBox> {
         }
 
         layoutDirty = false;
-        // After layout pass, clear animate flag so subsequent layout changes don't animate unless requested
-        animatePositions = false;
+        // Don't clear animatePositions here - let it persist through multiple layout passes
+        // It will be cleared in onUpdate when layout stabilizes
     }
 
     @Override
@@ -382,6 +382,9 @@ public class VBox extends PanelBase<VBox> {
     protected void onUpdate(float deltaTime) {
         if (layoutDirty) {
             performLayout();
+        } else if (animatePositions) {
+            // Layout is stable (not dirty), safe to clear animation flag now
+            animatePositions = false;
         }
     }
 
