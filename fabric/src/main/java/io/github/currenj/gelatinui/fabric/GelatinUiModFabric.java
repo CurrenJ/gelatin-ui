@@ -52,6 +52,9 @@ public final class GelatinUiModFabric implements ModInitializer {
             // Add tooltip example command
             CommandUtils.addTooltipExampleCommand(commandTree);
 
+            // Add debug animation speed commands
+            CommandUtils.addDebugAnimationCommand(commandTree);
+
             // Add all root-level branches to the gelatin command
             for (LiteralArgumentBuilder<CommandSourceStack> branch : commandTree.values()) {
                 gelatinCommand = gelatinCommand.then(branch);

@@ -1,9 +1,12 @@
 package io.github.currenj.gelatinui.command;
 
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.github.currenj.gelatinui.gui.UIAnimationSettings;
 import io.github.currenj.gelatinui.registration.menu.MenuRegistration;
 import io.github.currenj.gelatinui.tooltip.ItemStacksInfo;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.world.item.ItemStack;
@@ -84,6 +87,93 @@ public final class CommandUtils {
                 }
                 return 1;
             }));
+        }
+    }
+
+    /**
+     * Adds /gelatin debug animate commands for live-adjusting UIAnimationSettings.
+     * Works in single-player (integrated server) and any environment where the
+     * executing JVM also runs the client (e.g. dev environment).
+     *
+     * Commands:
+     *   /gelatin debug animate position <speed>
+     *   /gelatin debug animate scale <speed>
+     *   /gelatin debug animate get
+     *   /gelatin debug animate reset
+     */
+    public static void addDebugAnimationCommand(Map<String, LiteralArgumentBuilder<CommandSourceStack>> commandTree) {
+        LiteralArgumentBuilder<CommandSourceStack> debugBranch =
+                commandTree.computeIfAbsent("debug", k -> LiteralArgumentBuilder.literal("debug"));
+
+        LiteralArgumentBuilder<CommandSourceStack> animateBranch =
+                LiteralArgumentBuilder.literal("animate");
+
+        // /gelatin debug animate position <speed>
+        animateBranch.then(
+            LiteralArgumentBuilder.<CommandSourceStack>literal("position").then(
+                Commands.argument("speed", FloatArgumentType.floatArg(0.1f, 100.0f))
+                    .executes(ctx -> {
+                        float speed = FloatArgumentType.getFloat(ctx, "speed");
+                        UIAnimationSettings.setPositionSpeed(speed);
+                        sendFeedback(ctx.getSource(),
+                            "[GelatinUI] Position animation speed set to " + speed
+                            + "  (default: " + UIAnimationSettings.DEFAULT_POSITION_SPEED + ")");
+                        return 1;
+                    })
+            )
+        );
+
+        // /gelatin debug animate scale <speed>
+        animateBranch.then(
+            LiteralArgumentBuilder.<CommandSourceStack>literal("scale").then(
+                Commands.argument("speed", FloatArgumentType.floatArg(0.1f, 100.0f))
+                    .executes(ctx -> {
+                        float speed = FloatArgumentType.getFloat(ctx, "speed");
+                        UIAnimationSettings.setScaleSpeed(speed);
+                        sendFeedback(ctx.getSource(),
+                            "[GelatinUI] Scale animation speed set to " + speed
+                            + "  (default: " + UIAnimationSettings.DEFAULT_SCALE_SPEED + ")");
+                        return 1;
+                    })
+            )
+        );
+
+        // /gelatin debug animate get
+        animateBranch.then(
+            LiteralArgumentBuilder.<CommandSourceStack>literal("get")
+                .executes(ctx -> {
+                    sendFeedback(ctx.getSource(),
+                        "[GelatinUI] Animation speeds — position: "
+                        + UIAnimationSettings.getPositionSpeed()
+                        + "  scale: " + UIAnimationSettings.getScaleSpeed()
+                        + "  (defaults: " + UIAnimationSettings.DEFAULT_POSITION_SPEED
+                        + " / " + UIAnimationSettings.DEFAULT_SCALE_SPEED + ")");
+                    return 1;
+                })
+        );
+
+        // /gelatin debug animate reset
+        animateBranch.then(
+            LiteralArgumentBuilder.<CommandSourceStack>literal("reset")
+                .executes(ctx -> {
+                    UIAnimationSettings.reset();
+                    sendFeedback(ctx.getSource(),
+                        "[GelatinUI] Animation speeds reset to defaults ("
+                        + UIAnimationSettings.DEFAULT_POSITION_SPEED + " / "
+                        + UIAnimationSettings.DEFAULT_SCALE_SPEED + ")");
+                    return 1;
+                })
+        );
+
+        debugBranch.then(animateBranch);
+        commandTree.put("debug", debugBranch);
+    }
+
+    private static void sendFeedback(CommandSourceStack source, String message) {
+        if (source.getPlayer() != null) {
+            source.getPlayer().sendSystemMessage(Component.literal(message));
+        } else {
+            source.sendSuccess(() -> Component.literal(message), false);
         }
     }
 

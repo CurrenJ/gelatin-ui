@@ -337,26 +337,21 @@ public class HBox extends PanelBase<HBox> {
             }
 
             Vector2f targetPos = new Vector2f(xOffset, yOffsetLocal);
-            if (animatePositions) {
-                if (child instanceof io.github.currenj.gelatinui.gui.UIElement) {
-                    ((io.github.currenj.gelatinui.gui.UIElement) child).setTargetPosition(targetPos, true);
-                } else {
-                    child.setPosition(targetPos);
+            if (child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild) {
+                Vector2f currentPos = uiChild.getPosition();
+                Vector2f currentTarget = uiChild.getTargetPosition();
+                // If the element has never been positioned (both current position and target are at
+                // the default origin), snap it immediately. Animating from (0,0) to the correct
+                // position causes content to visibly appear in the wrong place when first laid out.
+                boolean neverPositioned = (Math.abs(currentPos.x) < 0.001f && Math.abs(currentPos.y) < 0.001f)
+                                       && (Math.abs(currentTarget.x) < 0.001f && Math.abs(currentTarget.y) < 0.001f);
+                if (neverPositioned) {
+                    uiChild.setPosition(targetPos);
+                } else if (animatePositions || !currentPos.equals(targetPos, 0.001f)) {
+                    uiChild.setTargetPosition(targetPos, true);
                 }
             } else {
-                if (child instanceof io.github.currenj.gelatinui.gui.UIElement) {
-                    io.github.currenj.gelatinui.gui.UIElement uiChild = (io.github.currenj.gelatinui.gui.UIElement) child;
-                    // Always animate position changes, even when animatePositions is false
-                    // This ensures smooth transitions when layout changes (e.g., tab content switching)
-                    Vector2f currentPos = uiChild.getPosition();
-                    if (!currentPos.equals(targetPos, 0.001f)) {
-                        // Position is changing - animate the transition
-                        uiChild.setTargetPosition(targetPos, true);
-                    }
-                    // If position is already correct, no need to do anything
-                } else {
-                    child.setPosition(targetPos);
-                }
+                child.setPosition(targetPos);
             }
 
             xOffset += scaledChildWidth + spacing * effectiveScale;

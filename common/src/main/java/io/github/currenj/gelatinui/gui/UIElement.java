@@ -64,10 +64,8 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     private final List<io.github.currenj.gelatinui.gui.effects.Effect> effects = new ArrayList<>();
     private io.github.currenj.gelatinui.gui.effects.TransformDelta combinedEffectDelta = io.github.currenj.gelatinui.gui.effects.TransformDelta.IDENTITY;
 
-    // Interpolation speeds (per-second)
-    // Increased speeds so tests and UI see noticeable motion within a few frames.
-    private static final float POSITION_SPEED = 1.0f;
-    private static final float SCALE_SPEED = 1.0f;
+    // Interpolation speeds are read from UIAnimationSettings each frame so they
+    // can be changed at runtime (e.g. via /gelatin debug animate).
 
     // Cached bounds
     protected Rectangle2D cachedBounds;
@@ -157,7 +155,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
 
         // Position interpolation (exponential smoothing)
         if (position.distance(targetPosition) > 0.001f) {
-            float t = 1.0f - (float) Math.exp(-POSITION_SPEED * Math.max(0f, deltaTime));
+            float t = 1.0f - (float) Math.exp(-UIAnimationSettings.getPositionSpeed() * Math.max(0f, deltaTime));
             float nx = position.x + (targetPosition.x - position.x) * t;
             float ny = position.y + (targetPosition.y - position.y) * t;
             position.set(nx, ny);
@@ -167,7 +165,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
 
         // Scale interpolation
         if (Math.abs(currentScale - targetScale) > 0.0001f) {
-            float t = 1.0f - (float) Math.exp(-SCALE_SPEED * Math.max(0f, deltaTime));
+            float t = 1.0f - (float) Math.exp(-UIAnimationSettings.getScaleSpeed() * Math.max(0f, deltaTime));
             currentScale = currentScale + (targetScale - currentScale) * t;
             // Scaling affects size/layout in most elements
             markDirty(DirtyFlag.SIZE);
