@@ -96,8 +96,8 @@ public final class CommandUtils {
      * executing JVM also runs the client (e.g. dev environment).
      *
      * Commands:
-     *   /gelatin debug animate position <speed>
-     *   /gelatin debug animate scale <speed>
+     *   /gelatin debug animate position &lt;speed&gt;
+     *   /gelatin debug animate scale &lt;speed&gt;
      *   /gelatin debug animate get
      *   /gelatin debug animate reset
      */
