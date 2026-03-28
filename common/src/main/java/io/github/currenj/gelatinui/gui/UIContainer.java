@@ -121,6 +121,15 @@ public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T>
             return false;
         }
 
+        // If the event's explicit target is this container, handle it locally and
+        // do not propagate into children. This prevents children from receiving
+        // events that were intended for the container (e.g., hover/click on
+        // container background) which could trigger child hover handlers even
+        // when the pointer isn't over them.
+        if (event.getTarget() == this) {
+            return super.handleEvent(event);
+        }
+
         // Propagate to children first (front to back)
         for (int i = children.size() - 1; i >= 0; i--) {
             IUIElement child = children.get(i);

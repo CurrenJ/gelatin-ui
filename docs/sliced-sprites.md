@@ -2,11 +2,12 @@
 
 ## Overview
 
-The sprite system supports three rendering modes to handle different use cases:
+The sprite system supports four rendering modes to handle different use cases:
 
 - **STRETCH** (default): Stretches the sprite to fill the destination area
 - **REPEAT**: Tiles the sprite to fill the destination area (pixel-perfect repetition)
 - **SLICE**: Uses 9-slice scaling to preserve corners and edges (perfect for pixel-art UI)
+- **ITEM**: Renders an itemstack model with optional rotation (semi-3D effect)
 
 ## SpriteRenderMode Enum
 
@@ -14,7 +15,8 @@ The sprite system supports three rendering modes to handle different use cases:
 public enum SpriteRenderMode {
     STRETCH,  // Default - stretches entire sprite
     REPEAT,   // Tiles sprite to fill area
-    SLICE     // 9-slice with preserved corners/edges
+    SLICE,    // 9-slice with preserved corners/edges
+    ITEM      // Renders 3D item model as sprite
 }
 ```
 
@@ -75,6 +77,37 @@ The sprite is divided into 9 regions:
 - **Edges**: Stretched in one dimension only
 - **Center**: Stretched in both dimensions
 
+### Item Mode (3D Item Rendering)
+
+Render Minecraft items as sprites with optional rotation for semi-3D effects:
+
+```java
+// Using factory method - renders a diamond item
+SpriteData itemSprite = SpriteData.item(
+    ResourceLocation.fromNamespaceAndPath("minecraft", "diamond")
+);
+
+// With rotation for spinning effect
+SpriteData spinningCoin = SpriteData.item(
+    ResourceLocation.fromNamespaceAndPath("minecraft", "gold_ingot"),
+    0,      // Y-axis rotation (degrees)
+    90      // Z-axis rotation (degrees) - coin spin effect
+);
+
+// With UV bounds to clip the rendered item
+SpriteData clippedItem = SpriteData.item(
+    ResourceLocation.fromNamespaceAndPath("minecraft", "emerald")
+)
+.uv(0, 0, 16, 16)  // Optional UV bounds for clipping
+.itemRotation(45, 0);  // Optional rotation
+```
+
+The ITEM mode allows you to:
+- Render 3D item models instead of flat textures
+- Apply Y-axis rotation (full spin around vertical axis)
+- Apply Z-axis rotation (coin spin effect)
+- Specify UV bounds for clipping (though this is simplified for 3D items)
+
 ## Usage Examples
 
 ### SpriteRectangle/SpriteButton with Different Modes
@@ -94,6 +127,11 @@ SpriteButton button2 = new SpriteButton(100, 30, 0xFF404040)
 SpriteButton button3 = new SpriteButton(100, 30, 0xFF404040)
     .texture(SpriteData.sliced(pixelArt, 0, 0, 32, 16, 4))
     .text("Slice", 0xFFFFFFFF);
+
+// Item renderer as button icon
+SpriteButton button4 = new SpriteButton(100, 30, 0xFF404040)
+    .texture(SpriteData.item(ResourceLocation.fromNamespaceAndPath("minecraft", "diamond")))
+    .text("Item", 0xFFFFFFFF);
 ```
 
 ### Panel Backgrounds
@@ -113,6 +151,14 @@ Panel panel2 = new Panel()
 Panel panel3 = new Panel()
     .backgroundSprite(SpriteData.sliced(panelTexture, 0, 0, 32, 32, 4))
     .setSize(200, 150);
+
+// Item as decorative element
+Panel panel4 = new Panel()
+    .backgroundSprite(SpriteData.item(
+        ResourceLocation.fromNamespaceAndPath("minecraft", "nether_star"),
+        0, 45  // Slight rotation for visual interest
+    ))
+    .setSize(32, 32);
 ```
 
 ### State-Based Rendering
@@ -141,6 +187,7 @@ void drawSprite(SpriteData sprite, int x, int y, int width, int height);
 void drawTexture(...);              // STRETCH mode
 void drawRepeatingTexture(...);     // REPEAT mode  
 void drawSlicedTexture(...);        // SLICE mode
+void drawItemSprite(...);           // ITEM mode
 ```
 
 ### How REPEAT Works
@@ -170,20 +217,36 @@ The 9-slice algorithm divides the source texture into regions:
 
 Minimum size for sliced rendering: `leftWidth + rightWidth` by `topHeight + bottomHeight`
 
+### How ITEM Works
+
+The ITEM mode renders a Minecraft item model:
+
+1. Looks up the item from the registry using the provided ResourceLocation
+2. Creates an ItemStack from the item
+3. Scales the item to fit the destination bounds
+4. Applies Y and Z axis rotations around the item center
+5. Renders using Minecraft's item renderer for 3D voxel effect
+
+The rendering maintains the 3D appearance of items, allowing for semi-3D effects in 2D UI.
+
 ## Best Practices
 
 1. **Use STRETCH for**: Photos, gradients, simple backgrounds that can distort
 2. **Use REPEAT for**: Seamless patterns, textures that should tile naturally
 3. **Use SLICE for**: Pixel-art UI panels, buttons, frames that need clean scaling
+4. **Use ITEM for**: Displaying game items as UI elements, animated item icons, decorative 3D elements
 
-4. **Performance**: REPEAT and SLICE make multiple draw calls - use STRETCH when performance is critical
+5. **Performance**: REPEAT and SLICE make multiple draw calls - use STRETCH when performance is critical. ITEM mode renders 3D models which can be more expensive than 2D sprites
 
-5. **Texture Design**:
+6. **Texture Design**:
    - REPEAT textures should tile seamlessly at edges
    - SLICE textures should have consistent corner/edge styling
    - Design slice edges to be 1-dimensional patterns
+   - ITEM mode uses registered items - ensure items are registered before use
 
-6. **Validation**: SLICE mode validates that slice dimensions don't exceed texture size
+7. **Validation**: 
+   - SLICE mode validates that slice dimensions don't exceed texture size
+   - ITEM mode validates that itemId is set when using ITEM render mode
 
 ## Migration from SlicedSpriteData
 

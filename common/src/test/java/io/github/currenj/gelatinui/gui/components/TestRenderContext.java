@@ -65,4 +65,9 @@ public class TestRenderContext implements IRenderContext {
     public void drawTexture(ResourceLocation texture, float x, float y, float width, float height, float u, float v, float regionWidth, float regionHeight, int textureWidth, int textureHeight) {
         // No-op for UV-aware draw calls in tests; record or assert in future if necessary
     }
+
+    @Override
+    public void drawItemSprite(SpriteData sprite, float x, float y, int width, int height) {
+        // No-op for item sprite rendering in tests
+    }
 }

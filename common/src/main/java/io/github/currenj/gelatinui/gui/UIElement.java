@@ -62,7 +62,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
 
     // Effects system (per element)
     private final List<io.github.currenj.gelatinui.gui.effects.Effect> effects = new ArrayList<>();
-    private io.github.currenj.gelatinui.gui.effects.TransformDelta combinedEffectDelta = io.github.currenj.gelatinui.gui.effects.TransformDelta.IDENTITY;
+    protected io.github.currenj.gelatinui.gui.effects.TransformDelta combinedEffectDelta = io.github.currenj.gelatinui.gui.effects.TransformDelta.IDENTITY;
 
     // Interpolation speeds are read from UIAnimationSettings each frame so they
     // can be changed at runtime (e.g. via /gelatin debug animate).
@@ -78,6 +78,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     protected List<ClickAction> onClickActions = new ArrayList<>();
     protected List<MouseEnterAction> onMouseEnterActions = new ArrayList<>();
     protected List<MouseExitAction> onMouseExitActions = new ArrayList<>();
+    protected List<MouseMoveAction> onMouseMoveActions = new ArrayList<>();
 
     /**
      * Functional interface for click actions.
@@ -101,6 +102,15 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     @FunctionalInterface
     public interface MouseExitAction {
         void onMouseExit(UIEvent event);
+    }
+
+    /**
+     * Functional interface for mouse move actions.
+     * Fired repeatedly while the mouse moves over the element.
+     */
+    @FunctionalInterface
+    public interface MouseMoveAction {
+        void onMouseMove(UIEvent event);
     }
 
     @Override
@@ -828,6 +838,14 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
                     return true;
                 }
                 break;
+            case MOUSE_MOVE:
+                if (!onMouseMoveActions.isEmpty()) {
+                    for (MouseMoveAction action : onMouseMoveActions) {
+                        action.onMouseMove(event);
+                    }
+                    return true;
+                }
+                break;
         }
         return false;
     }
@@ -1163,6 +1181,39 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     }
 
     /**
+     * Register a mouse move action handler for this element.
+     * Fired when the mouse moves while over this element.
+     *
+     * @param action The action to execute on mouse move
+     * @return this element for method chaining
+     */
+    public T onMouseMove(MouseMoveAction action) {
+        this.onMouseMoveActions.add(action);
+        return self();
+    }
+
+    /**
+     * Remove the mouse move action handler from this element.
+     *
+     * @return this element for method chaining
+     */
+    public T clearOnMouseMove() {
+        this.onMouseMoveActions.clear();
+        return self();
+    }
+
+    /**
+     * Remove a specific mouse move action handler from this element.
+     *
+     * @param action The action to remove
+     * @return this element for method chaining
+     */
+    public T removeOnMouseMove(MouseMoveAction action) {
+        this.onMouseMoveActions.remove(action);
+        return self();
+    }
+
+    /**
      * Register a mouse exit action handler for this element.
      * This provides an easy way to respond to hover exit events.
      *
@@ -1204,6 +1255,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
         this.onClickActions.clear();
         this.onMouseEnterActions.clear();
         this.onMouseExitActions.clear();
+        this.onMouseMoveActions.clear();
         return self();
     }
 

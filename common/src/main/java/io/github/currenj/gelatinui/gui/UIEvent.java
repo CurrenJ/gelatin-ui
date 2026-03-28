@@ -12,6 +12,7 @@ public class UIEvent {
         CLICK,
         HOVER_ENTER,
         HOVER_EXIT,
+        MOUSE_MOVE,
         SCROLL,
         DRAG_START,
         DRAG,
@@ -69,4 +70,3 @@ public class UIEvent {
         this.consumed = true;
     }
 }
-

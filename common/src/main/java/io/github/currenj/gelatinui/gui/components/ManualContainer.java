@@ -5,6 +5,7 @@ import io.github.currenj.gelatinui.gui.IUIElement;
 import io.github.currenj.gelatinui.gui.UIElement;
 import org.joml.Vector2f;
 
+import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -251,9 +252,25 @@ public class ManualContainer extends PanelBase<ManualContainer> {
         }
     }
 
+    @Override
+    protected Rectangle2D calculateBounds() {
+        // --- Copied from UIElement impl. ---
+        Vector2f gp = getGlobalPosition();
+        float gs = getGlobalScale();
+
+        // Apply effect transformations to bounds if enabled
+        if (effectsAffectLayout) {
+            Vector2f effectOffset = combinedEffectDelta.getPositionOffset();
+            gp.add(effectOffset);
+            gs *= combinedEffectDelta.getScaleMultiplier();
+        }
+
+        return new Rectangle2D.Float(gp.x, gp.y, size.x * gs, size.y * gs);
+    }
+
     /**
      * Get the maximum number of children allowed.
-     * 
+     *
      * @return Maximum number of children, or 0 if unlimited
      */
     public int getMaxChildren() {
@@ -281,4 +298,6 @@ public class ManualContainer extends PanelBase<ManualContainer> {
         return Math.max(0, maxChildren - children.size());
     }
 }
+
+
 

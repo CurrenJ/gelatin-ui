@@ -2,6 +2,7 @@ package io.github.currenj.gelatinui.gui;
 
 import io.github.currenj.gelatinui.gui.components.SlicedSpriteData;
 import io.github.currenj.gelatinui.gui.components.SpriteData;
+import io.github.currenj.gelatinui.gui.components.SpriteRenderMode;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -106,6 +107,29 @@ public interface IRenderContext {
     void drawTexture(ResourceLocation texture, float x, float y, float width, float height, float u, float v, float regionWidth, float regionHeight, int textureWidth, int textureHeight);
 
     /**
+     * Draw a texture with explicit z-offset support.
+     * The default implementation delegates to drawTexture without z-offset.
+     * Implementations should override this to support z-offset rendering.
+     *
+     * @param texture ResourceLocation of the texture
+     * @param x Destination X
+     * @param y Destination Y
+     * @param width Destination width
+     * @param height Destination height
+     * @param u Source X in texture pixels
+     * @param v Source Y in texture pixels
+     * @param regionWidth Width of the source region in texture pixels
+     * @param regionHeight Height of the source region in texture pixels
+     * @param textureWidth Total width of the texture atlas
+     * @param textureHeight Total height of the texture atlas
+     * @param z Z-offset for rendering depth
+     */
+    default void drawTextureWithZ(ResourceLocation texture, float x, float y, float width, float height, float u, float v, float regionWidth, float regionHeight, int textureWidth, int textureHeight, float z) {
+        // Default implementation ignores z-offset and delegates to standard drawTexture
+        drawTexture(texture, x, y, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
+    }
+
+    /**
      * Draw a 9-slice sprite that scales while preserving corners and edges.
      * Perfect for pixel-art UI panels.
      * @param slicedSprite The sliced sprite data containing texture and slice dimensions
@@ -180,7 +204,17 @@ public interface IRenderContext {
      * @param height Destination height
      */
     default void drawSprite(SpriteData sprite, float x, float y, int width, int height) {
-        if (sprite == null || sprite.texture() == null) {
+        if (sprite == null) {
+            return;
+        }
+
+        // Handle ITEM render mode separately
+        if (sprite.renderMode() == SpriteRenderMode.ITEM) {
+            drawItemSprite(sprite, x, y, width, height);
+            return;
+        }
+
+        if (sprite.texture() == null) {
             return;
         }
 
@@ -197,15 +231,30 @@ public interface IRenderContext {
             return;
         }
 
+        float zOffset = sprite.zOffset();
+        
         switch (sprite.renderMode()) {
-            case REPEAT -> drawRepeatingTexture(sprite.texture(), x, y, width, height, u, v, regionW, regionH, textureW, textureH);
+            case REPEAT -> drawRepeatingTexture(sprite.texture(), x, y, width, height, u, v, regionW, regionH, textureW, textureH, zOffset);
             case SLICE -> drawSlicedTexture(sprite.texture(), x, y, width, height, u, v, regionW, regionH,
-                sprite.sliceLeft(), sprite.sliceRight(), sprite.sliceTop(), sprite.sliceBottom(), textureW, textureH, sprite.tileScale());
+                sprite.sliceLeft(), sprite.sliceRight(), sprite.sliceTop(), sprite.sliceBottom(), textureW, textureH, sprite.tileScale(), zOffset);
             case TILE -> drawTiledTexture(sprite.texture(), x, y, width, height, u, v, regionW, regionH,
-                sprite.sliceLeft(), sprite.sliceRight(), sprite.sliceTop(), sprite.sliceBottom(), textureW, textureH, sprite.tileScale());
-            default -> drawTexture(sprite.texture(), x, y, width, height, u, v, regionW, regionH, textureW, textureH);
+                sprite.sliceLeft(), sprite.sliceRight(), sprite.sliceTop(), sprite.sliceBottom(), textureW, textureH, sprite.tileScale(), zOffset);
+            default -> drawTextureWithZ(sprite.texture(), x, y, width, height, u, v, regionW, regionH, textureW, textureH, zOffset);
         }
     }
+
+    /**
+     * Draw an item as a sprite with optional rotation and UV bounds.
+     * This renders an itemstack model instead of blitting a sprite to the screen,
+     * allowing for semi-3D effects from item voxel rendering.
+     *
+     * @param sprite The sprite data containing item ID, UV coords, and rotation
+     * @param x Destination X
+     * @param y Destination Y
+     * @param width Destination width
+     * @param height Destination height
+     */
+    void drawItemSprite(SpriteData sprite, float x, float y, int width, int height);
 
     /**
      * Draw a repeating (tiling) texture.
@@ -225,6 +274,28 @@ public interface IRenderContext {
     default void drawRepeatingTexture(ResourceLocation texture, float x, float y, int width, int height,
                                       int u, int v, int regionWidth, int regionHeight,
                                       int textureWidth, int textureHeight) {
+        drawRepeatingTexture(texture, x, y, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight, 0);
+    }
+
+    /**
+     * Draw a repeating (tiling) texture with z-offset.
+     *
+     * @param texture       ResourceLocation of the texture
+     * @param x             Destination X
+     * @param y             Destination Y
+     * @param width         Destination width
+     * @param height        Destination height
+     * @param u             Source X in texture pixels
+     * @param v             Source Y in texture pixels
+     * @param regionWidth   Width of the source region in texture pixels
+     * @param regionHeight  Height of the source region in texture pixels
+     * @param textureWidth  Total width of the texture atlas
+     * @param textureHeight Total height of the texture atlas
+     * @param z             Z-offset for rendering depth
+     */
+    default void drawRepeatingTexture(ResourceLocation texture, float x, float y, int width, int height,
+                                      int u, int v, int regionWidth, int regionHeight,
+                                      int textureWidth, int textureHeight, float z) {
         // Calculate how many times to tile horizontally and vertically
         int tilesX = (width + regionWidth - 1) / regionWidth; // ceiling division
         int tilesY = (height + regionHeight - 1) / regionHeight;
@@ -239,7 +310,7 @@ public interface IRenderContext {
                 int drawH = Math.min(regionHeight, height - ty * regionHeight);
 
                 // Draw the tile (potentially clipped at edges)
-                drawTexture(texture, drawX, drawY, drawW, drawH, u, v, drawW, drawH, textureWidth, textureHeight);
+                drawTextureWithZ(texture, drawX, drawY, drawW, drawH, u, v, drawW, drawH, textureWidth, textureHeight, z);
             }
         }
     }
@@ -268,6 +339,34 @@ public interface IRenderContext {
                                    int u, int v, int regionW, int regionH,
                                    int left, int right, int top, int bottom,
                                    int textureW, int textureH, float tileScale) {
+        drawSlicedTexture(texture, x, y, width, height, u, v, regionW, regionH, left, right, top, bottom, textureW, textureH, tileScale, 0);
+    }
+
+    /**
+     * Draw a 9-slice texture with z-offset.
+     *
+     * @param texture  ResourceLocation of the texture
+     * @param x        Destination X
+     * @param y        Destination Y
+     * @param width    Destination width
+     * @param height   Destination height
+     * @param u        Source X in texture pixels
+     * @param v        Source Y in texture pixels
+     * @param regionW  Total width of the source region
+     * @param regionH  Total height of the source region
+     * @param left     Width of the left slice
+     * @param right    Width of the right slice
+     * @param top      Height of the top slice
+     * @param bottom   Height of the bottom slice
+     * @param textureW Total width of the texture atlas
+     * @param textureH Total height of the texture atlas
+     * @param tileScale Scale factor for tiles (1.0 = original size)
+     * @param z        Z-offset for rendering depth
+     */
+    default void drawSlicedTexture(ResourceLocation texture, float x, float y, int width, int height,
+                                   int u, int v, int regionW, int regionH,
+                                   int left, int right, int top, int bottom,
+                                   int textureW, int textureH, float tileScale, float z) {
         // Calculate center dimensions in source texture
         int centerW = regionW - left - right;
         int centerH = regionH - top - bottom;
@@ -290,31 +389,31 @@ public interface IRenderContext {
         // Draw 9 slices:
 
         // Top-left corner
-        drawTexture(texture, x, y, scaledLeft, scaledTop, u, v, left, top, textureW, textureH);
+        drawTextureWithZ(texture, x, y, scaledLeft, scaledTop, u, v, left, top, textureW, textureH, z);
 
         // Top edge (stretched horizontally)
-        drawTexture(texture, x + scaledLeft, y, destCenterW, scaledTop, u + left, v, centerW, top, textureW, textureH);
+        drawTextureWithZ(texture, x + scaledLeft, y, destCenterW, scaledTop, u + left, v, centerW, top, textureW, textureH, z);
 
         // Top-right corner
-        drawTexture(texture, x + scaledLeft + destCenterW, y, scaledRight, scaledTop, u + left + centerW, v, right, top, textureW, textureH);
+        drawTextureWithZ(texture, x + scaledLeft + destCenterW, y, scaledRight, scaledTop, u + left + centerW, v, right, top, textureW, textureH, z);
 
         // Left edge (stretched vertically)
-        drawTexture(texture, x, y + scaledTop, scaledLeft, destCenterH, u, v + top, left, centerH, textureW, textureH);
+        drawTextureWithZ(texture, x, y + scaledTop, scaledLeft, destCenterH, u, v + top, left, centerH, textureW, textureH, z);
 
         // Center (stretched both ways)
-        drawTexture(texture, x + scaledLeft, y + scaledTop, destCenterW, destCenterH, u + left, v + top, centerW, centerH, textureW, textureH);
+        drawTextureWithZ(texture, x + scaledLeft, y + scaledTop, destCenterW, destCenterH, u + left, v + top, centerW, centerH, textureW, textureH, z);
 
         // Right edge (stretched vertically)
-        drawTexture(texture, x + scaledLeft + destCenterW, y + scaledTop, scaledRight, destCenterH, u + left + centerW, v + top, right, centerH, textureW, textureH);
+        drawTextureWithZ(texture, x + scaledLeft + destCenterW, y + scaledTop, scaledRight, destCenterH, u + left + centerW, v + top, right, centerH, textureW, textureH, z);
 
         // Bottom-left corner
-        drawTexture(texture, x, y + scaledTop + destCenterH, scaledLeft, scaledBottom, u, v + top + centerH, left, bottom, textureW, textureH);
+        drawTextureWithZ(texture, x, y + scaledTop + destCenterH, scaledLeft, scaledBottom, u, v + top + centerH, left, bottom, textureW, textureH, z);
 
         // Bottom edge (stretched horizontally)
-        drawTexture(texture, x + scaledLeft, y + scaledTop + destCenterH, destCenterW, scaledBottom, u + left, v + top + centerH, centerW, bottom, textureW, textureH);
+        drawTextureWithZ(texture, x + scaledLeft, y + scaledTop + destCenterH, destCenterW, scaledBottom, u + left, v + top + centerH, centerW, bottom, textureW, textureH, z);
 
         // Bottom-right corner
-        drawTexture(texture, x + scaledLeft + destCenterW, y + scaledTop + destCenterH, scaledRight, scaledBottom, u + left + centerW, v + top + centerH, right, bottom, textureW, textureH);
+        drawTextureWithZ(texture, x + scaledLeft + destCenterW, y + scaledTop + destCenterH, scaledRight, scaledBottom, u + left + centerW, v + top + centerH, right, bottom, textureW, textureH, z);
     }
 
     /**
@@ -341,6 +440,34 @@ public interface IRenderContext {
                                   int u, int v, int regionW, int regionH,
                                   int left, int right, int top, int bottom,
                                   int textureW, int textureH, float tileScale) {
+        drawTiledTexture(texture, x, y, width, height, u, v, regionW, regionH, left, right, top, bottom, textureW, textureH, tileScale, 0);
+    }
+
+    /**
+     * Draw a 9-slice tiled texture with tessellation instead of stretching, with z-offset support.
+     *
+     * @param texture  ResourceLocation of the texture
+     * @param x        Destination X
+     * @param y        Destination Y
+     * @param width    Destination width
+     * @param height   Destination height
+     * @param u        Source X in texture pixels
+     * @param v        Source Y in texture pixels
+     * @param regionW  Total width of the source region
+     * @param regionH  Total height of the source region
+     * @param left     Width of the left slice
+     * @param right    Width of the right slice
+     * @param top      Height of the top slice
+     * @param bottom   Height of the bottom slice
+     * @param textureW Total width of the texture atlas
+     * @param textureH Total height of the texture atlas
+     * @param tileScale Scale factor for tiles (1.0 = original size, 2.0 = double size, 0.5 = half size)
+     * @param z        Z-offset for rendering depth
+     */
+    default void drawTiledTexture(ResourceLocation texture, float x, float y, int width, int height,
+                                  int u, int v, int regionW, int regionH,
+                                  int left, int right, int top, int bottom,
+                                  int textureW, int textureH, float tileScale, float z) {
         // Calculate center dimensions in source texture
         float centerW = regionW - left - right;
         float centerH = regionH - top - bottom;
@@ -372,31 +499,31 @@ public interface IRenderContext {
         // Draw 9 slices:
 
         // Top-left corner (scaled)
-        drawTexture(texture, x, y, scaledLeft, scaledTop, u, v, left, top, textureW, textureH);
+        drawTextureWithZ(texture, x, y, scaledLeft, scaledTop, u, v, left, top, textureW, textureH, z);
 
         // Top edge (tessellate horizontally)
-        drawTiledEdge(texture, x + scaledLeft, y, destCenterW, scaledTop, u + left, v, centerW, top, textureW, textureH, tileScale, true);
+        drawTiledEdge(texture, x + scaledLeft, y, destCenterW, scaledTop, u + left, v, centerW, top, textureW, textureH, tileScale, true, z);
 
         // Top-right corner (scaled)
-        drawTexture(texture, x + scaledLeft + destCenterW, y, scaledRight, scaledTop, u + left + centerW, v, right, top, textureW, textureH);
+        drawTextureWithZ(texture, x + scaledLeft + destCenterW, y, scaledRight, scaledTop, u + left + centerW, v, right, top, textureW, textureH, z);
 
         // Left edge (tessellate vertically)
-        drawTiledEdge(texture, x, y + scaledTop, scaledLeft, destCenterH, u, v + top, left, centerH, textureW, textureH, tileScale, false);
+        drawTiledEdge(texture, x, y + scaledTop, scaledLeft, destCenterH, u, v + top, left, centerH, textureW, textureH, tileScale, false, z);
 
         // Center (tessellate in both directions)
-        drawTiledCenter(texture, x + scaledLeft, y + scaledTop, destCenterW, destCenterH, u + left, v + top, centerW, centerH, textureW, textureH, tileScale);
+        drawTiledCenter(texture, x + scaledLeft, y + scaledTop, destCenterW, destCenterH, u + left, v + top, centerW, centerH, textureW, textureH, tileScale, z);
 
         // Right edge (tessellate vertically)
-        drawTiledEdge(texture, x + scaledLeft + destCenterW, y + scaledTop, scaledRight, destCenterH, u + left + centerW, v + top, right, centerH, textureW, textureH, tileScale, false);
+        drawTiledEdge(texture, x + scaledLeft + destCenterW, y + scaledTop, scaledRight, destCenterH, u + left + centerW, v + top, right, centerH, textureW, textureH, tileScale, false, z);
 
         // Bottom-left corner (scaled)
-        drawTexture(texture, x, y + scaledTop + destCenterH, scaledLeft, scaledBottom, u, v + top + centerH, left, bottom, textureW, textureH);
+        drawTextureWithZ(texture, x, y + scaledTop + destCenterH, scaledLeft, scaledBottom, u, v + top + centerH, left, bottom, textureW, textureH, z);
 
         // Bottom edge (tessellate horizontally)
-        drawTiledEdge(texture, x + scaledLeft, y + scaledTop + destCenterH, destCenterW, scaledBottom, u + left, v + top + centerH, centerW, bottom, textureW, textureH, tileScale, true);
+        drawTiledEdge(texture, x + scaledLeft, y + scaledTop + destCenterH, destCenterW, scaledBottom, u + left, v + top + centerH, centerW, bottom, textureW, textureH, tileScale, true, z);
 
         // Bottom-right corner (scaled)
-        drawTexture(texture, x + scaledLeft + destCenterW, y + scaledTop + destCenterH, scaledRight, scaledBottom, u + left + centerW, v + top + centerH, right, bottom, textureW, textureH);
+        drawTextureWithZ(texture, x + scaledLeft + destCenterW, y + scaledTop + destCenterH, scaledRight, scaledBottom, u + left + centerW, v + top + centerH, right, bottom, textureW, textureH, z);
     }
 
     /**
@@ -419,6 +546,30 @@ public interface IRenderContext {
     default void drawTiledEdge(ResourceLocation texture, float x, float y, float width, float height,
                                float u, float v, float regionW, float regionH,
                                int textureW, int textureH, float tileScale, boolean horizontal) {
+        drawTiledEdge(texture, x, y, width, height, u, v, regionW, regionH, textureW, textureH, tileScale, horizontal, 0);
+    }
+
+    /**
+     * Draw a tiled edge (either horizontal or vertical tessellation) with z-offset.
+     *
+     * @param texture ResourceLocation of the texture
+     * @param x Destination X
+     * @param y Destination Y
+     * @param width Destination width
+     * @param height Destination height
+     * @param u Source X in texture pixels
+     * @param v Source Y in texture pixels
+     * @param regionW Width of the source region in texture pixels
+     * @param regionH Height of the source region in texture pixels
+     * @param textureW Total width of the texture atlas
+     * @param textureH Total height of the texture atlas
+     * @param tileScale Scale factor for tiles
+     * @param horizontal If true, tile horizontally; if false, tile vertically
+     * @param z Z-offset for rendering depth
+     */
+    default void drawTiledEdge(ResourceLocation texture, float x, float y, float width, float height,
+                               float u, float v, float regionW, float regionH,
+                               int textureW, int textureH, float tileScale, boolean horizontal, float z) {
         if (horizontal) {
             // Tile horizontally
             int scaledTileW = Math.max(1, (int)(regionW * tileScale));
@@ -431,7 +582,7 @@ public interface IRenderContext {
                 // Calculate proportional source region width to avoid squishing
                 float srcW = (drawW == scaledTileW) ? regionW : ((drawW / (float)scaledTileW) * regionW);
 
-                drawTexture(texture, drawX, y, drawW, height, u, v, srcW, regionH, textureW, textureH);
+                drawTextureWithZ(texture, drawX, y, drawW, height, u, v, srcW, regionH, textureW, textureH, z);
             }
         } else {
             // Tile vertically
@@ -445,7 +596,7 @@ public interface IRenderContext {
                 // Calculate proportional source region height to avoid squishing
                 float srcH = (drawH == scaledTileH) ? regionH : ((drawH / (float)scaledTileH) * regionH);
 
-                drawTexture(texture, x, drawY, width, drawH, u, v, regionW, srcH, textureW, textureH);
+                drawTextureWithZ(texture, x, drawY, width, drawH, u, v, regionW, srcH, textureW, textureH, z);
             }
         }
     }
@@ -469,6 +620,29 @@ public interface IRenderContext {
     default void drawTiledCenter(ResourceLocation texture, float x, float y, float width, float height,
                                  float u, float v, float regionW, float regionH,
                                  int textureW, int textureH, float tileScale) {
+        drawTiledCenter(texture, x, y, width, height, u, v, regionW, regionH, textureW, textureH, tileScale, 0);
+    }
+
+    /**
+     * Draw a tiled center area (tessellation in both directions) with z-offset.
+     *
+     * @param texture ResourceLocation of the texture
+     * @param x Destination X
+     * @param y Destination Y
+     * @param width Destination width
+     * @param height Destination height
+     * @param u Source X in texture pixels
+     * @param v Source Y in texture pixels
+     * @param regionW Width of the source region in texture pixels
+     * @param regionH Height of the source region in texture pixels
+     * @param textureW Total width of the texture atlas
+     * @param textureH Total height of the texture atlas
+     * @param tileScale Scale factor for tiles
+     * @param z Z-offset for rendering depth
+     */
+    default void drawTiledCenter(ResourceLocation texture, float x, float y, float width, float height,
+                                 float u, float v, float regionW, float regionH,
+                                 int textureW, int textureH, float tileScale, float z) {
         int scaledTileW = Math.max(1, (int)(regionW * tileScale));
         int scaledTileH = Math.max(1, (int)(regionH * tileScale));
 
@@ -488,7 +662,7 @@ public interface IRenderContext {
                 float srcW = (drawW == scaledTileW) ? regionW : ((drawW / (float)scaledTileW) * regionW);
                 float srcH = (drawH == scaledTileH) ? regionH : ((drawH / (float)scaledTileH) * regionH);
 
-                drawTexture(texture, drawX, drawY, drawW, drawH, u, v, srcW, srcH, textureW, textureH);
+                drawTextureWithZ(texture, drawX, drawY, drawW, drawH, u, v, srcW, srcH, textureW, textureH, z);
             }
         }
     }

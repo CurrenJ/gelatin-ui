@@ -118,6 +118,28 @@ public abstract class PanelBase<T extends PanelBase<T>> extends UIContainer<T> {
 
             // Render sprite if available using unified drawSprite method
             if (backgroundSprite != null && backgroundSprite.texture() != null) {
+                // Store original rotation for ITEM mode sprites before applying animation effects
+                org.joml.Vector3f originalRotation = null;
+                if (backgroundSprite.renderMode() == SpriteRenderMode.ITEM) {
+                    // Get the current effect delta rotation
+                    org.joml.Vector3f effectRotation = combinedEffectDelta.getRotation3D();
+                    
+                    // Store original rotation to restore after rendering
+                    org.joml.Vector3f currentRotation = backgroundSprite.itemRotation();
+                    originalRotation = new org.joml.Vector3f(currentRotation);
+                    
+                    // Temporarily modify the sprite's rotation by adding effect rotation
+                    backgroundSprite.itemRotation(
+                        currentRotation.x + effectRotation.x,
+                        currentRotation.y + effectRotation.y,
+                        currentRotation.z + effectRotation.z
+                    );
+                }
+                
+                // Store original actualW/H for non-centered sprites
+                int originalActualW = backgroundSprite.actualW();
+                int originalActualH = backgroundSprite.actualH();
+                
                 if (centerBackgroundSprite) {
                     // Draw sprite at its actual size, centered in the container
                     // Use actualW/actualH if set, otherwise use regionW/regionH
@@ -135,10 +157,20 @@ public abstract class PanelBase<T extends PanelBase<T>> extends UIContainer<T> {
                     // Default behavior: stretch sprite to match panel's size
                     int wi = (int) Math.ceil(w);
                     int hi = (int) Math.ceil(h);
-                    SpriteData sizedSprite = backgroundSprite.actualSize(wi, hi);
+                    
+                    // Temporarily set actualSize for rendering
+                    backgroundSprite.actualSize(wi, hi);
                     context.enableBlend();
-                    context.drawSprite(sizedSprite, 0, 0, wi, hi);
+                    context.drawSprite(backgroundSprite, 0, 0, wi, hi);
                     context.disableBlend();
+                    
+                    // Restore original actualSize
+                    backgroundSprite.actualSize(originalActualW, originalActualH);
+                }
+                
+                // Restore original rotation if it was modified
+                if (originalRotation != null) {
+                    backgroundSprite.itemRotation(originalRotation.x, originalRotation.y, originalRotation.z);
                 }
             }
             // Fall back to solid color
