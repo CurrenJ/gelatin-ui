@@ -4,8 +4,10 @@ import io.github.currenj.gelatinui.gui.IUIElement;
 import io.github.currenj.gelatinui.gui.UIScreen;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -18,12 +20,8 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
     private long fadeStartTime;
     private static final float FADE_DURATION = 0.2f;
 
-    // Global click listeners for elements that need to respond to clicks anywhere
     private final List<GlobalClickListener> globalClickListeners = new ArrayList<>();
 
-    /**
-     * Functional interface for global click listeners.
-     */
     @FunctionalInterface
     public interface GlobalClickListener {
         void onGlobalClick(double mouseX, double mouseY, int button);
@@ -40,7 +38,7 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
         super.init();
 
         uiScreen = new UIScreen(this.width, this.height);
-        uiScreen.setAutoCenterRoot(false); // Changed to false
+        uiScreen.setAutoCenterRoot(false);
         uiScreen.setAutoCenterThreshold(0.5f);
 
         buildUI();
@@ -49,18 +47,16 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
     protected abstract void buildUI();
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderContent(guiGraphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        extractContent(graphics, mouseX, mouseY, partialTick);
 
-        // Calculate delta time
         long nowNanos = System.nanoTime();
         float deltaSeconds = Math.min(0.1f, Math.max(0f, (nowNanos - lastFrameTimeNanos) / 1_000_000_000f));
         lastFrameTimeNanos = nowNanos;
 
-        // Render UI
         if (uiScreen != null) {
-            MinecraftRenderContext renderContext = new MinecraftRenderContext(guiGraphics, this.font);
+            MinecraftRenderContext renderContext = new MinecraftRenderContext(graphics, this.font);
 
             uiScreen.update(deltaSeconds);
             updateComponentSizes(renderContext);
@@ -69,15 +65,11 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
             uiScreen.update(0f);
             uiScreen.render(renderContext);
 
-            // Render time control status if not at default settings
-            renderTimeControlStatus(guiGraphics);
+            renderTimeControlStatus(graphics);
         }
     }
 
-    /**
-     * Render time control status overlay when pause or timescale is active.
-     */
-    protected void renderTimeControlStatus(GuiGraphics guiGraphics) {
+    protected void renderTimeControlStatus(GuiGraphicsExtractor graphics) {
         if (io.github.currenj.gelatinui.gui.UITimeControl.isPaused() ||
             Math.abs(io.github.currenj.gelatinui.gui.UITimeControl.getTimescale() - 1.0f) > 0.01f) {
 
@@ -86,36 +78,30 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
             int x = this.width - textWidth - 10;
             int y = this.height - 20;
 
-            // Draw semi-transparent background
-            guiGraphics.fill(x - 5, y - 2, x + textWidth + 5, y + 10, 0xC0000000);
+            graphics.fill(x - 5, y - 2, x + textWidth + 5, y + 10, 0xC0000000);
 
-            // Draw text in yellow if paused, white if just timescaled
             int color = io.github.currenj.gelatinui.gui.UITimeControl.isPaused() ? 0xFFFFFF00 : 0xFFFFFFFF;
-            guiGraphics.drawString(this.font, status, x, y, color, false);
+            graphics.text(this.font, status, x, y, color, false);
         }
     }
 
-    protected void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {}
+    protected void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {}
 
-    protected void updateComponentSizes(MinecraftRenderContext context) {
-        // Default implementation: do nothing
-        // Subclasses can override to update specific component sizes
-    }
+    protected void updateComponentSizes(MinecraftRenderContext context) {}
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        super.mouseClicked(mouseX, mouseY, button);
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        super.mouseClicked(event, doubleClick);
 
-        // Notify global click listeners first
-        notifyGlobalClickListeners(mouseX, mouseY, button);
+        notifyGlobalClickListeners(event.x(), event.y(), event.button());
 
         if (uiScreen != null) {
-            uiScreen.onMouseMove((int) mouseX, (int) mouseY);
-            if (uiScreen.onMouseClick((int) mouseX, (int) mouseY, button)) {
+            uiScreen.onMouseMove((int) event.x(), (int) event.y());
+            if (uiScreen.onMouseClick((int) event.x(), (int) event.y(), event.button())) {
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override
@@ -131,147 +117,89 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
     }
 
     @Override
-    public void resize(net.minecraft.client.Minecraft minecraft, int width, int height) {
-        super.resize(minecraft, width, height);
+    public void resize(int width, int height) {
+        super.resize(width, height);
 
-        super.resize(minecraft, width, height);
         if (uiScreen != null) {
             uiScreen.resize(width, height);
         }
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // Check for debug toggle keys BEFORE calling super to prevent escape key from closing the screen
-        // Key '8' = GLFW_KEY_8 = 56
-        // Key '9' = GLFW_KEY_9 = 57
-        // Key '0' = GLFW_KEY_0 = 48
-        // Key '7' = GLFW_KEY_7 = 55
-        // Key '6' = GLFW_KEY_6 = 54
-        // Key '5' = GLFW_KEY_5 = 53
-        // Key '4' = GLFW_KEY_4 = 52
-        // Key 'P' = GLFW_KEY_P = 80
-        // Key 'N' = GLFW_KEY_N = 78
-        // Key '[' = GLFW_KEY_LEFT_BRACKET = 91
-        // Key ']' = GLFW_KEY_RIGHT_BRACKET = 93
-
-        if (keyCode == 56) { // Key '8' - Toggle bounds debug
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
+        if (keyCode == 56) {
             io.github.currenj.gelatinui.gui.UIElement.toggleDebugBounds();
             return true;
-        } else if (keyCode == 57) { // Key '9' - Toggle grid debug
+        } else if (keyCode == 57) {
             io.github.currenj.gelatinui.gui.UIElement.toggleDebugGrid();
             return true;
-        } else if (keyCode == 48) { // Key '0' - Toggle padding debug
+        } else if (keyCode == 48) {
             io.github.currenj.gelatinui.gui.UIElement.toggleDebugPadding();
             return true;
-        } else if (keyCode == 55) { // Key '7' - Toggle culled elements debug
+        } else if (keyCode == 55) {
             io.github.currenj.gelatinui.gui.UIElement.toggleDebugCulled();
             return true;
-        }
-
-        // Time control keys
-        else if (keyCode == 80) { // Key 'P' - Toggle pause
+        } else if (keyCode == 80) {
             io.github.currenj.gelatinui.gui.UITimeControl.togglePause();
             return true;
-        } else if (keyCode == 78) { // Key 'N' - Step forward (when paused)
+        } else if (keyCode == 78) {
             if (io.github.currenj.gelatinui.gui.UITimeControl.isPaused()) {
                 io.github.currenj.gelatinui.gui.UITimeControl.step();
             }
             return true;
-        } else if (keyCode == 91) { // Key '[' - Decrease timescale
+        } else if (keyCode == 91) {
             float currentScale = io.github.currenj.gelatinui.gui.UITimeControl.getTimescale();
-            float newScale = Math.max(0.1f, currentScale - 0.1f);
-            io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(newScale);
+            io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(Math.max(0.1f, currentScale - 0.1f));
             return true;
-        } else if (keyCode == 93) { // Key ']' - Increase timescale
+        } else if (keyCode == 93) {
             float currentScale = io.github.currenj.gelatinui.gui.UITimeControl.getTimescale();
-            float newScale = Math.min(5.0f, currentScale + 0.1f);
-            io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(newScale);
+            io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(Math.min(5.0f, currentScale + 0.1f));
             return true;
-        } else if (keyCode == 52) { // Key '4' - Reset timescale to 1.0
+        } else if (keyCode == 52) {
             io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(1.0f);
             return true;
-        } else if (keyCode == 53) { // Key '5' - Set timescale to 0.5x (slow motion)
+        } else if (keyCode == 53) {
             io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(0.5f);
             return true;
-        } else if (keyCode == 54) { // Key '6' - Set timescale to 2.0x (fast forward)
+        } else if (keyCode == 54) {
             io.github.currenj.gelatinui.gui.UITimeControl.setTimescale(2.0f);
             return true;
         }
 
-        // Call super last so our debug keys take priority and escape key handling works correctly
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
-    /**
-     * Add a global click listener to this screen.
-     *
-     * @param listener The listener to add.
-     */
     public void addGlobalClickListener(GlobalClickListener listener) {
         this.globalClickListeners.add(listener);
     }
 
-    /**
-     * Remove a global click listener from this screen.
-     *
-     * @param listener The listener to remove.
-     */
     public void removeGlobalClickListener(GlobalClickListener listener) {
         this.globalClickListeners.remove(listener);
     }
 
-    /**
-     * Notify all global click listeners of a click event.
-     *
-     * @param mouseX The mouse X position.
-     * @param mouseY The mouse Y position.
-     * @param button The mouse button.
-     */
     protected void notifyGlobalClickListeners(double mouseX, double mouseY, int button) {
         for (GlobalClickListener listener : globalClickListeners) {
             listener.onGlobalClick(mouseX, mouseY, button);
         }
     }
 
-    // ----- Tooltip API -----
-
-    /**
-     * Set the global tooltip element to be rendered at the mouse position.
-     * The tooltip will follow the mouse cursor and can be any UI component.
-     *
-     * @param tooltip The UI element to use as a tooltip, or null to hide the tooltip
-     */
     public void setTooltip(IUIElement tooltip) {
         if (uiScreen != null) {
             uiScreen.setTooltip(tooltip);
         }
     }
 
-    /**
-     * Get the current tooltip element.
-     *
-     * @return The current tooltip element, or null if no tooltip is set
-     */
     public IUIElement getTooltip() {
         return uiScreen != null ? uiScreen.getTooltip() : null;
     }
 
-    /**
-     * Set the offset from the mouse cursor where the tooltip should appear.
-     *
-     * @param offsetX Horizontal offset in pixels (default: 10)
-     * @param offsetY Vertical offset in pixels (default: 10)
-     */
     public void setTooltipOffset(float offsetX, float offsetY) {
         if (uiScreen != null) {
             uiScreen.setTooltipOffset(offsetX, offsetY);
         }
     }
 
-    /**
-     * Clear the current tooltip (same as setTooltip(null)).
-     */
     public void clearTooltip() {
         if (uiScreen != null) {
             uiScreen.clearTooltip();
@@ -279,21 +207,16 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
     }
 
     @Override
-    protected void renderLabels(GuiGraphics guiGraphics, int i, int j) {
-        // No label rendering here; handled in renderContent
+    protected void extractLabels(GuiGraphicsExtractor graphics, int i, int j) {
+        // No label rendering here; handled in extractContent
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float f, int i, int j) {
-        // No background rendering here; handled in renderContent
-    }
-
-    @Override
-    public void renderTransparentBackground(GuiGraphics arg) {
+    public void extractTransparentBackground(GuiGraphicsExtractor graphics) {
         long now = System.nanoTime();
         float elapsed = (now - fadeStartTime) / 1_000_000_000f;
         if (elapsed >= FADE_DURATION) {
-            arg.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
+            graphics.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
         } else {
             float progress = Math.min(1f, elapsed / FADE_DURATION);
 
@@ -305,7 +228,7 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
             int newAlpha2 = (int) (alpha2 * progress);
             int newColor1 = (newAlpha1 << 24) | (color1 & 0x00FFFFFF);
             int newColor2 = (newAlpha2 << 24) | (color2 & 0x00FFFFFF);
-            arg.fillGradient(0, 0, this.width, this.height, newColor1, newColor2);
+            graphics.fillGradient(0, 0, this.width, this.height, newColor1, newColor2);
         }
     }
 }

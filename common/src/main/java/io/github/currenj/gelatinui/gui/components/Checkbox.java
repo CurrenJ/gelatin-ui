@@ -4,7 +4,7 @@ import io.github.currenj.gelatinui.gui.DirtyFlag;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import io.github.currenj.gelatinui.gui.UIElement;
 import io.github.currenj.gelatinui.gui.UIEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * A checkbox component with a toggleable checked state.
@@ -24,10 +24,10 @@ public class Checkbox extends UIElement<Checkbox> {
     private int labelSpacing = 6;
 
     // Optional textures for custom appearance
-    private ResourceLocation uncheckedTexture = null;
-    private ResourceLocation checkedTexture = null;
-    private ResourceLocation uncheckedHoverTexture = null;
-    private ResourceLocation checkedHoverTexture = null;
+    private Identifier uncheckedTexture = null;
+    private Identifier checkedTexture = null;
+    private Identifier uncheckedHoverTexture = null;
+    private Identifier checkedHoverTexture = null;
 
     // Callback for state changes
     private CheckChangeListener onCheckChange = null;
@@ -171,7 +171,7 @@ public class Checkbox extends UIElement<Checkbox> {
     /**
      * Set custom texture for unchecked state.
      */
-    public Checkbox uncheckedTexture(ResourceLocation texture) {
+    public Checkbox uncheckedTexture(Identifier texture) {
         this.uncheckedTexture = texture;
         markDirty(DirtyFlag.CONTENT);
         return this;
@@ -180,7 +180,7 @@ public class Checkbox extends UIElement<Checkbox> {
     /**
      * Set custom texture for checked state.
      */
-    public Checkbox checkedTexture(ResourceLocation texture) {
+    public Checkbox checkedTexture(Identifier texture) {
         this.checkedTexture = texture;
         markDirty(DirtyFlag.CONTENT);
         return this;
@@ -189,7 +189,7 @@ public class Checkbox extends UIElement<Checkbox> {
     /**
      * Set custom texture for unchecked hover state.
      */
-    public Checkbox uncheckedHoverTexture(ResourceLocation texture) {
+    public Checkbox uncheckedHoverTexture(Identifier texture) {
         this.uncheckedHoverTexture = texture;
         markDirty(DirtyFlag.CONTENT);
         return this;
@@ -198,7 +198,7 @@ public class Checkbox extends UIElement<Checkbox> {
     /**
      * Set custom texture for checked hover state.
      */
-    public Checkbox checkedHoverTexture(ResourceLocation texture) {
+    public Checkbox checkedHoverTexture(Identifier texture) {
         this.checkedHoverTexture = texture;
         markDirty(DirtyFlag.CONTENT);
         return this;
@@ -224,7 +224,7 @@ public class Checkbox extends UIElement<Checkbox> {
         int y = 0;
 
         // Determine which texture to use (if any)
-        ResourceLocation texture;
+        Identifier texture;
         if (checked) {
             texture = hovered && checkedHoverTexture != null ? checkedHoverTexture : checkedTexture;
         } else {

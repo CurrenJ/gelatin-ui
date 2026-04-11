@@ -7,7 +7,7 @@ import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.effects.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -35,7 +35,7 @@ public class ItemAnimationsTestScreen extends GelatinUIScreenWithParticles<Gelat
     @Override
     protected void buildUI() {
         MinecraftRenderContext tempContext = new MinecraftRenderContext(
-                new GuiGraphics(this.minecraft, this.minecraft.renderBuffers().bufferSource()),
+                null,
                 this.font
         );
 
@@ -337,7 +337,7 @@ public class ItemAnimationsTestScreen extends GelatinUIScreenWithParticles<Gelat
     }
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         // Dark background
     }
 

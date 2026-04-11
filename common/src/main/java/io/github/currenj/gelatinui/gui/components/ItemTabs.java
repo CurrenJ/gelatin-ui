@@ -1,7 +1,7 @@
 package io.github.currenj.gelatinui.gui.components;
 
 import io.github.currenj.gelatinui.gui.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -32,8 +32,8 @@ public class ItemTabs extends VBox {
     // Remove all the complex configuration methods for simplification
     public ItemTabs hoverFrame(SpriteData frame) { return this; }
     public ItemTabs selectedFrame(SpriteData frame) { return this; }
-    public ItemTabs hoverFrame(ResourceLocation texture) { return this; }
-    public ItemTabs selectedFrame(ResourceLocation texture) { return this; }
+    public ItemTabs hoverFrame(Identifier texture) { return this; }
+    public ItemTabs selectedFrame(Identifier texture) { return this; }
     public ItemTabs sizes(float slotW, float slotH, float iconW, float iconH) { return this; }
     public ItemTabs tabSpacing(float spacing) { this.spacing(spacing); return this; }
 

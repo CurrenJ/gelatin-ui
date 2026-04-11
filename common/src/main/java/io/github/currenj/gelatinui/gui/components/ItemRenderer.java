@@ -134,30 +134,30 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
             y += (int) ((size.y - 16 * itemScale) / 2);
         }
 
-        // Use GuiGraphics to render the item
+        // Use GuiGraphicsExtractor to render the item
         var graphics = mcContext.getGraphics();
         var font = mcContext.getFont();
 
         // Apply scaling if needed
         if (itemScale != 1.0f) {
-            graphics.pose().pushPose();
-            graphics.pose().translate(x, y, 0);
-            graphics.pose().scale(itemScale, itemScale, 1.0f);
+            graphics.pose().pushMatrix();
+            graphics.pose().translate(x, y);
+            graphics.pose().scale(itemScale, itemScale);
 
             // Render at origin after scaling
-            graphics.renderItem(itemStack, 0, 0);
+            graphics.item(itemStack, 0, 0);
 
             if (showCount && itemStack.getCount() > 1) {
-                graphics.renderItemDecorations(font, itemStack, 0, 0);
+                graphics.itemDecorations(font, itemStack, 0, 0);
             }
 
-            graphics.pose().popPose();
+            graphics.pose().popMatrix();
         } else {
             // No scaling, render directly
-            graphics.renderItem(itemStack, x, y);
+            graphics.item(itemStack, x, y);
 
             if (showCount && itemStack.getCount() > 1) {
-                graphics.renderItemDecorations(font, itemStack, x, y);
+                graphics.itemDecorations(font, itemStack, x, y);
             }
         }
     }

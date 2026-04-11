@@ -3,7 +3,7 @@ package io.github.currenj.gelatinui.gui.components;
 import io.github.currenj.gelatinui.gui.DirtyFlag;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import io.github.currenj.gelatinui.gui.UIElement;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Vector2f;
 
 /**
@@ -37,7 +37,7 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
         this.color = color;
     }
 
-    public SpriteRectangle(float width, float height, ResourceLocation texture) {
+    public SpriteRectangle(float width, float height, Identifier texture) {
         this.size.set(width, height);
         this.sprite = new SpriteData(texture);
     }
@@ -262,7 +262,7 @@ public abstract class SpriteRectangle<T extends SpriteRectangle<T>> extends UIEl
             super(width, height, color);
         }
 
-        public SpriteRectangleImpl(float width, float height, ResourceLocation texture) {
+        public SpriteRectangleImpl(float width, float height, Identifier texture) {
             super(width, height, texture);
         }
 

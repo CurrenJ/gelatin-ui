@@ -1,10 +1,10 @@
 package io.github.currenj.gelatinui.gui.components;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Data holder describing a sprite region within a texture atlas.
- * texture: the ResourceLocation for the texture atlas
+ * texture: the Identifier for the texture atlas
  * u,v: source origin in texture pixels
  * regionW,regionH: size of the source region in texture pixels (may include padding)
  * actualW,actualH: actual content size inside the source region (for centered cropping); 0 means use full region
@@ -14,7 +14,7 @@ import net.minecraft.resources.ResourceLocation;
  * tileScale: scale factor for tiled sprites (default 1.0, can be 0.5 or 2.0 for nice repeating)
  */
 public record SpriteData(
-    ResourceLocation texture,
+    Identifier texture,
     int u,
     int v,
     int regionW,
@@ -30,11 +30,11 @@ public record SpriteData(
     int sliceBottom,
     float tileScale
 ) {
-    public SpriteData(ResourceLocation texture) {
+    public SpriteData(Identifier texture) {
         this(texture, 0, 0, 0, 0, 0, 0, 256, 256, SpriteRenderMode.STRETCH, 0, 0, 0, 0, 1.0f);
     }
 
-    public static SpriteData texture(ResourceLocation texture) {
+    public static SpriteData texture(Identifier texture) {
         return new SpriteData(texture);
     }
 

@@ -6,9 +6,9 @@ import io.github.currenj.gelatinui.gui.UI;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 public class ScaleToFitTestScreen extends GelatinUIScreen<GelatinMenu> {
@@ -27,12 +27,12 @@ public class ScaleToFitTestScreen extends GelatinUIScreen<GelatinMenu> {
     protected void buildUI() {
         // Create a temporary render context to measure text
         MinecraftRenderContext tempContext = new MinecraftRenderContext(
-            new GuiGraphics(this.minecraft, this.minecraft.renderBuffers().bufferSource()),
+            null,
             this.font
         );
 
         // Panel texture
-        ResourceLocation panel1Tex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel.png");
+        Identifier panel1Tex = Identifier.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel.png");
         SpriteData panel1 = SpriteData.texture(panel1Tex)
             .uv(0, 0, 16, 16)
             .tileScale(1f)
@@ -40,7 +40,7 @@ public class ScaleToFitTestScreen extends GelatinUIScreen<GelatinMenu> {
             .textureSize(16, 16)
             .renderMode(SpriteRenderMode.TILE);
 
-        ResourceLocation panelTex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel2.png");
+        Identifier panelTex = Identifier.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel2.png");
         SpriteData panel2 = SpriteData.texture(panelTex)
             .uv(0, 0, 23, 23)
             .tileScale(1f)
@@ -103,16 +103,16 @@ public class ScaleToFitTestScreen extends GelatinUIScreen<GelatinMenu> {
     }
 
     @Override
-    protected void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 54) { // Key '6' = GLFW_KEY_
+    public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
+        if (event.key() == 54) { // Key '6' = GLFW_KEY_
             outerVBox.scaleToHeight(this.uiScreen.getViewHeight());
             return true;
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 }

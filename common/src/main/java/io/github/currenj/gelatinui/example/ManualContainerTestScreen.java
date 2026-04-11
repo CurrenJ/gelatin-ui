@@ -5,12 +5,12 @@ import io.github.currenj.gelatinui.gui.UI;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import io.github.currenj.gelatinui.GelatinUi;
 import org.joml.Vector2f;
 
@@ -45,7 +45,7 @@ public class ManualContainerTestScreen extends GelatinUIScreen<GelatinMenu> {
         manualContainer.maxChildren(6);
 
         // Add a textured background sprite (if texture exists)
-        ResourceLocation tex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel.png");
+        Identifier tex = Identifier.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel.png");
         SpriteData spriteData = SpriteData.texture(tex)
                 .uv(0, 0, 15, 15)
                 .slice(6, 7, 6, 7)
@@ -92,7 +92,7 @@ public class ManualContainerTestScreen extends GelatinUIScreen<GelatinMenu> {
     }
 
     @Override
-    protected void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         // Darken the screen background slightly
         guiGraphics.fill(0, 0, this.width, this.height, 0xFF0A0A0A);
     }

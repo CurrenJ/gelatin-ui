@@ -4,7 +4,8 @@ import io.github.currenj.gelatinui.GelatinUIScreen;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -115,7 +116,7 @@ public class InputComponentsTestScreen extends GelatinUIScreen<GelatinMenu> {
     }
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         // Dark background
         graphics.fill(0, 0, this.width, this.height, 0xFF0A0A0A);
     }
@@ -145,7 +146,8 @@ public class InputComponentsTestScreen extends GelatinUIScreen<GelatinMenu> {
     }
 
     @Override
-    public boolean charTyped(char character, int modifiers) {
+    public boolean charTyped(CharacterEvent event) {
+        char character = (char) event.codepoint();
         // Forward character input to the focused text input
         if (usernameInput.isFocused()) {
             usernameInput.charTyped(character);
@@ -155,11 +157,12 @@ public class InputComponentsTestScreen extends GelatinUIScreen<GelatinMenu> {
             emailInput.charTyped(character);
             return true;
         }
-        return super.charTyped(character, modifiers);
+        return super.charTyped(event);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
+        int keyCode = event.key();
         // Forward key presses to the focused text input
         if (usernameInput.isFocused()) {
             usernameInput.keyPressed(keyCode);
@@ -169,6 +172,6 @@ public class InputComponentsTestScreen extends GelatinUIScreen<GelatinMenu> {
             emailInput.keyPressed(keyCode);
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 }

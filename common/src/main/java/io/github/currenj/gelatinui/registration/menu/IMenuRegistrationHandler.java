@@ -1,6 +1,6 @@
 package io.github.currenj.gelatinui.registration.menu;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.MenuType;
 
 public interface IMenuRegistrationHandler {

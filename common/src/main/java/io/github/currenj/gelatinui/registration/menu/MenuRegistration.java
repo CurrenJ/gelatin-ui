@@ -40,8 +40,7 @@ public class MenuRegistration {
     }
 
     private static MenuType<GelatinMenu> createDebugMenuType(String id) {
-        MenuType.MenuSupplier<GelatinMenu> menuSupplier = (i, inv) -> new GelatinMenu(getDebugMenuTypeById(id), i);
-        return new MenuType<>(menuSupplier, FeatureFlags.VANILLA_SET);
+        return new MenuType<>((i, inv) -> new GelatinMenu(getDebugMenuTypeById(id), i), FeatureFlags.VANILLA_SET);
     }
 
     public static MenuType<GelatinMenu> getDebugMenuTypeById(String id) {

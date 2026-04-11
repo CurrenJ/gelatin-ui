@@ -1,14 +1,13 @@
 {
   "required": true,
   "package": "io.github.currenj.gelatinui.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "refmap": "gelatinui-refmap.json",
   "minVersion": "0.8",
   "client": [
     "GuiGraphicsMixin"
   ],
   "mixins": [
-    "HoverEventActionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -3,7 +3,7 @@ package io.github.currenj.gelatinui;
 import io.github.currenj.gelatinui.example.ExampleViews;
 import io.github.currenj.gelatinui.registration.menu.MenuRegistration;
 import io.github.currenj.gelatinui.registration.menu.MenuRegistrationEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 
 public final class GelatinUi {
@@ -20,7 +20,7 @@ public final class GelatinUi {
 
     private static void registerExampleMenus() {
         MenuRegistrationEvent.registerListener(registrar -> {
-            for (ResourceLocation viewId : ExampleViews.EXAMPLE_VIEWS) {
+            for (Identifier viewId : ExampleViews.EXAMPLE_VIEWS) {
                 registrar.registerDebugMenu(viewId.getPath());
             }
         });

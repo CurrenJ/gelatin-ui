@@ -12,7 +12,7 @@ import io.github.currenj.gelatinui.gui.components.VerticalScrollBar;
 import java.awt.geom.Rectangle2D;
 
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.joml.Vector2f;
 
 /**
@@ -251,12 +251,7 @@ public class UIScreen {
             tooltipElement.setPosition(new Vector2f(tooltipX, tooltipY));
 
             if (context instanceof MinecraftRenderContext ctx) {
-                GuiGraphics graphics = ctx.getGraphics();
-
-                final int zOffset = 500; // ensure tooltip renders on top
-                graphics.pose().translate(0, 0, zOffset);
                 tooltipElement.render(context, viewport);
-                graphics.pose().translate(0, 0, -zOffset);
             }
         }
     }

@@ -1,7 +1,7 @@
 package io.github.currenj.gelatinui.gui.components;
 
 import io.github.currenj.gelatinui.gui.IRenderContext;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,12 +57,12 @@ public class TestRenderContext implements IRenderContext {
     public void disableBlend() { }
 
     @Override
-    public void drawTexture(ResourceLocation texture, float x, float y, int width, int height) {
+    public void drawTexture(Identifier texture, float x, float y, int width, int height) {
         // No-op for tests; we could record calls if needed in the future
     }
 
     @Override
-    public void drawTexture(ResourceLocation texture, float x, float y, float width, float height, float u, float v, float regionWidth, float regionHeight, int textureWidth, int textureHeight) {
+    public void drawTexture(Identifier texture, float x, float y, float width, float height, float u, float v, float regionWidth, float regionHeight, int textureWidth, int textureHeight) {
         // No-op for UV-aware draw calls in tests; record or assert in future if necessary
     }
 }

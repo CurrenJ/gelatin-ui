@@ -1,6 +1,5 @@
 package io.github.currenj.gelatinui.tooltip;
 
-import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 
@@ -8,9 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record ItemStacksTooltip(List<ItemStack> items, boolean renderItemDecorations) implements TooltipComponent {
-    public static final HoverEvent.Action<ItemStacksInfo> SHOW_ITEM_STACKS = new HoverEvent.Action<>(
-            "show_item_stacks", true, ItemStacksInfo.CODEC, ItemStacksInfo::legacyCreate
-    );
+    // Note: Custom HoverEvent.Action injection is not possible in MC 26.1 since Action is a final enum.
 
     public static ItemStacksTooltip of(List<List<ItemStack>> items, boolean renderItemDecorations) {
         List<ItemStack> displayStacks = new ArrayList<>();

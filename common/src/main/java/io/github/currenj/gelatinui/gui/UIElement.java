@@ -309,34 +309,28 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
         if (context instanceof io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext) {
             io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext mc = (io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext) context;
             var pose = mc.getGraphics().pose();
-            pose.pushPose();
+            pose.pushMatrix();
 
             // Apply effect position offset
             Vector2f effectPos = combinedEffectDelta.getPositionOffset();
-            pose.translate(position.x + effectPos.x, position.y + effectPos.y, 0);
+            pose.translate(position.x + effectPos.x, position.y + effectPos.y);
 
             // Apply combined scale (base * effectScale * effect delta scale)
             float combinedScale = currentScale * effectScale * combinedEffectDelta.getScaleMultiplier();
-            pose.scale(combinedScale, combinedScale, 1.0f);
+            pose.scale(combinedScale, combinedScale);
 
-            // Apply rotation if element supports it
-            if (supports3DRotation() && combinedEffectDelta.has3DRotation()) {
-                // Rotate around element center in current local space (after translate & scale)
-                float pivotX = size.x * 0.5f;
-                float pivotY = size.y * 0.5f;
-                final int DEPTH_OFFSET = 150; // GuiGraphics renders items at z=150 (magic number), so mirror that here. Otherwise, items do big spin.
+            // Apply 2D (Z-axis) rotation if element has rotation
+            if (combinedEffectDelta.has3DRotation()) {
                 org.joml.Vector3f rot3D = combinedEffectDelta.getRotation3D();
-
-                // Apply rotations (pitch, yaw, roll) around the same pivot
-                if (Math.abs(rot3D.x) > 0.001f) {
-                    pose.rotateAround(com.mojang.math.Axis.XP.rotationDegrees(rot3D.x), pivotX, pivotY, DEPTH_OFFSET);
-                }
-                if (Math.abs(rot3D.y) > 0.001f) {
-                    pose.rotateAround(com.mojang.math.Axis.YP.rotationDegrees(rot3D.y), pivotX, pivotY, DEPTH_OFFSET);
-                }
+                // Only Z-axis rotation is supported in 26.1 2D GUI rendering
                 if (Math.abs(rot3D.z) > 0.001f) {
-                    pose.rotateAround(com.mojang.math.Axis.ZP.rotationDegrees(rot3D.z), pivotX, pivotY, DEPTH_OFFSET);
+                    float pivotX = size.x * 0.5f;
+                    float pivotY = size.y * 0.5f;
+                    pose.translate(pivotX, pivotY);
+                    pose.rotate((float) Math.toRadians(rot3D.z));
+                    pose.translate(-pivotX, -pivotY);
                 }
+                // X and Y rotations (3D flips) are not supported in 2D GUI rendering in 26.1
             }
 
             // render self and children under same transform so children inherit the parent's transform
@@ -348,7 +342,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
                 renderDebugOverlays(context);
             }
 
-            pose.popPose();
+            pose.popMatrix();
         } else {
             // Non-Minecraft contexts: no pose stack available; render normally
             renderSelf(context);

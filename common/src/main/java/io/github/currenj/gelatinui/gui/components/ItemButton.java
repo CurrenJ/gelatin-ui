@@ -84,7 +84,7 @@ public class ItemButton extends ItemRenderer<ItemButton> {
             y += (int) ((size.y - 16 * getItemScale()) / 2);
         }
 
-        // Use GuiGraphics to render the item
+        // Use GuiGraphicsExtractor to render the item
         var graphics = mcContext.getGraphics();
         var font = mcContext.getFont();
 
@@ -92,18 +92,18 @@ public class ItemButton extends ItemRenderer<ItemButton> {
         float effectiveScale = getItemScale();
 
         // Apply scaling
-        graphics.pose().pushPose();
-        graphics.pose().translate(x, y, 0);
-        graphics.pose().scale(effectiveScale, effectiveScale, 1.0f);
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(x, y);
+        graphics.pose().scale(effectiveScale, effectiveScale);
 
         // Render at origin after scaling
-        graphics.renderItem(getItemStack(), 0, 0);
+        graphics.item(getItemStack(), 0, 0);
 
         if (isShowCount() && getItemStack().getCount() > 1) {
-            graphics.renderItemDecorations(font, getItemStack(), 0, 0);
+            graphics.itemDecorations(font, getItemStack(), 0, 0);
         }
 
-        graphics.pose().popPose();
+        graphics.pose().popMatrix();
     }
 
     /**

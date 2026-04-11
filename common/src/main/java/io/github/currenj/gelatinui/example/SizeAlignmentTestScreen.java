@@ -7,9 +7,9 @@ import io.github.currenj.gelatinui.gui.UIElement;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 public class SizeAlignmentTestScreen extends GelatinUIScreen<GelatinMenu> {
@@ -28,12 +28,12 @@ public class SizeAlignmentTestScreen extends GelatinUIScreen<GelatinMenu> {
     protected void buildUI() {
         // Create a temporary render context to measure text
         MinecraftRenderContext tempContext = new MinecraftRenderContext(
-            new GuiGraphics(this.minecraft, this.minecraft.renderBuffers().bufferSource()),
+            null,
             this.font
         );
 
         // Panel2 texture - has 9-pixel repeating segments in the tiled area
-        ResourceLocation panelTex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel2.png");
+        Identifier panelTex = Identifier.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel2.png");
         SpriteData panel2 = SpriteData.texture(panelTex)
             .uv(0, 0, 23, 23)
             .tileScale(1f)
@@ -158,7 +158,7 @@ public class SizeAlignmentTestScreen extends GelatinUIScreen<GelatinMenu> {
     }
 
     @Override
-    protected void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         // No additional content to render
         UIElement<?> element = uiElement;
     }

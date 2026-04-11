@@ -1,21 +1,20 @@
 package io.github.currenj.gelatinui.gui.minecraft;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.currenj.gelatinui.extension.IGuiGraphicsExtension;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
 
 /**
  * Minecraft-specific implementation of IRenderContext.
- * Adapts Minecraft's GuiGraphics to the GUI system's rendering interface.
+ * Adapts Minecraft's GuiGraphicsExtractor to the GUI system's rendering interface.
  */
 public class MinecraftRenderContext implements IRenderContext {
-    private final GuiGraphics graphics;
+    private final GuiGraphicsExtractor graphics;
     private final Font font;
 
-    public MinecraftRenderContext(GuiGraphics graphics, Font font) {
+    public MinecraftRenderContext(GuiGraphicsExtractor graphics, Font font) {
         this.graphics = graphics;
         this.font = font;
     }
@@ -27,12 +26,12 @@ public class MinecraftRenderContext implements IRenderContext {
 
     @Override
     public void drawString(String text, int x, int y, int color) {
-        graphics.drawString(font, text, x, y, color, false);
+        graphics.text(font, text, x, y, color, false);
     }
 
     @Override
     public void drawCenteredString(String text, int x, int y, int color) {
-        graphics.drawCenteredString(font, text, x, y, color);
+        graphics.centeredText(font, text, x, y, color);
     }
 
     @Override
@@ -57,33 +56,29 @@ public class MinecraftRenderContext implements IRenderContext {
 
     @Override
     public void enableBlend() {
-        RenderSystem.enableBlend();
+        // Blend mode is now controlled per RenderPipeline in 26.1; no-op here
     }
 
     @Override
     public void disableBlend() {
-        RenderSystem.disableBlend();
+        // Blend mode is now controlled per RenderPipeline in 26.1; no-op here
     }
 
     @Override
-    public void drawTexture(ResourceLocation texture, float x, float y, int width, int height) {
+    public void drawTexture(Identifier texture, float x, float y, int width, int height) {
         drawTexture(texture, x, y, width, height, 0, 0, width, height, width, height);
     }
 
     @Override
-    public void drawTexture(ResourceLocation texture, float x, float y, float width, float height, float u, float v, float regionWidth, float regionHeight, int textureWidth, int textureHeight) {
-        // GuiGraphics.blit signature: blit(ResourceLocation, int x, int y, int z, float u, float v, int width, int height, int textureWidth, int textureHeight)
-        // where width/height are destination size, and textureWidth/textureHeight are the total atlas dimensions
-        // Note: texWidth and texHeight (source region size) are implicitly the same as width and height when using this blit overload
-        // So we need to use the innerBlit method instead for proper UV mapping
+    public void drawTexture(Identifier texture, float x, float y, float width, float height, float u, float v, float regionWidth, float regionHeight, int textureWidth, int textureHeight) {
         IGuiGraphicsExtension ext = (IGuiGraphicsExtension) graphics;
         ext.gelatinui$blit(texture, x, y, width, height, u, v, regionWidth, regionHeight, textureWidth, textureHeight);
     }
 
     /**
-     * Get the underlying GuiGraphics for advanced rendering operations.
+     * Get the underlying GuiGraphicsExtractor for advanced rendering operations.
      */
-    public GuiGraphics getGraphics() {
+    public GuiGraphicsExtractor getGraphics() {
         return graphics;
     }
 

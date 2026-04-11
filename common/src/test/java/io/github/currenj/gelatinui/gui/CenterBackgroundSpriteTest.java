@@ -3,7 +3,7 @@ package io.github.currenj.gelatinui.gui;
 import io.github.currenj.gelatinui.gui.components.Panel;
 import io.github.currenj.gelatinui.gui.components.SpriteData;
 import io.github.currenj.gelatinui.gui.components.SpriteRenderMode;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,7 +41,7 @@ public class CenterBackgroundSpriteTest {
         Panel panel = new Panel();
         
         // Create a sprite with specific dimensions
-        ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("test", "sprite");
+        Identifier texture = Identifier.fromNamespaceAndPath("test", "sprite");
         SpriteData sprite = new SpriteData(texture)
             .uv(0, 0, 64, 64)  // regionW=64, regionH=64
             .actualSize(50, 50)  // actualW=50, actualH=50
@@ -61,7 +61,7 @@ public class CenterBackgroundSpriteTest {
         Panel panel = new Panel();
         
         // Create a sprite without explicit actualSize
-        ResourceLocation texture = ResourceLocation.fromNamespaceAndPath("test", "sprite");
+        Identifier texture = Identifier.fromNamespaceAndPath("test", "sprite");
         SpriteData sprite = new SpriteData(texture)
             .uv(0, 0, 64, 64)  // regionW=64, regionH=64
             .renderMode(SpriteRenderMode.STRETCH);

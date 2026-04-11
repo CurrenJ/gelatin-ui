@@ -9,7 +9,7 @@ import io.github.currenj.gelatinui.gui.animation.FloatKeyframeAnimation;
 import io.github.currenj.gelatinui.gui.animation.Keyframe;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.joml.Vector2f;
@@ -43,7 +43,7 @@ public class EffectsTestScreen extends GelatinUIScreen<GelatinMenu> {
     @Override
     protected void buildUI() {
         MinecraftRenderContext tempContext = new MinecraftRenderContext(
-                new GuiGraphics(this.minecraft, this.minecraft.renderBuffers().bufferSource()),
+                null,
                 this.font
         );
 
@@ -312,7 +312,7 @@ public class EffectsTestScreen extends GelatinUIScreen<GelatinMenu> {
     }
 
     @Override
-    protected void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         // Dark background
     }
 

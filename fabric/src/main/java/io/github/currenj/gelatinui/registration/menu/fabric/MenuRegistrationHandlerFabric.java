@@ -4,7 +4,7 @@ import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.registration.menu.IMenuRegistrationHandler;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.MenuType;
 
 public class MenuRegistrationHandlerFabric implements IMenuRegistrationHandler {
@@ -14,7 +14,7 @@ public class MenuRegistrationHandlerFabric implements IMenuRegistrationHandler {
 
     @Override
     public void register(String id, MenuType<?> menuType) {
-        ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, id);
+        Identifier resourceLocation = Identifier.fromNamespaceAndPath(GelatinUi.MOD_ID, id);
         Registry.register(BuiltInRegistries.MENU, resourceLocation, menuType);
     }
 }

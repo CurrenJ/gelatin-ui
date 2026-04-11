@@ -4,19 +4,10 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.currenj.gelatinui.gui.UIAnimationSettings;
 import io.github.currenj.gelatinui.registration.menu.MenuRegistration;
-import io.github.currenj.gelatinui.tooltip.ItemStacksInfo;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-
-import io.github.currenj.gelatinui.tooltip.ItemStacksTooltip;
-
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -64,25 +55,14 @@ public final class CommandUtils {
      * @param commandTree The command tree map
      */
     public static void addTooltipExampleCommand(Map<String, LiteralArgumentBuilder<CommandSourceStack>> commandTree) {
+        // Note: Custom HoverEvent.Action injection is not possible in MC 26.1 (Action is a final enum).
+        // The ItemStacksTooltip hover event feature is disabled until an alternative approach is found.
         if (commandTree.containsKey("example")) {
             LiteralArgumentBuilder<CommandSourceStack> exampleBranch = commandTree.get("example");
             exampleBranch.then(LiteralArgumentBuilder.<CommandSourceStack>literal("tooltip").executes(context -> {
                 var source = context.getSource();
                 if (source.getPlayer() != null) {
-                    // Create ItemStacksTooltip with test items
-                    List<ItemStack> tooltipItems = Arrays.asList(
-                        new ItemStack(Items.DIAMOND, 3),
-                        new ItemStack(Items.EMERALD, 2),
-                        new ItemStack(Items.GOLD_INGOT, 5),
-                        ItemStack.EMPTY,
-                        new ItemStack(Items.IRON_INGOT, 10)
-                    );
-                    ItemStacksInfo info = new ItemStacksInfo(tooltipItems);
-
-                    // Send chat message with hover tooltip
-                    Component message = Component.literal("Hover over this message to see item stacks tooltip!")
-                        .withStyle(style -> style.withHoverEvent(new HoverEvent(ItemStacksTooltip.SHOW_ITEM_STACKS, info)));
-
+                    Component message = Component.literal("[GelatinUI] ItemStacks hover tooltip is not available in MC 26.1 (custom HoverEvent.Action removed).");
                     source.getPlayer().sendSystemMessage(message);
                 }
                 return 1;

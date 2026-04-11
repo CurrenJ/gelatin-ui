@@ -4,7 +4,7 @@ import io.github.currenj.gelatinui.gui.DirtyFlag;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import io.github.currenj.gelatinui.gui.IUIElement;
 import io.github.currenj.gelatinui.gui.UIContainer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.awt.geom.Rectangle2D;
 

@@ -1,6 +1,6 @@
 package io.github.currenj.gelatinui.gui.particles;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Random;
@@ -56,7 +56,7 @@ public class ParticleEmitter {
     
     // Rendering
     private ParticleRenderMode renderMode = ParticleRenderMode.SPRITE;
-    private ResourceLocation spriteTexture = null;
+    private Identifier spriteTexture = null;
     private ItemStack itemStack = ItemStack.EMPTY;
     
     // Custom initialization
@@ -202,7 +202,7 @@ public class ParticleEmitter {
         return this;
     }
     
-    public ParticleEmitter setSpriteTexture(ResourceLocation texture) {
+    public ParticleEmitter setSpriteTexture(Identifier texture) {
         this.spriteTexture = texture;
         this.renderMode = ParticleRenderMode.SPRITE;
         return this;

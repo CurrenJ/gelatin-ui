@@ -2,7 +2,7 @@ package io.github.currenj.gelatinui.gui.components;
 
 import io.github.currenj.gelatinui.gui.DirtyFlag;
 import io.github.currenj.gelatinui.gui.UIEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Vector2f;
 
 /**
@@ -18,7 +18,7 @@ public class SpriteButton extends SpriteRectangle<SpriteButton> {
         super(width, height, color);
     }
 
-    public SpriteButton(float width, float height, ResourceLocation texture) {
+    public SpriteButton(float width, float height, Identifier texture) {
         super(width, height, texture);
     }
 

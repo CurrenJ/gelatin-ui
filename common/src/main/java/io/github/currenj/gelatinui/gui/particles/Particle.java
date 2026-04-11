@@ -1,6 +1,6 @@
 package io.github.currenj.gelatinui.gui.particles;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -33,7 +33,7 @@ public class Particle {
     
     // Rendering mode
     private ParticleRenderMode renderMode = ParticleRenderMode.SPRITE;
-    private ResourceLocation spriteTexture = null;
+    private Identifier spriteTexture = null;
     private ItemStack itemStack = ItemStack.EMPTY;
     
     // Property interpolation
@@ -124,7 +124,7 @@ public class Particle {
     public float getAge() { return age; }
     public Vector2f getGravity() { return gravity; }
     public ParticleRenderMode getRenderMode() { return renderMode; }
-    public ResourceLocation getSpriteTexture() { return spriteTexture; }
+    public Identifier getSpriteTexture() { return spriteTexture; }
     public ItemStack getItemStack() { return itemStack; }
     
     // Setters for initialization
@@ -205,7 +205,7 @@ public class Particle {
         return this;
     }
     
-    public Particle setSpriteTexture(ResourceLocation texture) {
+    public Particle setSpriteTexture(Identifier texture) {
         this.spriteTexture = texture;
         this.renderMode = ParticleRenderMode.SPRITE;
         return this;

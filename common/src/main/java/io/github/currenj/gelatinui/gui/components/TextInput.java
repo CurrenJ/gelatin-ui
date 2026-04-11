@@ -5,7 +5,7 @@ import io.github.currenj.gelatinui.gui.DirtyFlag;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import io.github.currenj.gelatinui.gui.UIElement;
 import io.github.currenj.gelatinui.gui.UIEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Vector2f;
 
 /**

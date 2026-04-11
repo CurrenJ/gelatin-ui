@@ -6,7 +6,7 @@ import io.github.currenj.gelatinui.gui.UI;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -29,7 +29,7 @@ public class TabsTestScreen extends GelatinUIScreen<GelatinMenu> {
     protected void buildUI() {
         // Create a temporary render context to measure text
         MinecraftRenderContext tempContext = new MinecraftRenderContext(
-            new GuiGraphics(this.minecraft, this.minecraft.renderBuffers().bufferSource()),
+            null,
             this.font
         );
 
@@ -47,8 +47,8 @@ public class TabsTestScreen extends GelatinUIScreen<GelatinMenu> {
         ItemTabs itemTabs = UI.itemTabs()
                 .sizes(18, 18, 16, 16)
                 // Use existing textures as placeholder frames; replace with your frame sprites as needed
-                .hoverFrame(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_embellishment_1.png"))
-                .selectedFrame(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_gold_outline.png"))
+                .hoverFrame(net.minecraft.resources.Identifier.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_embellishment_1.png"))
+                .selectedFrame(net.minecraft.resources.Identifier.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_gold_outline.png"))
                 .tabSpacing(4)
                 .onSelectionChanged(index -> {
                     // Example: change the title to reflect the selected tab
@@ -106,8 +106,8 @@ public class TabsTestScreen extends GelatinUIScreen<GelatinMenu> {
 
         ItemTabs itemTabs2 = UI.itemTabs()
                 .sizes(18, 18, 16, 16)
-                .hoverFrame(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_embellishment_1.png"))
-                .selectedFrame(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_gold_outline.png"))
+                .hoverFrame(net.minecraft.resources.Identifier.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_embellishment_1.png"))
+                .selectedFrame(net.minecraft.resources.Identifier.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_gold_outline.png"))
                 .tabSpacing(4)
                 .onSelectionChanged(index -> {
                     tabsLabel2
@@ -183,7 +183,7 @@ public class TabsTestScreen extends GelatinUIScreen<GelatinMenu> {
     }
 
     @Override
-    protected void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         // Draw title using traditional method
     }
 }

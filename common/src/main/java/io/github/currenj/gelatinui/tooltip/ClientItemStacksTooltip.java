@@ -2,10 +2,11 @@ package io.github.currenj.gelatinui.tooltip;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public class ClientItemStacksTooltip implements ClientTooltipComponent {
     }
 
     @Override
-    public int getHeight() {
+    public int getHeight(Font font) {
         return isShowing() ? this.backgroundHeight() : 0;
     }
 
@@ -42,7 +43,7 @@ public class ClientItemStacksTooltip implements ClientTooltipComponent {
     }
 
     @Override
-    public void renderImage(Font font, int x, int y, GuiGraphics guiGraphics) {
+    public void extractImage(Font font, int x, int y, int w, int h, GuiGraphicsExtractor guiGraphics) {
         if(isShowing()) {
             int xMax = this.gridSizeX();
             int yMax = this.gridSizeY();
@@ -63,22 +64,22 @@ public class ClientItemStacksTooltip implements ClientTooltipComponent {
         return player != null;
     }
 
-    private void renderSlot(int x, int y, int itemIndex, GuiGraphics guiGraphics, Font font) {
+    private void renderSlot(int x, int y, int itemIndex, GuiGraphicsExtractor guiGraphics, Font font) {
         if (itemIndex < this.items.size()) {
             ItemStack itemstack = this.items.get(itemIndex);
             if (itemstack.isEmpty()) {
                 return;
             }
 
-            guiGraphics.renderItem(itemstack, x + 1, y + 1, itemIndex);
+            guiGraphics.item(itemstack, x + 1, y + 1, itemIndex);
             if (this.renderItemDecorations) {
-                guiGraphics.renderItemDecorations(font, itemstack, x + 1, y + 1);
+                guiGraphics.itemDecorations(font, itemstack, x + 1, y + 1);
             }
         }
     }
 
-    private void blit(GuiGraphics guiGraphics, int x, int y, Texture texture) {
-        guiGraphics.blitSprite(texture.sprite, x, y, texture.w, texture.h);
+    private void blit(GuiGraphicsExtractor guiGraphics, int x, int y, Texture texture) {
+        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, texture.sprite, x, y, texture.w, texture.h);
     }
 
     private int gridSizeX() {
@@ -90,13 +91,13 @@ public class ClientItemStacksTooltip implements ClientTooltipComponent {
     }
 
     enum Texture {
-        SLOT(ResourceLocation.withDefaultNamespace("container/slot"), 18, 20);
+        SLOT(Identifier.withDefaultNamespace("container/slot"), 18, 20);
 
-        public final ResourceLocation sprite;
+        public final Identifier sprite;
         public final int w;
         public final int h;
 
-        Texture(ResourceLocation sprite, int w, int h) {
+        Texture(Identifier sprite, int w, int h) {
             this.sprite = sprite;
             this.w = w;
             this.h = h;

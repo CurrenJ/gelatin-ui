@@ -5,7 +5,7 @@ import io.github.currenj.gelatinui.GelatinUiClient;
 import io.github.currenj.gelatinui.registration.menu.ScreenRegistration;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.ClientTooltipComponentCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -36,7 +36,7 @@ public final class GelatinUiModFabricClient implements ClientModInitializer {
         GelatinUiClient.init();
 
         // Register tooltip components
-        TooltipComponentCallback.EVENT.register(data -> {
+        ClientTooltipComponentCallback.EVENT.register(data -> {
             if (data instanceof ItemStacksTooltip tooltip) {
                 return new ClientItemStacksTooltip(
                     tooltip.items(),

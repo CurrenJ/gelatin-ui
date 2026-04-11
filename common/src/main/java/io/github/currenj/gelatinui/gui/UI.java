@@ -1,7 +1,7 @@
 package io.github.currenj.gelatinui.gui;
 
 import io.github.currenj.gelatinui.gui.components.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -54,7 +54,7 @@ public class UI {
     /**
      * Create a new SpriteRectangle backed by a texture.
      */
-    public static SpriteRectangle.SpriteRectangleImpl spriteRectangle(float width, float height, ResourceLocation texture) {
+    public static SpriteRectangle.SpriteRectangleImpl spriteRectangle(float width, float height, Identifier texture) {
         return new SpriteRectangle.SpriteRectangleImpl(width, height, texture);
     }
 
@@ -68,7 +68,7 @@ public class UI {
     /**
      * Create a new SpriteButton backed by a texture.
      */
-    public static SpriteRectangle.SpriteRectangleImpl spriteButton(float width, float height, ResourceLocation texture) {
+    public static SpriteRectangle.SpriteRectangleImpl spriteButton(float width, float height, Identifier texture) {
         return new SpriteRectangle.SpriteRectangleImpl(width, height, texture);
     }
 

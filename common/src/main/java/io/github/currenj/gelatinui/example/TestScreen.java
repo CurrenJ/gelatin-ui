@@ -7,9 +7,9 @@ import io.github.currenj.gelatinui.gui.UIEvent;
 import io.github.currenj.gelatinui.gui.components.*;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -40,7 +40,7 @@ public class TestScreen extends GelatinUIScreen<GelatinMenu> {
     protected void buildUI() {
         // Create a temporary render context to measure text
         MinecraftRenderContext tempContext = new MinecraftRenderContext(
-            new GuiGraphics(this.minecraft, this.minecraft.renderBuffers().bufferSource()),
+            null,
             this.font
         );
 
@@ -177,7 +177,7 @@ public class TestScreen extends GelatinUIScreen<GelatinMenu> {
                 });
 
         // Close button
-        ResourceLocation progressBarBgTex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_background.png");
+        Identifier progressBarBgTex = Identifier.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_background.png");
         SpriteButton closeBtn = UI.spriteButton(128, 10, UI.rgb(180, 50, 50))
                 .texture(SpriteData
                         .texture(progressBarBgTex)
@@ -251,9 +251,9 @@ public class TestScreen extends GelatinUIScreen<GelatinMenu> {
     }
 
     @Override
-    protected void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         // Draw title using traditional method
-        guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, this.height / 2 - 100, 0xFFFFFF);
+        guiGraphics.centeredText(this.font, this.title, this.width / 2, this.height / 2 - 100, 0xFFFFFF);
 
         // Draw performance info
 //        drawPerformanceInfo(guiGraphics);
@@ -278,10 +278,10 @@ public class TestScreen extends GelatinUIScreen<GelatinMenu> {
         }
     }
 
-    protected void drawPerformanceInfo(GuiGraphics guiGraphics) {
+    protected void drawPerformanceInfo(GuiGraphicsExtractor guiGraphics) {
         totalTime += 0.016f; // Approximate frame time
         String perfInfo = String.format("Dirty Flag System Active | Time: %.1fs", totalTime);
-        guiGraphics.drawString(this.font, perfInfo, 10, this.height - 20, UI.rgb(100, 255, 100), false);
+        guiGraphics.text(this.font, perfInfo, 10, this.height - 20, UI.rgb(100, 255, 100), false);
 
         // Debug mode indicators
         boolean bounds = io.github.currenj.gelatinui.gui.UIElement.isDebugBoundsEnabled();
@@ -290,7 +290,7 @@ public class TestScreen extends GelatinUIScreen<GelatinMenu> {
 
         String debugInfo = String.format("Debug: [8]Bounds:%s  [9]Grid:%s  [0]Pad:%s",
                 bounds ? "ON " : "off", grid ? "ON " : "off", pad ? "ON" : "off");
-        guiGraphics.drawString(this.font, debugInfo, 10, this.height - 30, UI.rgb(255, 255, 100), false);
+        guiGraphics.text(this.font, debugInfo, 10, this.height - 30, UI.rgb(255, 255, 100), false);
     }
 
     private void addHoverEffects(Label label) {
@@ -322,12 +322,12 @@ public class TestScreen extends GelatinUIScreen<GelatinMenu> {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 54) { // Key '6' = GLFW_KEY_
+    public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
+        if (event.key() == 54) { // Key '6' = GLFW_KEY_
             outerVBox.scaleToHeight(this.uiScreen.getViewHeight());
             return true;
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 }
