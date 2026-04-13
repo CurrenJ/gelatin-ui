@@ -16,6 +16,9 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
     private ItemStack itemStack = ItemStack.EMPTY;
     private boolean showCount = true;
     private float itemScale = 1.0f;
+    // Base (unscaled) size used to recompute size when itemScale changes
+    private float baseWidth = 16f;
+    private float baseHeight = 16f;
 
     /**
      * Default constructor creates a 16x16 item renderer (standard item size).
@@ -28,6 +31,8 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
      * Constructor with custom size.
      */
     public ItemRenderer(float width, float height) {
+        this.baseWidth = width;
+        this.baseHeight = height;
         this.size.set(width, height);
     }
 
@@ -43,6 +48,8 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
      * Constructor with size and ItemStack.
      */
     public ItemRenderer(float width, float height, ItemStack itemStack) {
+        this.baseWidth = width;
+        this.baseHeight = height;
         this.size.set(width, height);
         this.itemStack = itemStack;
     }
@@ -71,11 +78,13 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
 
     /**
      * Set the scale of the rendered item.
+     * Updates the element's size so layout and bounds reflect the visual scale.
      */
     public T itemScale(float scale) {
         if (this.itemScale != scale) {
             this.itemScale = scale;
-            markDirty(DirtyFlag.CONTENT);
+            this.size.set(baseWidth * scale, baseHeight * scale);
+            markDirty(DirtyFlag.CONTENT, DirtyFlag.SIZE);
         }
         return self();
     }
