@@ -9,7 +9,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
@@ -36,6 +35,9 @@ public abstract class GuiGraphicsMixin implements IGuiGraphicsExtension {
 
     @Shadow
     public abstract void blit(RenderPipeline renderPipeline, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color);
+
+    @Shadow
+    public abstract void blit(Identifier location, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1);
 
     @Shadow
     abstract void setTooltipForNextFrameInternal(Font font, List<ClientTooltipComponent> components, int x, int y, ClientTooltipPositioner positioner, Identifier style, boolean replaceExisting);
@@ -74,16 +76,7 @@ public abstract class GuiGraphicsMixin implements IGuiGraphicsExtension {
 
     @Override
     public void gelatinui$innerBlit(Identifier resourceLocation, float x1, float x2, float y1, float y2, float u1, float u2, float v1, float v2) {
-        // Convert float UVs back to integer coordinates for blit call
-        // We'll use the standard blit with the GUI_TEXTURED pipeline
-        int x = (int) x1;
-        int y = (int) y1;
-        int width = (int) (x2 - x1);
-        int height = (int) (y2 - y1);
-        // Approximate: reconstruct u/v from normalized coords (assume 256x256 texture)
-        float uPx = u1 * 256.0f;
-        float vPx = v1 * 256.0f;
-        this.blit(RenderPipelines.GUI_TEXTURED, resourceLocation, x, y, uPx, vPx, width, height, 256, 256, -1);
+        this.blit(resourceLocation, (int) x1, (int) y1, (int) x2, (int) y2, u1, u2, v1, v2);
     }
 
     /**
