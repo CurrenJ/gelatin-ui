@@ -51,11 +51,22 @@ public class SpriteProgressBar extends SpriteRectangle<SpriteProgressBar> {
     }
 
     /**
-     * Set the progress value (0.0 to 1.0).
+     * Set the progress value (0.0 to 1.0) with smooth animation.
      */
     public SpriteProgressBar progress(float progress) {
         this.targetProgress = Math.max(0f, Math.min(1f, progress));
         this.isAnimating = true;
+        markDirty(DirtyFlag.CONTENT);
+        return this;
+    }
+
+    /**
+     * Set the progress value immediately without animation — use when restoring state.
+     */
+    public SpriteProgressBar progressImmediate(float progress) {
+        this.targetProgress = Math.max(0f, Math.min(1f, progress));
+        this.displayedProgress = this.targetProgress;
+        this.isAnimating = false;
         markDirty(DirtyFlag.CONTENT);
         return this;
     }
