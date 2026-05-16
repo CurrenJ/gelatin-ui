@@ -91,8 +91,6 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        super.mouseClicked(event, doubleClick);
-
         notifyGlobalClickListeners(event.x(), event.y(), event.button());
 
         if (uiScreen != null) {
