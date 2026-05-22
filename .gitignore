@@ -109,3 +109,6 @@ run-data
 repo
 
 /local.properties
+/debug/
+/.claude/settings.local.json
+CLAUDE.md

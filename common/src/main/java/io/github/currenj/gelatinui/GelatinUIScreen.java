@@ -277,6 +277,19 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
     }
 
     @Override
+    protected boolean hasClickedOutside(double mx, double my, int xo, int yo, int button) {
+        // NeoForge patches this same behavior into AbstractContainerScreen; replicate it for Fabric.
+        // Without this, slots positioned beyond the default imageWidth/imageHeight (176/166) are
+        // treated as "outside", causing cursor items to be thrown into the world on click.
+        for (net.minecraft.world.inventory.Slot slot : this.menu.slots) {
+            if (slot.isActive() && isHovering(slot.x, slot.y, 16, 16, mx, my)) {
+                return false;
+            }
+        }
+        return super.hasClickedOutside(mx, my, xo, yo, button);
+    }
+
+    @Override
     protected void renderLabels(GuiGraphics guiGraphics, int i, int j) {
         // No label rendering here; handled in renderContent
     }
