@@ -117,6 +117,22 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
     }
 
     @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (uiScreen != null) {
+            uiScreen.onMouseDrag((int) mouseX, (int) mouseY);
+        }
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (uiScreen != null) {
+            uiScreen.onMouseRelease((int) mouseX, (int) mouseY, button);
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
 

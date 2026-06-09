@@ -5,7 +5,12 @@ import io.github.currenj.gelatinui.extension.IGuiGraphicsExtension;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Minecraft-specific implementation of IRenderContext.
@@ -43,6 +48,28 @@ public class MinecraftRenderContext implements IRenderContext {
     @Override
     public int getFontHeight() {
         return font.lineHeight;
+    }
+
+    @Override
+    public List<String> wrapText(String text, int maxWidth) {
+        if (text == null || text.isEmpty() || maxWidth <= 0) {
+            return List.of();
+        }
+
+        // Use Minecraft's font splitter which handles word-boundary wrapping
+        List<FormattedCharSequence> lines = font.split(Component.literal(text), maxWidth);
+
+        // Extract plain text from each FormattedCharSequence line
+        List<String> result = new ArrayList<>(lines.size());
+        for (FormattedCharSequence line : lines) {
+            StringBuilder sb = new StringBuilder();
+            line.accept((charIndex, style, codePoint) -> {
+                sb.appendCodePoint(codePoint);
+                return true;
+            });
+            result.add(sb.toString());
+        }
+        return result;
     }
 
     @Override

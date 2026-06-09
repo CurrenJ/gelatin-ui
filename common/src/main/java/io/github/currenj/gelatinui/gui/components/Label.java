@@ -6,6 +6,8 @@ import io.github.currenj.gelatinui.gui.UIElement;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import org.joml.Vector2f;
 
+import java.util.List;
+
 /**
  * A simple text label component.
  * Renders text with configurable color and automatically sizes to text dimensions.
@@ -14,6 +16,13 @@ public class Label extends UIElement<Label> {
     private String text;
     private int color;
     private boolean centered;
+
+    // Wrapping support — when maxWidth > 0, text word-wraps to fit within this pixel width
+    private float maxWidth = 0f;
+    // Extra pixels between wrapped lines (added to font height per line gap)
+    private float lineSpacing = 0f;
+    // Cached wrapped lines populated by updateSize when wrapping is active; null otherwise
+    private List<String> wrappedLines;
 
     // Measured base size (unscaled) obtained via updateSize(context)
     private float baseWidth = 0f;
@@ -60,6 +69,31 @@ public class Label extends UIElement<Label> {
         return this;
     }
 
+    /**
+     * Set a maximum pixel width for this label. When the text exceeds this width,
+     * it will word-wrap across multiple lines. Set to 0 or negative to disable
+     * wrapping (default).
+     */
+    public Label maxWidth(float maxWidth) {
+        if (this.maxWidth != maxWidth) {
+            this.maxWidth = maxWidth;
+            markDirty(DirtyFlag.CONTENT, DirtyFlag.SIZE);
+        }
+        return this;
+    }
+
+    /**
+     * Set extra pixels between wrapped lines. Only meaningful when maxWidth is set.
+     * Default is 0 (standard font line height with no extra gap).
+     */
+    public Label lineSpacing(float lineSpacing) {
+        if (this.lineSpacing != lineSpacing) {
+            this.lineSpacing = lineSpacing;
+            markDirty(DirtyFlag.CONTENT, DirtyFlag.SIZE);
+        }
+        return this;
+    }
+
     public Label init(IRenderContext renderContext)
     {
         updateSize(renderContext);
@@ -102,36 +136,79 @@ public class Label extends UIElement<Label> {
         }
 
         // When UIElement.render has applied translation and scaling (Minecraft path), we should draw at origin.
-        if (context instanceof MinecraftRenderContext) {
-            MinecraftRenderContext mcContext = (MinecraftRenderContext) context;
-
-            if (centered) {
-                mcContext.drawCenteredString(text, (int) (baseWidth / 2f), 0, color);
+        if (context instanceof MinecraftRenderContext mcContext) {
+            if (wrappedLines != null && !wrappedLines.isEmpty()) {
+                // Multi-line wrapped rendering
+                int fontHeight = context.getFontHeight();
+                for (int i = 0; i < wrappedLines.size(); i++) {
+                    String line = wrappedLines.get(i);
+                    int yOffset = (int) (i * (fontHeight + lineSpacing));
+                    if (centered) {
+                        mcContext.drawCenteredString(line, (int) (baseWidth / 2f), yOffset, color);
+                    } else {
+                        mcContext.drawString(line, 0, yOffset, color);
+                    }
+                }
             } else {
-                mcContext.drawString(text, 0, 0, color);
+                // Single-line rendering
+                if (centered) {
+                    mcContext.drawCenteredString(text, (int) (baseWidth / 2f), 0, color);
+                } else {
+                    mcContext.drawString(text, 0, 0, color);
+                }
             }
         } else {
             // Fallback: draw using global positions and scaled size
             int x = (int) position.x;
             int y = (int) position.y;
-            if (centered) {
-                context.drawCenteredString(text, x + (int) size.x / 2, y, color);
+            if (wrappedLines != null && !wrappedLines.isEmpty()) {
+                // Multi-line wrapped rendering (fallback)
+                int fontHeight = context.getFontHeight();
+                for (int i = 0; i < wrappedLines.size(); i++) {
+                    String line = wrappedLines.get(i);
+                    int yOffset = (int) (i * (fontHeight + lineSpacing));
+                    if (centered) {
+                        context.drawCenteredString(line, x + (int) size.x / 2, y + yOffset, color);
+                    } else {
+                        context.drawString(line, x, y + yOffset, color);
+                    }
+                }
             } else {
-                context.drawString(text, x, y, color);
+                // Single-line rendering (fallback)
+                if (centered) {
+                    context.drawCenteredString(text, x + (int) size.x / 2, y, color);
+                } else {
+                    context.drawString(text, x, y, color);
+                }
             }
         }
     }
 
     /**
      * Measure and store base size using the provided context (unscaled size).
+     * When maxWidth is set, text is word-wrapped and the label's height expands
+     * to accommodate all lines.
      */
     public void updateSize(IRenderContext context) {
         if (text != null && !text.isEmpty()) {
-            this.baseWidth = context.getStringWidth(text);
-            this.baseHeight = context.getFontHeight();
-            // Store BASE (unscaled) size - rendering transform and bounds calculation will apply scale
-            setSize(new Vector2f(baseWidth, baseHeight));
+            if (maxWidth > 0) {
+                // Word-wrap mode: split text into lines that fit within maxWidth
+                this.wrappedLines = context.wrapText(text, (int) maxWidth);
+                this.baseWidth = maxWidth;
+                int fontHeight = context.getFontHeight();
+                float totalHeight = wrappedLines.size() * fontHeight
+                    + Math.max(0, wrappedLines.size() - 1) * lineSpacing;
+                this.baseHeight = totalHeight;
+                setSize(new Vector2f(baseWidth, baseHeight));
+            } else {
+                // Single-line mode (default)
+                this.wrappedLines = null;
+                this.baseWidth = context.getStringWidth(text);
+                this.baseHeight = context.getFontHeight();
+                setSize(new Vector2f(baseWidth, baseHeight));
+            }
         } else {
+            this.wrappedLines = null;
             this.baseWidth = 0f;
             this.baseHeight = 0f;
             setSize(new Vector2f(0, 0));
@@ -148,6 +225,21 @@ public class Label extends UIElement<Label> {
 
     public boolean isCentered() {
         return centered;
+    }
+
+    public float getMaxWidth() {
+        return maxWidth;
+    }
+
+    public float getLineSpacing() {
+        return lineSpacing;
+    }
+
+    /**
+     * Get the wrapped lines if wrapping is active, or null if not wrapping.
+     */
+    public List<String> getWrappedLines() {
+        return wrappedLines;
     }
 
 
