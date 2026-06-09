@@ -4,6 +4,8 @@ import io.github.currenj.gelatinui.gui.components.SlicedSpriteData;
 import io.github.currenj.gelatinui.gui.components.SpriteData;
 import net.minecraft.resources.Identifier;
 
+import java.util.List;
+
 /**
  * Abstraction layer for rendering operations.
  * Allows the GUI system to be independent of specific rendering implementations.
@@ -18,6 +20,49 @@ public interface IRenderContext {
     int getStringWidth(String text);
 
     int getFontHeight();
+
+    /**
+     * Wrap text to fit within a maximum pixel width, splitting at word boundaries
+     * where possible and falling back to character-level breaks for long words.
+     * <p>
+     * The default implementation does simple character-by-character wrapping using
+     * {@link #getStringWidth}. Override for better word-boundary wrapping (e.g.,
+     * using the Minecraft font splitter).
+     * @param text Plain text to wrap
+     * @param maxWidth Maximum pixel width for each line
+     * @return List of wrapped lines (may be empty if text is null/empty)
+     */
+    default List<String> wrapText(String text, int maxWidth) {
+        if (text == null || text.isEmpty() || maxWidth <= 0) {
+            return List.of();
+        }
+        List<String> lines = new java.util.ArrayList<>();
+        StringBuilder currentLine = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            String candidate = currentLine.toString() + text.charAt(i);
+            if (getStringWidth(candidate) > maxWidth && !currentLine.isEmpty()) {
+                lines.add(currentLine.toString());
+                currentLine.setLength(0);
+            }
+            currentLine.append(text.charAt(i));
+        }
+        if (!currentLine.isEmpty()) {
+            lines.add(currentLine.toString());
+        }
+        return lines;
+    }
+
+    /**
+     * Calculate the total pixel height of wrapped text at a given max width.
+     * Convenience method equivalent to {@code wrapText(text, maxWidth).size() * getFontHeight()}.
+     * @param text Plain text to measure
+     * @param maxWidth Maximum pixel width for each line
+     * @return Total pixel height of all wrapped lines
+     */
+    default int getWrappedHeight(String text, int maxWidth) {
+        List<String> lines = wrapText(text, maxWidth);
+        return lines.size() * getFontHeight();
+    }
 
     void pushScissor(int x, int y, int width, int height);
 

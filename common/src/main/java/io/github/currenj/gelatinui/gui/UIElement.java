@@ -714,6 +714,14 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
         }
 
         Rectangle2D bounds = getBounds();
+        // Empty bounds (e.g. a Label that hasn't had updateSize called yet) would
+        // cause intersects() to return false, culling the element and preventing
+        // the render pass that would compute its real size. Fall back to a
+        // point-in-viewport check so zero-size elements still get a chance to
+        // measure and render themselves.
+        if (bounds.isEmpty()) {
+            return viewport.contains(bounds.getX(), bounds.getY());
+        }
         return viewport.intersects(bounds);
     }
 

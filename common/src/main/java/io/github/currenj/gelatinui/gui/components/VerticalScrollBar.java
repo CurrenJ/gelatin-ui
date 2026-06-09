@@ -7,9 +7,9 @@ import io.github.currenj.gelatinui.gui.UIScreen;
 import org.joml.Vector2f;
 
 /**
- * Simple vertical scrollbar that can render a track and a thumb and allow clicking on the track
- * to jump the scroll position. This implementation intentionally keeps interaction minimal
- * (click-to-jump) to avoid adding drag state to UIScreen; it can be extended later.
+ * Vertical scrollbar that renders a track and thumb.
+ * Click on the track to jump to a scroll position.
+ * Click and drag the thumb to smoothly scroll.
  */
 public class VerticalScrollBar extends UIElement<VerticalScrollBar> {
     private final UIScreen screen;
@@ -76,6 +76,9 @@ public class VerticalScrollBar extends UIElement<VerticalScrollBar> {
         context.disableBlend();
     }
 
+    // Drag state — set to true when the user grabs the thumb
+    private boolean isDragging = false;
+
     @Override
     protected boolean onEvent(UIEvent event) {
         switch (event.getType()) {
@@ -93,7 +96,7 @@ public class VerticalScrollBar extends UIElement<VerticalScrollBar> {
                 float localY = event.getMouseY() - gp.y;
                 int h = Math.max(1, (int) Math.round(size.y));
 
-                // Compute thumb height similar to render
+                // Compute thumb position (same logic as renderSelf)
                 float contentH = screen.getContentHeight();
                 float viewH = screen.getViewHeight();
                 if (contentH <= 0f || viewH <= 0f || contentH <= viewH) return true; // nothing to do
@@ -103,14 +106,53 @@ public class VerticalScrollBar extends UIElement<VerticalScrollBar> {
                 int minThumb = 16;
                 int thumbH = Math.max(minThumb, (int) Math.round(trackH * visibleFraction));
 
-                // Map click Y into scroll position: center the thumb on click position
-                float clickPos = localY - padding - thumbH * 0.5f;
+                float maxScroll = screen.getMaxScrollY();
+                float scroll = screen.getScrollY();
                 float tRange = Math.max(1f, trackH - thumbH);
+                int thumbTop = padding + (int) Math.round((scroll / Math.max(1f, maxScroll)) * tRange);
+
+                // Check whether the click landed on the thumb itself
+                boolean onThumb = localY >= thumbTop && localY <= thumbTop + thumbH;
+                if (onThumb) {
+                    // Start drag — subsequent mouse movement will update scroll position
+                    screen.startDrag(this, event.getMouseY(), screen.getScrollY());
+                    isDragging = true;
+                    return true;
+                }
+
+                // Click on track (not thumb): jump scroll position, centering thumb on click
+                float clickPos = localY - padding - thumbH * 0.5f;
                 float frac = clickPos / tRange;
                 if (Float.isNaN(frac)) frac = 0f;
                 frac = Math.max(0f, Math.min(1f, frac));
                 float newScroll = frac * screen.getMaxScrollY();
                 screen.setScrollY(newScroll);
+                return true;
+            }
+            case DRAG -> {
+                if (!isDragging) return false;
+                // Compute scroll delta from vertical mouse movement
+                float dy = event.getMouseY() - screen.getDragStartMouseY();
+                float contentH = screen.getContentHeight();
+                float viewH = screen.getViewHeight();
+                if (contentH <= 0f || viewH <= 0f || contentH <= viewH) return true;
+
+                float visibleFraction = Math.min(1f, viewH / contentH);
+                int h = Math.max(1, (int) Math.round(size.y));
+                int trackH = h - padding * 2;
+                int minThumb = 16;
+                int thumbH = Math.max(minThumb, (int) Math.round(trackH * visibleFraction));
+                float tRange = Math.max(1f, trackH - thumbH);
+
+                // Convert pixel delta to scroll delta
+                float scrollDelta = (dy / tRange) * screen.getMaxScrollY();
+                float newScroll = screen.getDragStartValue() + scrollDelta;
+                newScroll = Math.max(0f, Math.min(screen.getMaxScrollY(), newScroll));
+                screen.setScrollY(newScroll);
+                return true;
+            }
+            case DRAG_END -> {
+                isDragging = false;
                 return true;
             }
         }

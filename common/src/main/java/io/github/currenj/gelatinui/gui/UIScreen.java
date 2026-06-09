@@ -42,6 +42,11 @@ public class UIScreen {
     private long lastHoverEventTimeNanos = 0L; // monotonic nanos
     private final long hoverCooldownNanos = 80_000_000L; // 80 ms in nanos
     private IUIElement pendingHover = null; // scheduled hover target
+
+    // Drag state: track element being dragged and the mouse origin of the drag
+    private IUIElement draggedElement = null;
+    private float dragStartMouseY = 0f;
+    private float dragStartValue = 0f; // element-defined value at drag start (e.g. scrollY)
     private long pendingHoverFireTimeNanos = 0L; // nanos timestamp when pendingHover should be applied
 
     // Auto-centering: if enabled, UIScreen will center the root element in the viewport when its size changes
@@ -420,6 +425,92 @@ public class UIScreen {
          }
          return false;
      }
+
+    /**
+     * Handle mouse drag. Dispatches DRAG events to the dragged element, or
+     * initiates a drag via DRAG_START if the mouse is over a new element and the
+     * button is held.
+     */
+    public void onMouseDrag(int mouseX, int mouseY) {
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
+
+        if (draggedElement != null) {
+            UIEvent event = new UIEvent(UIEvent.Type.DRAG, draggedElement, mouseX, mouseY, dragStartMouseY);
+            draggedElement.handleEvent(event);
+            return;
+        }
+
+        // No element being dragged; see if the hovered element wants to start a drag
+        if (root != null) {
+            IUIElement target = findElementAt(root, mouseX, mouseY);
+            if (target != null) {
+                UIEvent startEvent = new UIEvent(UIEvent.Type.DRAG_START, target, mouseX, mouseY);
+                if (target.handleEvent(startEvent)) {
+                    draggedElement = target;
+                    dragStartMouseY = mouseY;
+                    dragStartValue = 0f;
+                }
+            }
+        }
+    }
+
+    /**
+     * Handle mouse release. Dispatches DRAG_END to the dragged element and
+     * clears drag state.
+     */
+    public void onMouseRelease(int mouseX, int mouseY, int button) {
+        if (draggedElement != null) {
+            UIEvent event = new UIEvent(UIEvent.Type.DRAG_END, draggedElement, mouseX, mouseY);
+            draggedElement.handleEvent(event);
+            draggedElement = null;
+        }
+    }
+
+    /**
+     * Set the drag start value from the element being dragged, used to anchor
+     * the drag delta to a meaningful starting offset (e.g. current scrollY).
+     */
+    public void setDragStartValue(float value) {
+        this.dragStartValue = value;
+    }
+
+    /**
+     * Get the drag start mouse Y coordinate.
+     */
+    public float getDragStartMouseY() {
+        return dragStartMouseY;
+    }
+
+    /**
+     * Get the drag start value (element-defined, e.g. scroll position).
+     */
+    public float getDragStartValue() {
+        return dragStartValue;
+    }
+
+    /**
+     * Called by an element's CLICK handler to initiate a drag, bypassing the
+     * normal DRAG_START auto-detection in {@link #onMouseDrag}. Use this when
+     * the element knows on mousedown that a drag should begin (e.g. clicking
+     * directly on a scrollbar thumb).
+     *
+     * @param element    the element that will receive DRAG / DRAG_END events
+     * @param mouseY     the mouse Y coordinate at drag start
+     * @param startValue the element-defined value at drag start (e.g. current scrollY)
+     */
+    public void startDrag(IUIElement element, float mouseY, float startValue) {
+        this.draggedElement = element;
+        this.dragStartMouseY = mouseY;
+        this.dragStartValue = startValue;
+    }
+
+    /**
+     * Check whether an element is currently being dragged.
+     */
+    public boolean isDragging() {
+        return draggedElement != null;
+    }
 
     private boolean isPointInScrollbar(int mouseX, int mouseY) {
         if (vscroll == null) return false;

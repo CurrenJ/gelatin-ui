@@ -37,12 +37,7 @@ public class Rectangle extends UIElement<Rectangle> {
 
     @Override
     protected void renderSelf(IRenderContext context) {
-        int x1 = (int) position.x;
-        int y1 = (int) position.y;
-        int x2 = (int) (position.x + size.x);
-        int y2 = (int) (position.y + size.y);
-
-        context.fill(x1, y1, x2, y2, color);
+        context.fill(0, 0, (int) size.x, (int) size.y, color);
     }
 
     @Override
