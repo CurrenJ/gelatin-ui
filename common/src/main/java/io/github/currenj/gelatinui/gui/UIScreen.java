@@ -372,6 +372,9 @@ public class UIScreen {
 
     /**
      * Handle mouse click.
+     * Events are dispatched to the deepest leaf under the cursor first.
+     * If the leaf does not consume the event, it bubbles up through ancestor
+     * containers until one consumes it or the root is reached.
      */
     public boolean onMouseClick(int mouseX, int mouseY, int button) {
         if (root != null) {
@@ -381,9 +384,10 @@ public class UIScreen {
                 return vscroll.handleEvent(evt);
             }
             IUIElement target = findElementAt(root, mouseX, mouseY);
-            if (target != null) {
+            while (target != null) {
                 UIEvent event = new UIEvent(UIEvent.Type.CLICK, target, mouseX, mouseY);
-                return target.handleEvent(event);
+                if (target.handleEvent(event)) return true;
+                target = target.getParent();
             }
         }
         return false;
