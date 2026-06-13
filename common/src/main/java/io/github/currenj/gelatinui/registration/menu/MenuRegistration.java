@@ -28,19 +28,32 @@ public class MenuRegistration {
 
     /**
      * Register a debug menu. This is typically called by event listeners during the registration event.
+     * MenuType creation is delegated to the platform-specific handler so each platform
+     * can create it at the correct time (e.g., NeoForge defers until registries are bootstrapped).
      * @param id The menu id
      */
     public static void registerDebugMenu(String id) {
-        MenuType<GelatinMenu> menuType = createDebugMenuType(id);
-        SidedRegistrationHelper.getMenuRegistrationHandler().register(id, menuType);
+        SidedRegistrationHelper.getMenuRegistrationHandler().register(id);
 
-        DEBUG_MENUS.put(id, menuType);
         String[] parts = id.split("[/:]");
         ID_PARTS.put(id, parts);
     }
 
-    private static MenuType<GelatinMenu> createDebugMenuType(String id) {
+    /**
+     * Create a MenuType for the given debug menu id.
+     * The returned MenuType's factory will look itself up via {@link #getDebugMenuTypeById(String)},
+     * so the MenuType must be stored in {@link #DEBUG_MENUS} before any menu is opened with it.
+     */
+    public static MenuType<GelatinMenu> createDebugMenuType(String id) {
         return new MenuType<>((i, inv) -> new GelatinMenu(getDebugMenuTypeById(id), i), FeatureFlags.VANILLA_SET);
+    }
+
+    /**
+     * Store a created MenuType so it can be looked up by id.
+     * Called by platform-specific handlers after MenuType creation.
+     */
+    public static void storeDebugMenuType(String id, MenuType<GelatinMenu> menuType) {
+        DEBUG_MENUS.put(id, menuType);
     }
 
     public static MenuType<GelatinMenu> getDebugMenuTypeById(String id) {

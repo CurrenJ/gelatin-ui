@@ -44,6 +44,14 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     // Multiplied by currentScale for rendering and bounds.
     protected float effectScale = 1.0f;
 
+    // Scale pivot point in local (unscaled) element coordinates.
+    // Default (0,0) = top-left corner (backward-compatible).
+    // Set to (size.x/2, size.y/2) for center-based scaling.
+    protected Vector2f pivot = new Vector2f(0.0f, 0.0f);
+
+    // Controls whether the pivot is recomputed automatically when size changes.
+    private PivotMode pivotMode = PivotMode.FIXED;
+
     // Visibility state
     protected boolean visible = true;
 
@@ -317,7 +325,14 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
 
             // Apply combined scale (base * effectScale * effect delta scale)
             float combinedScale = currentScale * effectScale * combinedEffectDelta.getScaleMultiplier();
-            pose.scale(combinedScale, combinedScale);
+            if (pivot.x != 0.0f || pivot.y != 0.0f) {
+                // Scale around the configured pivot point
+                pose.translate(pivot.x, pivot.y);
+                pose.scale(combinedScale, combinedScale);
+                pose.translate(-pivot.x, -pivot.y);
+            } else {
+                pose.scale(combinedScale, combinedScale);
+            }
 
             // Apply 2D (Z-axis) rotation if element has rotation
             if (combinedEffectDelta.has3DRotation()) {
@@ -510,14 +525,29 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
         Vector2f gp = getGlobalPosition();
         float gs = getGlobalScale();
 
+        // Compute local effective scale (without parent chain)
+        float localScale = currentScale * effectScale;
+
         // Apply effect transformations to bounds if enabled
         if (effectsAffectLayout) {
             Vector2f effectOffset = combinedEffectDelta.getPositionOffset();
             gp.add(effectOffset);
             gs *= combinedEffectDelta.getScaleMultiplier();
+            localScale *= combinedEffectDelta.getScaleMultiplier();
         }
 
-        return new Rectangle2D.Float(gp.x, gp.y, size.x * gs, size.y * gs);
+        // Account for scale pivot offset: when scaling from a non-zero pivot,
+        // the rendered top-left shifts by pivot * (1 - localScale) in local space
+        float parentScale = gs / localScale;
+        float pivotOffsetX = pivot.x * (1.0f - localScale) * parentScale;
+        float pivotOffsetY = pivot.y * (1.0f - localScale) * parentScale;
+
+        return new Rectangle2D.Float(
+            gp.x + pivotOffsetX,
+            gp.y + pivotOffsetY,
+            size.x * gs,
+            size.y * gs
+        );
     }
 
     @Override
@@ -566,6 +596,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     public T setSize(Vector2f size) {
         if (!this.size.equals(size)) {
             this.size.set(size);
+            applyPivotMode();
             markDirty(DirtyFlag.SIZE);
         }
         return self();
@@ -608,6 +639,89 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
      */
     public float getEffectScale() {
         return effectScale;
+    }
+
+    /**
+     * Get the scale pivot point in local (unscaled) element coordinates.
+     * (0,0) = top-left corner, (size.x, size.y) = bottom-right corner.
+     * @return the pivot point
+     */
+    public Vector2f getScalePivot() {
+        return new Vector2f(pivot);
+    }
+
+    /**
+     * Set the scale pivot point in local (unscaled) element coordinates.
+     * Calling this also sets the pivot mode to {@link PivotMode#FIXED}, meaning the
+     * pivot will not be recalculated automatically when the element is resized.
+     * @param pivot the new pivot point
+     * @return this element for method chaining
+     */
+    public T setScalePivot(Vector2f pivot) {
+        this.pivotMode = PivotMode.FIXED;
+        this.pivot.set(pivot);
+        boundsValid = false;
+        return self();
+    }
+
+    /**
+     * Set the scale pivot point in local (unscaled) element coordinates.
+     * Calling this also sets the pivot mode to {@link PivotMode#FIXED}.
+     * @param x pivot x-coordinate
+     * @param y pivot y-coordinate
+     * @return this element for method chaining
+     */
+    public T setScalePivot(float x, float y) {
+        this.pivotMode = PivotMode.FIXED;
+        this.pivot.set(x, y);
+        boundsValid = false;
+        return self();
+    }
+
+    /**
+     * Set the pivot mode. The pivot is recalculated immediately and will be kept
+     * in sync whenever the element's size changes.
+     * Use {@link PivotMode#FIXED} to stop auto-tracking and manage the pivot manually
+     * via {@link #setScalePivot}.
+     * @param mode the pivot mode
+     * @return this element for method chaining
+     */
+    public T setPivotMode(PivotMode mode) {
+        this.pivotMode = mode;
+        applyPivotMode();
+        return self();
+    }
+
+    /**
+     * Get the current pivot mode.
+     * @return the active {@link PivotMode}
+     */
+    public PivotMode getPivotMode() {
+        return pivotMode;
+    }
+
+    /**
+     * If the current pivot mode is not {@link PivotMode#FIXED}, recompute the
+     * pivot from the current element size.  Called automatically in
+     * {@link #setSize(Vector2f)} so callers never need to invoke this directly.
+     */
+    private void applyPivotMode() {
+        if (pivotMode == PivotMode.FIXED) return;
+        Vector2f computed = pivotMode.compute(size.x, size.y);
+        if (computed != null) {
+            pivot.set(computed);
+            boundsValid = false;
+        }
+    }
+
+    /**
+     * Convenience: configure the element to always scale from its center.
+     * Equivalent to {@code setPivotMode(PivotMode.CENTER)}.
+     * The pivot stays centered even as the element's size changes.
+     * @return this element for method chaining
+     */
+    public T scaleFromCenter() {
+        return setPivotMode(PivotMode.CENTER);
     }
 
     @Override
