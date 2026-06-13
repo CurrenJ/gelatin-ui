@@ -24,6 +24,8 @@ public final class GelatinUiClient {
             registrar.register(ExampleViews.EXAMPLE_MANUAL_CONTAINER_VIEW_ID.getPath(), ManualContainerTestScreen::new);
             registrar.register(ExampleViews.EXAMPLE_NESTED_TABS_VIEW_ID.getPath(), NestedTabsTestScreen::new);
             registrar.register(ExampleViews.EXAMPLE_TEXT_WRAPPING_VIEW_ID.getPath(), TextWrappingTestScreen::new);
+            registrar.register(ExampleViews.EXAMPLE_SCALE_PIVOT_VIEW_ID.getPath(), ScalePivotTestScreen::new);
+            registrar.register(ExampleViews.EXAMPLE_LABEL_SCALE_PIVOT_VIEW_ID.getPath(), LabelScalePivotTestScreen::new);
         });
     }
 }
