@@ -99,7 +99,12 @@ public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T>
         super.update(deltaTime);
 
         // Update children that need it
-        for (IUIElement child : children) {
+        // Snapshot before iterating: a child's update() can fire a callback (e.g. an
+        // animation onComplete) that mutates `children` on this container, which would
+        // otherwise throw ConcurrentModificationException. If a child is removed mid-pass,
+        // it still gets this one extra update() call against the stale snapshot reference,
+        // but update() on a detached element doesn't assume a parent exists, so that's harmless.
+        for (IUIElement child : new ArrayList<>(children)) {
             if (child.needsUpdate()) {
                 child.update(deltaTime);
             }
@@ -108,7 +113,7 @@ public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T>
 
     @Override
     protected void renderChildren(IRenderContext context, Rectangle2D viewport) {
-        for (IUIElement child : children) {
+        for (IUIElement child : new ArrayList<>(children)) {
             if (child.isVisible()) {
                 child.render(context, viewport);
             }
@@ -121,9 +126,12 @@ public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T>
             return false;
         }
 
-        // Propagate to children first (front to back)
-        for (int i = children.size() - 1; i >= 0; i--) {
-            IUIElement child = children.get(i);
+        // Propagate to children first (front to back). Snapshot first: a handler invoked
+        // partway through can remove an earlier-indexed sibling, which would otherwise shift
+        // later indices or throw IndexOutOfBoundsException.
+        List<IUIElement> snapshot = new ArrayList<>(children);
+        for (int i = snapshot.size() - 1; i >= 0; i--) {
+            IUIElement child = snapshot.get(i);
             if (child.handleEvent(event)) {
                 return true; // Event consumed by child
             }

@@ -65,6 +65,8 @@ public class UIScreen {
     // Base root position (before scroll offset applied). Auto-centering updates this.
     private Vector2f baseRootPosition = new Vector2f(0, 0);
 
+    private final List<Runnable> pendingDeferredTasks = new ArrayList<>();
+
     public UIScreen(int screenWidth, int screenHeight) {
         this.viewport = new Rectangle2D.Float(0, 0, screenWidth, screenHeight);
         this.vscroll = new VerticalScrollBar(this);
@@ -144,9 +146,40 @@ public class UIScreen {
     }
 
     /**
+     * Schedules {@code task} to run at the next safe point — in practice, the start of the next
+     * {@link #update(float)} call, which in a normal {@code GelatinUIScreen} frame is at most a
+     * couple of calls away (often still within the same render frame; see
+     * {@code GelatinUIScreen.extractRenderState}, which calls {@code update} up to three times per
+     * frame). Use this from click handlers / hover handlers / animation {@code onComplete} callbacks
+     * when you need to do more than a single {@code addChild}/{@code removeChild} — e.g. bundle a
+     * tree mutation with other field/state changes — and want the whole thing to run somewhere that
+     * isn't the middle of an active dispatch or update pass.
+     *
+     * <p>For a single child add/remove, you don't need this: {@link IUIElement} mutation methods are
+     * already safe to call directly from any callback (see the defensive-copy fix in
+     * {@code UIContainer}/{@code UIElement}).
+     */
+    public void runDeferred(Runnable task) {
+        pendingDeferredTasks.add(task);
+    }
+
+    private void flushDeferredTasks() {
+        if (pendingDeferredTasks.isEmpty()) {
+            return;
+        }
+        List<Runnable> toRun = new ArrayList<>(pendingDeferredTasks);
+        pendingDeferredTasks.clear();
+        for (Runnable task : toRun) {
+            task.run();
+        }
+    }
+
+    /**
      * Update the UI tree.
      */
     public void update(float deltaTime) {
+        flushDeferredTasks();
+
         // Apply global time control (timescale and pause/step logic)
         float adjustedDeltaTime = UITimeControl.processDeltaTime(deltaTime);
 

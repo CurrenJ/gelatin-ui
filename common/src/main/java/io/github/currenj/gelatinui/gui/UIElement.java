@@ -518,6 +518,35 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     }
 
     /**
+     * Moves this element from its current parent (if any) to {@code newParent}, optionally
+     * preserving its on-screen (global) position across the move.
+     *
+     * <p>Prefer this over manually calling {@code oldParent.removeChild(this)} then
+     * {@code newParent.addChild(this)} plus your own position math: {@code removeChild} clears
+     * the parent reference, so reading the global position *after* that call would return this
+     * element's bare {@code position} as if it were already a global coordinate — silently wrong
+     * unless the old parent happened to sit at global {@code (0,0)} with scale {@code 1}. This
+     * method captures the global position first, while the old parent reference is still valid,
+     * making "move this already-on-screen element into a different container" safe to call
+     * regardless of where the two containers actually are.
+     *
+     * @param newParent the container to move this element into
+     * @param preserveGlobalPosition if {@code true}, this element's local position is set after
+     *                               the move so its on-screen position is unchanged
+     */
+    public void reparentTo(UIContainer<?> newParent, boolean preserveGlobalPosition) {
+        Vector2f globalPos = preserveGlobalPosition ? getGlobalPosition() : null;
+        if (parent instanceof UIContainer<?> oldParent) {
+            oldParent.removeChild(this);
+        }
+        newParent.addChild(this);
+        if (globalPos != null) {
+            Vector2f localPos = new Vector2f(globalPos).sub(newParent.getGlobalPosition()).div(newParent.getGlobalScale());
+            setPosition(localPos);
+        }
+    }
+
+    /**
      * Calculate bounds using global position and global scale.
      * When effectsAffectLayout is true, includes effect transformations in the bounds.
      */
@@ -811,7 +840,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
         }
 
         // Dispatch to listeners
-        for (UIEventListener listener : eventListeners) {
+        for (UIEventListener listener : new ArrayList<>(eventListeners)) {
             listener.onEvent(event);
             if (event.isConsumed()) {
                 return true;
@@ -922,7 +951,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
         switch (event.getType()) {
             case CLICK:
                 if (!onClickActions.isEmpty()) {
-                    for (ClickAction action : onClickActions) {
+                    for (ClickAction action : new ArrayList<>(onClickActions)) {
                         action.onClick(event);
                     }
                     return true;
@@ -930,7 +959,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
                 break;
             case HOVER_ENTER:
                 if (!onMouseEnterActions.isEmpty()) {
-                    for (MouseEnterAction action : onMouseEnterActions) {
+                    for (MouseEnterAction action : new ArrayList<>(onMouseEnterActions)) {
                         action.onMouseEnter(event);
                     }
                     return true;
@@ -938,7 +967,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
                 break;
             case HOVER_EXIT:
                 if (!onMouseExitActions.isEmpty()) {
-                    for (MouseExitAction action : onMouseExitActions) {
+                    for (MouseExitAction action : new ArrayList<>(onMouseExitActions)) {
                         action.onMouseExit(event);
                     }
                     return true;
