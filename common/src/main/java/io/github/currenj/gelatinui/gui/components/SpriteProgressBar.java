@@ -22,13 +22,30 @@ public class SpriteProgressBar extends SpriteRectangle<SpriteProgressBar> {
 
     // Default dimensions
     public static final int DEFAULT_WIDTH = 63;
-    public static final int DEFAULT_HEIGHT = 19;
+    /**
+     * Visual height of the plain bar (background + fill, no embellishments) — this is
+     * what {@code new SpriteProgressBar()} reports and renders at by default. The sprite
+     * sheet reserves a taller {@link #EMBELLISHED_HEIGHT} box purely so decorative overlays
+     * unlocked at higher skill levels have room to extend past the plain bar's own artwork;
+     * consumers that never call {@link #skillLevel(int)} above {@link #EMBELLISHMENT_SKILL_THRESHOLD}
+     * never need to know that headroom exists.
+     */
+    public static final int DEFAULT_HEIGHT = 9;
+    /** Full sprite box height, needed once an embellishment overlay is active. */
+    public static final int EMBELLISHED_HEIGHT = 19;
+    /** Skill level at which the first embellishment overlay (which needs the tall box) appears. */
+    public static final int EMBELLISHMENT_SKILL_THRESHOLD = 30;
 
     // Sprite parameters - UV coordinates and dimensions in texture
     private static final int SPRITE_U = 10;
     private static final int SPRITE_V = 5;
     private static final int SPRITE_WIDTH = 63;
     private static final int SPRITE_HEIGHT = 19;
+    // Rows [SPRITE_V, SPRITE_V + CORE_TOP_INSET) of the sprite box are transparent
+    // embellishment headroom — the plain bar's actual artwork starts CORE_TOP_INSET
+    // rows in and is DEFAULT_HEIGHT rows tall (measured from progress_bar_background.png
+    // and progress_bar_gold_outline.png, whose opaque content is exactly rows 5-14).
+    private static final int CORE_TOP_INSET = 5;
     private static final int TEXTURE_SIZE = 128;
 
     // State
@@ -79,6 +96,11 @@ public class SpriteProgressBar extends SpriteRectangle<SpriteProgressBar> {
             throw new IllegalArgumentException("Skill level cannot be negative");
         }
         this.skillLevel = level;
+        // Embellishment overlays need the full sprite box; the plain bar only needs its
+        // tight core height. Keep the reported size honest (via setSize, so parent
+        // containers doing auto-layout re-measure) instead of always claiming the taller
+        // embellishment-headroom box.
+        setSize(size.x, level >= EMBELLISHMENT_SKILL_THRESHOLD ? EMBELLISHED_HEIGHT : DEFAULT_HEIGHT);
         markDirty(DirtyFlag.CONTENT);
         return this;
     }
@@ -106,12 +128,20 @@ public class SpriteProgressBar extends SpriteRectangle<SpriteProgressBar> {
 
         context.enableBlend();
 
+        // Below EMBELLISHMENT_SKILL_THRESHOLD the box is only DEFAULT_HEIGHT tall, so sample
+        // just the plain bar's tight visual band instead of the full sprite (which would
+        // otherwise get squashed to fit the shorter box). Gold outline shares that same band;
+        // embellishments 1-3 only ever render once the box has already grown to the full height.
+        boolean embellished = skillLevel >= EMBELLISHMENT_SKILL_THRESHOLD;
+        int srcV = embellished ? SPRITE_V : SPRITE_V + CORE_TOP_INSET;
+        int srcHeight = embellished ? SPRITE_HEIGHT : DEFAULT_HEIGHT;
+
         // Render background
-        blitProgressBarSprite(context, BAR_BACKGROUND, x, y, w, h, 1f);
+        blitProgressBarSprite(context, BAR_BACKGROUND, x, y, w, h, 1f, SPRITE_U, srcV, SPRITE_WIDTH, srcHeight);
 
         // Render skill level decorations
         if (skillLevel >= 15) {
-            blitProgressBarSprite(context, BAR_GOLD_OUTLINE, x, y, w, h, 1f);
+            blitProgressBarSprite(context, BAR_GOLD_OUTLINE, x, y, w, h, 1f, SPRITE_U, srcV, SPRITE_WIDTH, srcHeight);
         }
         if (skillLevel >= 30) {
             blitProgressBarSprite(context, BAR_EMBELLISHMENT_1, x, y, w, h, 1f);
@@ -124,7 +154,7 @@ public class SpriteProgressBar extends SpriteRectangle<SpriteProgressBar> {
         }
 
         // Render filled meter (progress-dependent)
-        blitProgressBarSprite(context, BAR_FILLED_METER, x, y, w, h, displayedProgress);
+        blitProgressBarSprite(context, BAR_FILLED_METER, x, y, w, h, displayedProgress, SPRITE_U, srcV, SPRITE_WIDTH, srcHeight);
 
         context.disableBlend();
     }
