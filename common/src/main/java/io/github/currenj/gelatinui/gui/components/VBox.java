@@ -43,6 +43,14 @@ public class VBox extends PanelBase<VBox> {
     // When set > 0, children will be uniformly scaled to fit this height (mutually exclusive with scaleToWidth)
     private float scaleToHeight = 0;
 
+    // Whether scaleToWidth/scaleToHeight has ever been applied to children before. The very first
+    // application snaps instead of animating — there's no prior on-screen state to smoothly
+    // transition from, so animating it just means newly-created children spend their first stretch
+    // of existence at the wrong (pre-fit) size, which can push them outside the viewport and get
+    // them wrongly culled. Later re-applications (e.g. triggered by a window resize) still animate,
+    // preserving gelatin-ui's gradual layout adjustment.
+    private boolean scaleToFitApplied = false;
+
     // Track if layout needs recalculation
     private boolean layoutDirty = true;
 
@@ -297,14 +305,18 @@ public class VBox extends PanelBase<VBox> {
 
         setSize(finalWidth, finalHeight);
 
-        // Now actually apply scaling to children (preserve previous behavior of setting targetScale)
+        // Apply scaling to children — snap on the very first application (no on-screen prior
+        // state to transition from), animate on every one after that so resizes still adjust
+        // gradually. See scaleToFitApplied's javadoc for why the first application must snap.
         if (scaleToWidth > 0 || scaleToHeight > 0) {
+            boolean animate = scaleToFitApplied;
             for (IUIElement child : children) {
                 if (!child.isVisible()) continue;
                 if (child instanceof io.github.currenj.gelatinui.gui.UIElement uiChild) {
-                    uiChild.scale(scaleFactor);
+                    uiChild.setTargetScale(scaleFactor, animate);
                 }
             }
+            scaleToFitApplied = true;
         }
 
         // Second pass: position children with correct alignment using effective scales

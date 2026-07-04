@@ -3,6 +3,7 @@ package io.github.currenj.gelatinui.gui.components;
 import io.github.currenj.gelatinui.gui.*;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,12 @@ public class ItemTabs extends VBox {
     private static final int NORMAL_COLOR = 0xFF888888;
     private static final int SELECTED_COLOR = 0xFFFFFFFF;
 
+    // Optional badge overlaid on a tab icon's top-right corner (e.g. an "unclaimed reward"
+    // alert). Configure once via alertIcon() before adding tabs; toggle per tab with setTabAlert().
+    private Identifier alertTexture;
+    private float alertWidth = 0f;
+    private float alertHeight = 0f;
+
     public ItemTabs() {
         this.alignment(Alignment.CENTER);
         tabBar = new HBox().spacing(4).alignment(HBox.Alignment.CENTER);
@@ -36,6 +43,32 @@ public class ItemTabs extends VBox {
     public ItemTabs selectedFrame(Identifier texture) { return this; }
     public ItemTabs sizes(float slotW, float slotH, float iconW, float iconH) { return this; }
     public ItemTabs tabSpacing(float spacing) { this.spacing(spacing); return this; }
+
+    /**
+     * Configure the badge shown in a tab icon's top-right corner. Must be called before
+     * addTab() — tabs created beforehand won't get a badge. Toggle visibility per tab
+     * afterwards with setTabAlert().
+     */
+    public ItemTabs alertIcon(Identifier texture, float width, float height) {
+        this.alertTexture = texture;
+        this.alertWidth = width;
+        this.alertHeight = height;
+        return this;
+    }
+
+    /**
+     * Show or hide the alert badge on the tab at the given index. No-op if alertIcon() was
+     * never configured (tab has no badge to toggle).
+     */
+    public ItemTabs setTabAlert(int index, boolean visible) {
+        if (index >= 0 && index < tabs.size()) {
+            UIElement<?> badge = tabs.get(index).alertBadge;
+            if (badge != null) {
+                badge.setVisible(visible);
+            }
+        }
+        return this;
+    }
 
     /**
      * Add a simple SpriteButton tab.
@@ -54,9 +87,27 @@ public class ItemTabs extends VBox {
 
         btn.onClick(e -> select(index));
 
+        IUIElement tabBarChild = btn;
+        UIElement<?> alertBadge = null;
+        if (alertTexture != null) {
+            Vector2f btnSize = btn.getSize();
+            ManualContainer wrapper = UI.manualContainer().setSize(btnSize.x, btnSize.y);
+            wrapper.addChildAt(btn, btnSize.x / 2f, btnSize.y / 2f);
 
-        tabs.add(new Tab(btn, content));
-        tabBar.addChild(btn);
+            SpriteData alertSprite = new SpriteData(alertTexture)
+                    .uv(0, 0, Math.round(alertWidth), Math.round(alertHeight))
+                    .textureSize(Math.round(alertWidth), Math.round(alertHeight));
+            alertBadge = UI.spriteRectangle(alertWidth, alertHeight, alertTexture).texture(alertSprite);
+            alertBadge.setVisible(false);
+            // Centered on the icon's top-right corner, so it peeks out over the edge like a notification dot.
+            wrapper.addChildAt(alertBadge, btnSize.x, 0f);
+            wrapper.forceLayout();
+
+            tabBarChild = wrapper;
+        }
+
+        tabs.add(new Tab(btn, content, alertBadge));
+        tabBar.addChild(tabBarChild);
         tabBar.recalculateLayout();
 
         // If this is the first tab, select it by default
@@ -125,9 +176,11 @@ public class ItemTabs extends VBox {
     private static class Tab {
         final IUIElement button;
         final IUIElement content;
-        Tab(IUIElement button, IUIElement content) {
+        final UIElement<?> alertBadge;
+        Tab(IUIElement button, IUIElement content, UIElement<?> alertBadge) {
             this.button = button;
             this.content = content;
+            this.alertBadge = alertBadge;
         }
     }
 }

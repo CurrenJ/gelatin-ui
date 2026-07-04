@@ -323,30 +323,45 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
             Vector2f effectPos = combinedEffectDelta.getPositionOffset();
             pose.translate(position.x + effectPos.x, position.y + effectPos.y);
 
+            org.joml.Vector3f rot3D = combinedEffectDelta.getRotation3D();
+
             // Apply combined scale (base * effectScale * effect delta scale)
             float combinedScale = currentScale * effectScale * combinedEffectDelta.getScaleMultiplier();
+            float scaleX = combinedScale;
+            float scaleY = combinedScale;
+            if (supports3DRotation() && Math.abs(rot3D.y) > 0.001f) {
+                // True 3D perspective rotation has no equivalent in 2D GUI space, so a Y-axis
+                // (vertical) spin is faked the way flat 2D coin-flip animations traditionally
+                // are: squash horizontally as the element "turns" edge-on, tracing a cosine
+                // wave (full width at 0°/180°, a sliver at 90°/270°).
+                scaleX *= Math.abs((float) Math.cos(Math.toRadians(rot3D.y)));
+            }
             if (pivot.x != 0.0f || pivot.y != 0.0f) {
                 // Scale around the configured pivot point
                 pose.translate(pivot.x, pivot.y);
-                pose.scale(combinedScale, combinedScale);
+                pose.scale(scaleX, scaleY);
                 pose.translate(-pivot.x, -pivot.y);
             } else {
-                pose.scale(combinedScale, combinedScale);
+                pose.scale(scaleX, scaleY);
             }
 
-            // Apply 2D (Z-axis) rotation if element has rotation
-            if (combinedEffectDelta.has3DRotation()) {
-                org.joml.Vector3f rot3D = combinedEffectDelta.getRotation3D();
-                // Only Z-axis rotation is supported in 26.1 2D GUI rendering
-                if (Math.abs(rot3D.z) > 0.001f) {
-                    float pivotX = size.x * 0.5f;
-                    float pivotY = size.y * 0.5f;
-                    pose.translate(pivotX, pivotY);
-                    pose.rotate((float) Math.toRadians(rot3D.z));
-                    pose.translate(-pivotX, -pivotY);
-                }
-                // X and Y rotations (3D flips) are not supported in 2D GUI rendering in 26.1
+            // Apply 2D (Z-axis) rotation if element has rotation.
+            // Note: gated on the Z component directly, not has3DRotation() (which checks
+            // only X/Y) — Z-only rotation is the only kind any 2D effect ever produces here,
+            // so gating on X/Y would (and previously did) skip this block entirely.
+            if (Math.abs(rot3D.z) > 0.001f) {
+                // Rotate about the configured scale pivot when one has been set (e.g.
+                // PivotMode.TOP_CENTER for something hanging from a pin); otherwise fall
+                // back to the element's center, matching prior/default behavior.
+                boolean hasCustomPivot = pivot.x != 0.0f || pivot.y != 0.0f;
+                float pivotX = hasCustomPivot ? pivot.x : size.x * 0.5f;
+                float pivotY = hasCustomPivot ? pivot.y : size.y * 0.5f;
+                pose.translate(pivotX, pivotY);
+                pose.rotate((float) Math.toRadians(rot3D.z));
+                pose.translate(-pivotX, -pivotY);
             }
+            // Y rotation is approximated above via horizontal squash. X rotation (pitch)
+            // still has no 2D GUI equivalent and is ignored.
 
             // render self and children under same transform so children inherit the parent's transform
             renderSelf(context);
@@ -1215,6 +1230,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
         addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.FallBounceEffect("fall-bounce", 0, 1.5f));
         return self();
     }
+
 
     /**
      * Convenience: add a pulsing glow effect (continuous).
