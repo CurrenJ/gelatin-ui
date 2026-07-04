@@ -147,15 +147,18 @@ public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T>
             return layoutCache.bounds;
         }
 
-        if (children.isEmpty()) {
-            return new Rectangle2D.Float(position.x, position.y, size.x, size.y);
-        }
-
-        // Calculate bounding box of all children
-        float minX = Float.MAX_VALUE;
-        float minY = Float.MAX_VALUE;
-        float maxX = Float.MIN_VALUE;
-        float maxY = Float.MIN_VALUE;
+        // Seed with this container's own global position/size (the same rectangle a plain
+        // UIElement would report). A container with a fixed size independent of its children
+        // (e.g. autoSizeToChildren(false) panels drawing a background sprite) must never report
+        // culling bounds smaller than this — unioning children only, as this used to do, collapses
+        // a background-only or off-center-children container down to wherever its children happen
+        // to be (or to raw local coordinates if it has none), causing it to be wrongly culled even
+        // though its actual rendered footprint is still on screen.
+        Rectangle2D ownBounds = super.calculateBounds();
+        float minX = (float) ownBounds.getMinX();
+        float minY = (float) ownBounds.getMinY();
+        float maxX = (float) ownBounds.getMaxX();
+        float maxY = (float) ownBounds.getMaxY();
 
         for (IUIElement child : children) {
             if (child.isVisible()) {
@@ -165,11 +168,6 @@ public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T>
                 maxX = Math.max(maxX, (float) childBounds.getMaxX());
                 maxY = Math.max(maxY, (float) childBounds.getMaxY());
             }
-        }
-
-        if (minX == Float.MAX_VALUE) {
-            // No visible children
-            return new Rectangle2D.Float(position.x, position.y, size.x, size.y);
         }
 
         Rectangle2D bounds = new Rectangle2D.Float(minX, minY, maxX - minX, maxY - minY);

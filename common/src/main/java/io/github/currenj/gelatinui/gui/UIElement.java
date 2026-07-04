@@ -323,6 +323,8 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
             Vector2f effectPos = combinedEffectDelta.getPositionOffset();
             pose.translate(position.x + effectPos.x, position.y + effectPos.y, 0);
 
+            org.joml.Vector3f rot3D = combinedEffectDelta.getRotation3D();
+
             // Apply combined scale (base * effectScale * effect delta scale)
             float combinedScale = currentScale * effectScale * combinedEffectDelta.getScaleMultiplier();
             if (pivot.x != 0.0f || pivot.y != 0.0f) {
@@ -334,24 +336,33 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
                 pose.scale(combinedScale, combinedScale, 1.0f);
             }
 
-            // Apply rotation if element supports it
+            // Apply X/Y rotation (pitch, yaw) around the element center. 1.21.1's GUI pose is a
+            // full 3D PoseStack, so these rotate for real. (26.1 has only a 2D pose there: it fakes
+            // Y as a horizontal cosine squash, which is what this projects to, and ignores X.)
             if (supports3DRotation() && combinedEffectDelta.has3DRotation()) {
-                // Rotate around element center in current local space (after translate & scale)
                 float pivotX = size.x * 0.5f;
                 float pivotY = size.y * 0.5f;
                 final int DEPTH_OFFSET = 150; // GuiGraphics renders items at z=150 (magic number), so mirror that here. Otherwise, items do big spin.
-                org.joml.Vector3f rot3D = combinedEffectDelta.getRotation3D();
-
-                // Apply rotations (pitch, yaw, roll) around the same pivot
                 if (Math.abs(rot3D.x) > 0.001f) {
                     pose.rotateAround(com.mojang.math.Axis.XP.rotationDegrees(rot3D.x), pivotX, pivotY, DEPTH_OFFSET);
                 }
                 if (Math.abs(rot3D.y) > 0.001f) {
                     pose.rotateAround(com.mojang.math.Axis.YP.rotationDegrees(rot3D.y), pivotX, pivotY, DEPTH_OFFSET);
                 }
-                if (Math.abs(rot3D.z) > 0.001f) {
-                    pose.rotateAround(com.mojang.math.Axis.ZP.rotationDegrees(rot3D.z), pivotX, pivotY, DEPTH_OFFSET);
-                }
+            }
+
+            // Apply Z-axis rotation if element has rotation.
+            // Note: gated on the Z component directly, not has3DRotation() (which checks
+            // only X/Y) — Z-only rotation is the only kind any 2D effect ever produces here,
+            // so gating on X/Y would (and previously did) skip this block entirely.
+            if (Math.abs(rot3D.z) > 0.001f) {
+                // Rotate about the configured scale pivot when one has been set (e.g.
+                // PivotMode.TOP_CENTER for something hanging from a pin); otherwise fall
+                // back to the element's center, matching prior/default behavior.
+                boolean hasCustomPivot = pivot.x != 0.0f || pivot.y != 0.0f;
+                float pivotX = hasCustomPivot ? pivot.x : size.x * 0.5f;
+                float pivotY = hasCustomPivot ? pivot.y : size.y * 0.5f;
+                pose.rotateAround(com.mojang.math.Axis.ZP.rotationDegrees(rot3D.z), pivotX, pivotY, 0.0f);
             }
 
             // render self and children under same transform so children inherit the parent's transform
@@ -1221,6 +1232,7 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
         addEffectExclusive(new io.github.currenj.gelatinui.gui.effects.FallBounceEffect("fall-bounce", 0, 1.5f));
         return self();
     }
+
 
     /**
      * Convenience: add a pulsing glow effect (continuous).
