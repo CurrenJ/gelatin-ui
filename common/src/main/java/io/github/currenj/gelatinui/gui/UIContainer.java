@@ -212,6 +212,17 @@ public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T>
             if (child instanceof UIElement uiChild) {
                 uiChild.boundsValid = false;
                 uiChild.cachedBounds = null;
+                // A container child's calculateBounds() (below) short-circuits on its own
+                // layoutCache before ever looking at boundsValid — clearing only boundsValid
+                // here leaves that cache stale. Left uninvalidated, a nested container (e.g. a
+                // tab bar several levels under a scrolled screen root) keeps reporting bounds
+                // from wherever it was first computed, forever, so once a scroll pass pushes it
+                // out of the (now-stale) cached rect it reads as permanently off-screen and its
+                // children silently stop rendering — no further scrolling ever invalidates it
+                // again to bring them back.
+                if (uiChild instanceof UIContainer<?> containerChild) {
+                    containerChild.layoutCache.invalidate();
+                }
                 uiChild.invalidateChildBounds();
             }
         }
