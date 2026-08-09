@@ -13,6 +13,14 @@ import java.util.List;
  * Renders text with configurable color and automatically sizes to text dimensions.
  */
 public class Label extends UIElement<Label> {
+    // Vanilla's bitmap font glyphs sit flush to the top of the 9px line-height box (ascent 7,
+    // glyph height 8), leaving ~1px empty above the ink and ~2px below within that box. Since
+    // Label reports the full 9px box as its size, HBox/VBox center that box exactly — but the
+    // ink inside it isn't centered, so text reads as shifted slightly toward the top next to
+    // siblings whose reported size matches their visual bounds (e.g. status pip icons). Nudge
+    // rendering down by this many local pixels to compensate.
+    private static final int VERTICAL_INK_OFFSET = 1;
+
     private String text;
     private int color;
     private boolean centered;
@@ -142,7 +150,7 @@ public class Label extends UIElement<Label> {
                 int fontHeight = context.getFontHeight();
                 for (int i = 0; i < wrappedLines.size(); i++) {
                     String line = wrappedLines.get(i);
-                    int yOffset = (int) (i * (fontHeight + lineSpacing));
+                    int yOffset = (int) (i * (fontHeight + lineSpacing)) + VERTICAL_INK_OFFSET;
                     if (centered) {
                         mcContext.drawCenteredString(line, (int) (baseWidth / 2f), yOffset, color);
                     } else {
@@ -152,9 +160,9 @@ public class Label extends UIElement<Label> {
             } else {
                 // Single-line rendering
                 if (centered) {
-                    mcContext.drawCenteredString(text, (int) (baseWidth / 2f), 0, color);
+                    mcContext.drawCenteredString(text, (int) (baseWidth / 2f), VERTICAL_INK_OFFSET, color);
                 } else {
-                    mcContext.drawString(text, 0, 0, color);
+                    mcContext.drawString(text, 0, VERTICAL_INK_OFFSET, color);
                 }
             }
         } else {
