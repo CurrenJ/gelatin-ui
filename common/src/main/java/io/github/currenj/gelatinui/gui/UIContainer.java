@@ -229,6 +229,19 @@ public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T>
     }
 
     @Override
+    protected void onPositionChanged() {
+        super.onPositionChanged();
+        // Mirrors onSizeChanged below: markDirty(POSITION) alone (e.g. animate()'s exponential
+        // smoothing mutating `position` directly, used by VBox/HBox's smooth-reflow
+        // setTargetPosition calls on their children) never invalidates *this* container's own
+        // layoutCache — only setPosition() does that eagerly, and invalidateChildBounds() only
+        // reaches descendants, not self. Left uninvalidated, a container whose own position
+        // animates this way keeps reporting bounds from wherever it was last validly computed,
+        // increasingly wrong every frame, until something else happens to invalidate it.
+        layoutCache.invalidate();
+    }
+
+    @Override
     protected void onSizeChanged() {
         super.onSizeChanged();
         // Invalidate layout cache on size change
