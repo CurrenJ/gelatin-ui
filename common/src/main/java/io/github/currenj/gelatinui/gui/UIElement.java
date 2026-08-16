@@ -581,10 +581,21 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
         }
 
         // Account for scale pivot offset: when scaling from a non-zero pivot,
-        // the rendered top-left shifts by pivot * (1 - localScale) in local space
-        float parentScale = gs / localScale;
-        float pivotOffsetX = pivot.x * (1.0f - localScale) * parentScale;
-        float pivotOffsetY = pivot.y * (1.0f - localScale) * parentScale;
+        // the rendered top-left shifts by pivot * (1 - localScale) in local space.
+        // Guarded against a near-zero localScale (e.g. an element animated/snapped to scale 0,
+        // such as a shrink-to-hide transition): gs / localScale would otherwise blow up to
+        // Infinity/NaN, and that poisons every ancestor's cached union bounds via Math.min/max
+        // (UIContainer#calculateBounds), culling the whole subtree from rendering until the
+        // offending element is dropped from the union — typically by going invisible, which is
+        // why this manifests as "nothing renders until an unrelated shrink animation finishes".
+        // A vanishingly small element has no meaningful pivot offset to begin with, so just skip it.
+        float pivotOffsetX = 0f;
+        float pivotOffsetY = 0f;
+        if (Math.abs(localScale) > 1.0e-4f) {
+            float parentScale = gs / localScale;
+            pivotOffsetX = pivot.x * (1.0f - localScale) * parentScale;
+            pivotOffsetY = pivot.y * (1.0f - localScale) * parentScale;
+        }
 
         return new Rectangle2D.Float(
             gp.x + pivotOffsetX,
