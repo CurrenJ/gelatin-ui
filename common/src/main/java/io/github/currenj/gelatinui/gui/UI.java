@@ -122,6 +122,24 @@ public class UI {
     }
 
     /**
+     * Create a new PlayerModelRenderer with custom size, rendering a posed player model with a
+     * real player's skin. Call {@code .profile(...)} to set who it renders.
+     */
+    public static PlayerModelRenderer playerModel(float width, float height) {
+        return new PlayerModelRenderer(width, height);
+    }
+
+    /**
+     * Create a new PlayerAvatarRenderer with custom size, rendering a fully-equipped player
+     * (skin, armor, held item) via vanilla's own equipped-entity render pipeline. Call
+     * {@code .profile(...)} to set who it renders and {@code .heldItem(...)} for the main-hand
+     * item; use {@link #playerModel(float, float)} instead when no equipment needs to render.
+     */
+    public static PlayerAvatarRenderer playerAvatar(float width, float height) {
+        return new PlayerAvatarRenderer(width, height);
+    }
+
+    /**
      * Create a new ItemButton with default size (16x16).
      */
     public static ItemButton itemButton() {
