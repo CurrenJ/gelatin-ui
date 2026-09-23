@@ -3,6 +3,7 @@ package io.github.currenj.gelatinui.gui.components;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import io.github.currenj.gelatinui.gui.UIEvent;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import io.github.currenj.gelatinui.gui.minecraft.hires.HiResItems;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Objects;
@@ -91,13 +92,19 @@ public class ItemButton extends ItemRenderer<ItemButton> {
         // Calculate effective scale including hover/pressed effects
         float effectiveScale = getItemScale();
 
+        // Draw at native screen resolution when the button magnifies the item, for the same
+        // reason ItemRenderer does (the atlas blit would only magnify 16 * guiScale texels).
+        boolean hiRes = HiResItems.item(mcContext, getItemStack(), x, y, 16 * effectiveScale);
+
         // Apply scaling
         graphics.pose().pushMatrix();
         graphics.pose().translate(x, y);
         graphics.pose().scale(effectiveScale, effectiveScale);
 
         // Render at origin after scaling
-        graphics.item(getItemStack(), 0, 0);
+        if (!hiRes) {
+            graphics.item(getItemStack(), 0, 0);
+        }
 
         if (isShowCount() && getItemStack().getCount() > 1) {
             graphics.itemDecorations(font, getItemStack(), 0, 0);

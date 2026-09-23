@@ -4,6 +4,7 @@ import io.github.currenj.gelatinui.gui.DirtyFlag;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import io.github.currenj.gelatinui.gui.UIElement;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import io.github.currenj.gelatinui.gui.minecraft.hires.HiResItems;
 import net.minecraft.client.gui.Font;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector2f;
@@ -147,6 +148,14 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
         var graphics = mcContext.getGraphics();
         var font = mcContext.getFont();
 
+        // An item drawn larger than 16x16 on screen must not go through graphics.item(...): that
+        // blits the item out of the shared GUI item atlas, which only ever holds it at
+        // 16 * guiScale pixels, so drawing it bigger just magnifies those texels (see HiResItems).
+        // Magnification can come from this element's own itemScale or from an ancestor's scale, so
+        // the decision is made from the live pose; HiResItems declines when the normal path is
+        // already pixel-for-pixel, or when the pose is rotated in a way it cannot reproduce.
+        boolean hiRes = HiResItems.item(mcContext, itemStack, x, y, 16 * itemScale);
+
         // Apply scaling if needed
         if (itemScale != 1.0f) {
             graphics.pose().pushMatrix();
@@ -154,7 +163,9 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
             graphics.pose().scale(itemScale, itemScale);
 
             // Render at origin after scaling
-            graphics.item(itemStack, 0, 0);
+            if (!hiRes) {
+                graphics.item(itemStack, 0, 0);
+            }
 
             if (showCount && itemStack.getCount() > 1) {
                 graphics.itemDecorations(font, itemStack, 0, 0);
@@ -163,7 +174,9 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
             graphics.pose().popMatrix();
         } else {
             // No scaling, render directly
-            graphics.item(itemStack, x, y);
+            if (!hiRes) {
+                graphics.item(itemStack, x, y);
+            }
 
             if (showCount && itemStack.getCount() > 1) {
                 graphics.itemDecorations(font, itemStack, x, y);
