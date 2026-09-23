@@ -60,6 +60,16 @@ public class HiResItemPipRenderer extends PictureInPictureRenderer<HiResItemRend
     }
 
     /**
+     * Returns the singleton renderer, creating it on first use. Used by platform registration code
+     * whose PIP renderer factory may be invoked more than once (e.g. NeoForge's per-state pooling):
+     * since this class never touches its own {@code texture} field and dispatches every draw to a
+     * per-(model, size) {@link Delegate} instead, one dispatcher instance is always sufficient.
+     */
+    public static HiResItemPipRenderer getOrCreate(MultiBufferSource.BufferSource bufferSource) {
+        return instance != null ? instance : new HiResItemPipRenderer(bufferSource);
+    }
+
+    /**
      * Whether the renderer reached the GUI renderer's picture-in-picture table. A state submitted
      * without a registered renderer is silently dropped by vanilla, so callers check this first
      * and fall back to the ordinary item path rather than drawing nothing.

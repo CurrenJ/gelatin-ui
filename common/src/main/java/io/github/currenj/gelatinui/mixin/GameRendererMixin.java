@@ -16,6 +16,12 @@ import java.util.List;
  * Registers Gelatin's high-resolution item renderer with the GUI renderer's picture-in-picture
  * table. The vanilla list is built inline as an immutable {@code List.of(...)}, so it is replaced
  * here with a mutable copy that carries our renderer as well.
+ *
+ * <p>Fabric-only: NeoForge patches this same constructor call to take a list of
+ * {@code PictureInPictureRendererRegistration} factories instead of renderer instances, built via
+ * its own {@code RegisterPictureInPictureRenderersEvent}. Adding a raw renderer instance to that
+ * list crashes with a {@code ClassCastException} when NeoForge tries to pool it, so the NeoForge
+ * mixin config omits this mixin and registers through that event instead.
  */
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
@@ -31,7 +37,7 @@ public abstract class GameRendererMixin {
     )
     private List<PictureInPictureRenderer<?>> gelatinui$addHiResItemRenderer(List<PictureInPictureRenderer<?>> renderers) {
         List<PictureInPictureRenderer<?>> withHiResItems = new ArrayList<>(renderers);
-        withHiResItems.add(new HiResItemPipRenderer(this.renderBuffers.bufferSource()));
+        withHiResItems.add(HiResItemPipRenderer.getOrCreate(this.renderBuffers.bufferSource()));
         return withHiResItems;
     }
 }
