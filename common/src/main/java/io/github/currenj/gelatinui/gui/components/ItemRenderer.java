@@ -4,6 +4,7 @@ import io.github.currenj.gelatinui.gui.DirtyFlag;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import io.github.currenj.gelatinui.gui.UIElement;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import io.github.currenj.gelatinui.gui.minecraft.hires.HiResItems;
 import net.minecraft.client.gui.Font;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector2f;
@@ -147,6 +148,10 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
         var graphics = mcContext.getGraphics();
         var font = mcContext.getFont();
 
+        // Kept for parity with 26.1, where a magnified item must bypass the GUI item atlas. On
+        // 1.21.1 renderItem draws the model through the pose, so HiResItems always declines.
+        boolean hiRes = HiResItems.item(mcContext, itemStack, x, y, 16 * itemScale);
+
         // Apply scaling if needed
         if (itemScale != 1.0f) {
             graphics.pose().pushPose();
@@ -154,7 +159,9 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
             graphics.pose().scale(itemScale, itemScale, 1.0f);
 
             // Render at origin after scaling
-            graphics.renderItem(itemStack, 0, 0);
+            if (!hiRes) {
+                graphics.renderItem(itemStack, 0, 0);
+            }
 
             if (showCount && itemStack.getCount() > 1) {
                 graphics.renderItemDecorations(font, itemStack, 0, 0);
@@ -163,7 +170,9 @@ public abstract class ItemRenderer<T extends ItemRenderer<T>> extends UIElement<
             graphics.pose().popPose();
         } else {
             // No scaling, render directly
-            graphics.renderItem(itemStack, x, y);
+            if (!hiRes) {
+                graphics.renderItem(itemStack, x, y);
+            }
 
             if (showCount && itemStack.getCount() > 1) {
                 graphics.renderItemDecorations(font, itemStack, x, y);

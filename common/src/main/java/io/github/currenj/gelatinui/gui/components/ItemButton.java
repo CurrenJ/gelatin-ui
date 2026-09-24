@@ -3,6 +3,7 @@ package io.github.currenj.gelatinui.gui.components;
 import io.github.currenj.gelatinui.gui.IRenderContext;
 import io.github.currenj.gelatinui.gui.UIEvent;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
+import io.github.currenj.gelatinui.gui.minecraft.hires.HiResItems;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Objects;
@@ -91,13 +92,18 @@ public class ItemButton extends ItemRenderer<ItemButton> {
         // Calculate effective scale including hover/pressed effects
         float effectiveScale = getItemScale();
 
+        // Kept for parity with 26.1 (see ItemRenderer); always declines on 1.21.1.
+        boolean hiRes = HiResItems.item(mcContext, getItemStack(), x, y, 16 * effectiveScale);
+
         // Apply scaling
         graphics.pose().pushPose();
         graphics.pose().translate(x, y, 0);
         graphics.pose().scale(effectiveScale, effectiveScale, 1.0f);
 
         // Render at origin after scaling
-        graphics.renderItem(getItemStack(), 0, 0);
+        if (!hiRes) {
+            graphics.renderItem(getItemStack(), 0, 0);
+        }
 
         if (isShowCount() && getItemStack().getCount() > 1) {
             graphics.renderItemDecorations(font, getItemStack(), 0, 0);

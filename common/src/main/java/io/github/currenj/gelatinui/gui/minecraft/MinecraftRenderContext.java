@@ -9,7 +9,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -19,6 +24,12 @@ import java.util.List;
 public class MinecraftRenderContext implements IRenderContext {
     private final GuiGraphics graphics;
     private final Font font;
+
+    // Mirror of the clip rectangles pushed through this context. Vanilla keeps the authoritative
+    // stack inside GuiGraphics, but its accessor is not reachable from mod code, and
+    // picture-in-picture render states have to carry their clip rectangle with them (see
+    // HiResItems) — so the pushes made here are tracked alongside, the same way vanilla does it.
+    private final Deque<ScreenRectangle> scissorMirror = new ArrayDeque<>();
 
     public MinecraftRenderContext(GuiGraphics graphics, Font font) {
         this.graphics = graphics;
@@ -75,11 +86,27 @@ public class MinecraftRenderContext implements IRenderContext {
     @Override
     public void pushScissor(int x, int y, int width, int height) {
         graphics.enableScissor(x, y, x + width, y + height);
+
+        // 1.21.1 GuiGraphics#enableScissor clips to the rectangle as given (it does not apply the pose).
+        ScreenRectangle rectangle = new ScreenRectangle(x, y, width, height);
+        ScreenRectangle previous = scissorMirror.peekLast();
+        if (previous != null) {
+            ScreenRectangle intersection = rectangle.intersection(previous);
+            rectangle = intersection != null ? intersection : ScreenRectangle.empty();
+        }
+        scissorMirror.addLast(rectangle);
     }
 
     @Override
     public void popScissor() {
         graphics.disableScissor();
+        scissorMirror.pollLast();
+    }
+
+    /** The clip rectangle currently in force, in screen pixels, or null when nothing is clipped. */
+    @Nullable
+    public ScreenRectangle peekScissor() {
+        return scissorMirror.peekLast();
     }
 
     @Override
