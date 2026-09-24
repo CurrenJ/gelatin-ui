@@ -122,6 +122,9 @@ subprojects {
 
 // ── CurseForge Publishing ────────────────────────────────────────────────
 
+// On this remapping Loom (1.21.1), shadowJar is the named-mappings dev jar (classifier
+// dev-shadow); remapJar is the distributable one.
+
 import net.darkhax.curseforgegradle.TaskPublishCurseForge
 
 tasks.register('publishCurseForge', TaskPublishCurseForge) {
@@ -133,7 +136,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
             ?: (file('CHANGELOG.md').exists() ? file('CHANGELOG.md').text : 'No changelog provided.')
 
     // ── Fabric ──
-    def fabricJar = project(':fabric').tasks.named('shadowJar').get().archiveFile
+    def fabricJar = project(':fabric').tasks.named('remapJar').get().archiveFile
     def fabricUpload = upload(projectId, fabricJar)
     fabricUpload.changelog = changelogText
     fabricUpload.changelogType = 'markdown'
@@ -144,7 +147,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     fabricUpload.displayName = fabricJar.get().asFile.name.replace('.jar', '')
 
     // ── NeoForge ──
-    def neoJar = project(':neoforge').tasks.named('shadowJar').get().archiveFile
+    def neoJar = project(':neoforge').tasks.named('remapJar').get().archiveFile
     def neoUpload = upload(projectId, neoJar)
     neoUpload.changelog = changelogText
     neoUpload.changelogType = 'markdown'
