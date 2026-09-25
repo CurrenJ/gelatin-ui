@@ -9,7 +9,8 @@ import java.util.List;
 
 public record ItemStacksTooltip(List<ItemStack> items, boolean renderItemDecorations) implements TooltipComponent {
     public static final HoverEvent.Action<ItemStacksInfo> SHOW_ITEM_STACKS = new HoverEvent.Action<>(
-            "show_item_stacks", true, ItemStacksInfo.CODEC, ItemStacksInfo::legacyCreate
+            "show_item_stacks", true,
+            ItemStacksInfo::deserializeArg, ItemStacksInfo::serializeArg, ItemStacksInfo::legacyCreate
     );
 
     public static ItemStacksTooltip of(List<List<ItemStack>> items, boolean renderItemDecorations) {

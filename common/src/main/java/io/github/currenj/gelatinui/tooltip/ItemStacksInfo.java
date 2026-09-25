@@ -1,17 +1,24 @@
 package io.github.currenj.gelatinui.tooltip;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.ItemStack;
+import org.slf4j.Logger;
+
 import java.util.List;
 import java.util.Objects;
 
 public class ItemStacksInfo {
-    public static final Codec<ItemStacksInfo> FULL_CODEC = Codec.list(ItemStack.CODEC).xmap(ItemStacksInfo::new, ItemStacksInfo::getItemStacks);
-    public static final Codec<ItemStacksInfo> SIMPLE_CODEC = Codec.list(ItemStack.SIMPLE_ITEM_CODEC).xmap(ItemStacksInfo::new, ItemStacksInfo::getItemStacks);
-    public static final Codec<ItemStacksInfo> CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
+    private static final Logger LOGGER = LogUtils.getLogger();
+    // Bridges to HoverEvent.Action's Gson-based (de)serializer functions via JsonOps —
+    // 1.20.1 has no Codec extension point on HoverEvent.Action itself, see
+    // HoverEventActionMixin. 1.20.1's ItemStack has only one CODEC (no data-component
+    // SIMPLE_ITEM_CODEC split, that's 1.20.5+).
+    public static final Codec<ItemStacksInfo> CODEC = Codec.list(ItemStack.CODEC).xmap(ItemStacksInfo::new, ItemStacksInfo::getItemStacks);
     private final List<ItemStack> itemStacks;
 
     public ItemStacksInfo(List<ItemStack> itemStacks) {
@@ -41,8 +48,20 @@ public class ItemStacksInfo {
         return Objects.hash(itemStacks);
     }
 
-    public static DataResult<ItemStacksInfo> legacyCreate(Component arg, RegistryOps<?> arg2) {
-        // TODO: Implement legacy parsing if needed
-        return DataResult.error(() -> "Legacy create not implemented for ItemStacksInfo");
+    public static JsonElement serializeArg(ItemStacksInfo info) {
+        return CODEC.encodeStart(JsonOps.INSTANCE, info)
+                .resultOrPartial(LOGGER::error)
+                .orElseGet(JsonObject::new);
+    }
+
+    public static ItemStacksInfo deserializeArg(JsonElement json) {
+        return CODEC.parse(JsonOps.INSTANCE, json)
+                .resultOrPartial(LOGGER::error)
+                .orElse(null);
+    }
+
+    // Legacy pre-1.16 "value" chat-component transport isn't supported for this action.
+    public static ItemStacksInfo legacyCreate(Component arg) {
+        return null;
     }
 }

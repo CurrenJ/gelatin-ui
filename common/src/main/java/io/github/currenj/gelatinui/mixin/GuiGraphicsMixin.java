@@ -65,10 +65,10 @@ public abstract class GuiGraphicsMixin implements IGuiGraphicsExtension {
         Matrix4f matrix4f = this.pose.last().pose();
         VertexConsumer vertexconsumer = this.bufferSource.getBuffer(renderType);
         // Change vertex order to clockwise: TL, BL, BR, TR
-        vertexconsumer.addVertex(matrix4f, x1, y1, (float) z).setColor(color);
-        vertexconsumer.addVertex(matrix4f, x4, y4, (float) z).setColor(color);
-        vertexconsumer.addVertex(matrix4f, x3, y3, (float) z).setColor(color);
-        vertexconsumer.addVertex(matrix4f, x2, y2, (float) z).setColor(color);
+        vertexconsumer.vertex(matrix4f, x1, y1, (float) z).color(color).endVertex();
+        vertexconsumer.vertex(matrix4f, x4, y4, (float) z).color(color).endVertex();
+        vertexconsumer.vertex(matrix4f, x3, y3, (float) z).color(color).endVertex();
+        vertexconsumer.vertex(matrix4f, x2, y2, (float) z).color(color).endVertex();
         this.flushIfUnmanaged();
     }
 
@@ -80,7 +80,8 @@ public abstract class GuiGraphicsMixin implements IGuiGraphicsExtension {
         if (style != null && style.getHoverEvent() != null)
         {
             HoverEvent hoverEvent = style.getHoverEvent();
-            if (hoverEvent.getValue(ItemStacksTooltip.SHOW_ITEM_STACKS) instanceof ItemStacksInfo itemStacksInfo) {
+            ItemStacksInfo itemStacksInfo = hoverEvent.getValue(ItemStacksTooltip.SHOW_ITEM_STACKS);
+            if (itemStacksInfo != null) {
                 ItemStacksTooltip tooltipComponent = new ItemStacksTooltip(
                         itemStacksInfo.getItemStacks(),
                         false
@@ -100,7 +101,7 @@ public abstract class GuiGraphicsMixin implements IGuiGraphicsExtension {
     @Override
     public void gelatinui$renderTooltip(Font font, Optional<TooltipComponent> tooltipComponent, int i, int j) {
         List<ClientTooltipComponent> list = new ArrayList<>();
-        tooltipComponent.ifPresent(t -> list.addFirst(ClientTooltipComponent.create(t)));
+        tooltipComponent.ifPresent(t -> list.add(0, ClientTooltipComponent.create(t)));
         this.renderTooltipInternal(font, list, i, j, DefaultTooltipPositioner.INSTANCE);
     }
 
@@ -119,11 +120,12 @@ public abstract class GuiGraphicsMixin implements IGuiGraphicsExtension {
         RenderSystem.setShaderTexture(0, resourceLocation);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         Matrix4f matrix4f = this.pose.last().pose();
-        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        bufferBuilder.addVertex(matrix4f, x1, y1, z).setUv(u1, v1);
-        bufferBuilder.addVertex(matrix4f, x1, y2, z).setUv(u1, v2);
-        bufferBuilder.addVertex(matrix4f, x2, y2, z).setUv(u2, v2);
-        bufferBuilder.addVertex(matrix4f, x2, y1, z).setUv(u2, v1);
-        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
+        BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferBuilder.vertex(matrix4f, x1, y1, z).uv(u1, v1).endVertex();
+        bufferBuilder.vertex(matrix4f, x1, y2, z).uv(u1, v2).endVertex();
+        bufferBuilder.vertex(matrix4f, x2, y2, z).uv(u2, v2).endVertex();
+        bufferBuilder.vertex(matrix4f, x2, y1, z).uv(u2, v1).endVertex();
+        BufferUploader.drawWithShader(bufferBuilder.end());
     }
 }
