@@ -110,6 +110,20 @@ public interface IRenderContext {
     void popScissor();
 
     /**
+     * Push a z offset onto the render pose, so everything drawn until the matching
+     * {@link #popZOffset()} is translated that far along z. Positive moves nearer the viewer.
+     * <p>Used to honour {@link IUIElement#getZOffset()} on a pose stack that has a z. The default
+     * is a no-op, which is correct for any context whose pose has no z.
+     * @param zOffset Offset along z
+     */
+    default void pushZOffset(float zOffset) {}
+
+    /**
+     * Pop the z offset pushed by {@link #pushZOffset(float)}.
+     */
+    default void popZOffset() {}
+
+    /**
      * Enable blending for transparency.
      */
     void enableBlend();

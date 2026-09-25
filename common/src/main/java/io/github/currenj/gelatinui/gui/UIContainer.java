@@ -115,7 +115,20 @@ public abstract class UIContainer<T extends UIContainer<T>> extends UIElement<T>
     protected void renderChildren(IRenderContext context, Rectangle2D viewport) {
         for (IUIElement child : new ArrayList<>(children)) {
             if (child.isVisible()) {
-                child.render(context, viewport);
+                // A child's z offset (IUIElement#setZOffset) translates that child and its whole
+                // subtree. Skipped when zero so the common case costs no pose push/pop.
+                float zOffset = child.getZOffset();
+                boolean offset = zOffset != 0.0f;
+                if (offset) {
+                    context.pushZOffset(zOffset);
+                }
+                try {
+                    child.render(context, viewport);
+                } finally {
+                    if (offset) {
+                        context.popZOffset();
+                    }
+                }
             }
         }
     }

@@ -59,6 +59,26 @@ public interface IUIElement {
     void setVisible(boolean visible);
 
     /**
+     * Get this element's extra z offset. The parent container applies it as a pose translate
+     * around this element and its whole subtree.
+     * @return The z offset; 0 means no offset
+     */
+    float getZOffset();
+
+    /**
+     * Set this element's extra z offset; positive moves it nearer the viewer.
+     * <p>Only meaningful where the GUI pose carries a z at all. On 1.21.1 the pose is a real 3D
+     * PoseStack and GUI children are painted depth-tested, so an overlap between two children is
+     * decided by depth rather than by paint order — and each leaf renderer bakes in its own depth
+     * (vanilla items 150, gelatin's posed player 100, vanilla's entity-in-inventory 50). This
+     * offset lets a caller that deliberately mixes those renderers restore "the later sibling
+     * paints in front" without changing the global paint loop. On 26.1.2 the pose is a 2D matrix
+     * with no z, so the offset is ignored and insertion order always decides.
+     * @param zOffset New z offset
+     */
+    void setZOffset(float zOffset);
+
+    /**
      * Check if this element needs updating.
      * @return true if dirty or animating
      */

@@ -55,6 +55,21 @@ public abstract class UIElement<T extends UIElement<T>> implements IUIElement {
     // Visibility state
     protected boolean visible = true;
 
+    // Extra z offset, applied by the parent container as a pose translate around this element and
+    // its whole subtree. Only meaningful where the GUI pose carries a z (1.21.1's 3D PoseStack);
+    // see IUIElement#setZOffset for why a caller would ask for one.
+    protected float zOffset = 0.0f;
+
+    @Override
+    public float getZOffset() {
+        return zOffset;
+    }
+
+    @Override
+    public void setZOffset(float zOffset) {
+        this.zOffset = zOffset;
+    }
+
     // Effects layout toggle: when true, effects will affect bounds and layout calculations
     protected boolean effectsAffectLayout = false;
 

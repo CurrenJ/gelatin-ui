@@ -103,6 +103,19 @@ public class MinecraftRenderContext implements IRenderContext {
         scissorMirror.pollLast();
     }
 
+    // 1.21.1's GUI pose is a real 3D PoseStack, so a child's z offset can be honoured by
+    // translating it. Pushed/popped around the child's render by UIContainer#renderChildren.
+    @Override
+    public void pushZOffset(float zOffset) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(0.0f, 0.0f, zOffset);
+    }
+
+    @Override
+    public void popZOffset() {
+        graphics.pose().popPose();
+    }
+
     /** The clip rectangle currently in force, in screen pixels, or null when nothing is clipped. */
     @Nullable
     public ScreenRectangle peekScissor() {
