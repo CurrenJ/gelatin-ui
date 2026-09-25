@@ -177,7 +177,7 @@ public class TestScreen extends GelatinUIScreen<GelatinMenu> {
                 });
 
         // Close button
-        ResourceLocation progressBarBgTex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/progress_bar_background.png");
+        ResourceLocation progressBarBgTex = new ResourceLocation(GelatinUi.MOD_ID, "textures/gui/progress_bar_background.png");
         SpriteButton closeBtn = UI.spriteButton(128, 10, UI.rgb(180, 50, 50))
                 .texture(SpriteData
                         .texture(progressBarBgTex)

@@ -17,7 +17,7 @@ public class MenuRegistrationHandlerFabric implements IMenuRegistrationHandler {
     @Override
     public void register(String id) {
         MenuType<GelatinMenu> menuType = MenuRegistration.createDebugMenuType(id);
-        ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, id);
+        ResourceLocation resourceLocation = new ResourceLocation(GelatinUi.MOD_ID, id);
         Registry.register(BuiltInRegistries.MENU, resourceLocation, menuType);
         MenuRegistration.storeDebugMenuType(id, menuType);
     }

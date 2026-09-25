@@ -45,7 +45,7 @@ public class ManualContainerTestScreen extends GelatinUIScreen<GelatinMenu> {
         manualContainer.maxChildren(6);
 
         // Add a textured background sprite (if texture exists)
-        ResourceLocation tex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel.png");
+        ResourceLocation tex = new ResourceLocation(GelatinUi.MOD_ID, "textures/gui/panel.png");
         SpriteData spriteData = SpriteData.texture(tex)
                 .uv(0, 0, 15, 15)
                 .slice(6, 7, 6, 7)

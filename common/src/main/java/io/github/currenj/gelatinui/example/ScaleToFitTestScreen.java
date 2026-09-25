@@ -32,7 +32,7 @@ public class ScaleToFitTestScreen extends GelatinUIScreen<GelatinMenu> {
         );
 
         // Panel texture
-        ResourceLocation panel1Tex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel.png");
+        ResourceLocation panel1Tex = new ResourceLocation(GelatinUi.MOD_ID, "textures/gui/panel.png");
         SpriteData panel1 = SpriteData.texture(panel1Tex)
             .uv(0, 0, 16, 16)
             .tileScale(1f)
@@ -40,7 +40,7 @@ public class ScaleToFitTestScreen extends GelatinUIScreen<GelatinMenu> {
             .textureSize(16, 16)
             .renderMode(SpriteRenderMode.TILE);
 
-        ResourceLocation panelTex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel2.png");
+        ResourceLocation panelTex = new ResourceLocation(GelatinUi.MOD_ID, "textures/gui/panel2.png");
         SpriteData panel2 = SpriteData.texture(panelTex)
             .uv(0, 0, 23, 23)
             .tileScale(1f)

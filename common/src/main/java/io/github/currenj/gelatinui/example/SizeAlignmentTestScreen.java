@@ -33,7 +33,7 @@ public class SizeAlignmentTestScreen extends GelatinUIScreen<GelatinMenu> {
         );
 
         // Panel2 texture - has 9-pixel repeating segments in the tiled area
-        ResourceLocation panelTex = ResourceLocation.fromNamespaceAndPath(GelatinUi.MOD_ID, "textures/gui/panel2.png");
+        ResourceLocation panelTex = new ResourceLocation(GelatinUi.MOD_ID, "textures/gui/panel2.png");
         SpriteData panel2 = SpriteData.texture(panelTex)
             .uv(0, 0, 23, 23)
             .tileScale(1f)
