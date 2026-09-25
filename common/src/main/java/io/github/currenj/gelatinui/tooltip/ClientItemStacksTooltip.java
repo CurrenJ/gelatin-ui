@@ -5,7 +5,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -77,29 +76,11 @@ public class ClientItemStacksTooltip implements ClientTooltipComponent {
         }
     }
 
-    private void blit(GuiGraphics guiGraphics, int x, int y, Texture texture) {
-        guiGraphics.blitSprite(texture.sprite, x, y, texture.w, texture.h);
-    }
-
     private int gridSizeX() {
-        return isShowing() ? Math.clamp(this.items.size(), 1, 9) : 0;
+        return isShowing() ? Math.min(Math.max(this.items.size(), 1), 9) : 0;
     }
 
     private int gridSizeY() {
         return isShowing() ? (int) (Math.ceil(this.items.size() / (double) gridSizeX())) : 0;
-    }
-
-    enum Texture {
-        SLOT(ResourceLocation.withDefaultNamespace("container/slot"), 18, 20);
-
-        public final ResourceLocation sprite;
-        public final int w;
-        public final int h;
-
-        Texture(ResourceLocation sprite, int w, int h) {
-            this.sprite = sprite;
-            this.w = w;
-            this.h = h;
-        }
     }
 }
