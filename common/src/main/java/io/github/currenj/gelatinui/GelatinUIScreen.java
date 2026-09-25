@@ -50,6 +50,10 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // 1.20.1 has no Screen#renderTransparentBackground hook (that split from
+        // #renderBackground is a later-version addition) that AbstractContainerScreen#render
+        // would otherwise call automatically, so paint it explicitly before the container itself.
+        renderTransparentBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         renderContent(guiGraphics, mouseX, mouseY, partialTick);
 
@@ -133,15 +137,15 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        super.mouseScrolled(mouseX, mouseY, delta);
 
         if (uiScreen != null) {
-            if (uiScreen.onMouseScroll((int) mouseX, (int) mouseY, (float) scrollY)) {
+            if (uiScreen.onMouseScroll((int) mouseX, (int) mouseY, (float) delta)) {
                 return true;
             }
         }
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
@@ -315,7 +319,6 @@ public abstract class GelatinUIScreen<M extends GelatinMenu> extends AbstractCon
         // No background rendering here; handled in renderContent
     }
 
-    @Override
     public void renderTransparentBackground(GuiGraphics arg) {
         long now = System.nanoTime();
         float elapsed = (now - fadeStartTime) / 1_000_000_000f;
