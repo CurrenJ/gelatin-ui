@@ -1,4 +1,4 @@
-package io.github.currenj.gelatinui.registration.menu.neoforge;
+package io.github.currenj.gelatinui.registration.menu.forge;
 
 import io.github.currenj.gelatinui.GelatinUi;
 import io.github.currenj.gelatinui.gui.GelatinMenu;
@@ -6,13 +6,13 @@ import io.github.currenj.gelatinui.registration.menu.IMenuRegistrationHandler;
 import io.github.currenj.gelatinui.registration.menu.MenuRegistration;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.registries.DeferredRegister;
 
-public class MenuRegistrationHandlerNeoForge implements IMenuRegistrationHandler {
-    public static final MenuRegistrationHandlerNeoForge INSTANCE = new MenuRegistrationHandlerNeoForge();
+public class MenuRegistrationHandlerForge implements IMenuRegistrationHandler {
+    public static final MenuRegistrationHandlerForge INSTANCE = new MenuRegistrationHandlerForge();
     public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, GelatinUi.MOD_ID);
 
-    private MenuRegistrationHandlerNeoForge() {}
+    private MenuRegistrationHandlerForge() {}
 
     @Override
     public void register(String id) {
