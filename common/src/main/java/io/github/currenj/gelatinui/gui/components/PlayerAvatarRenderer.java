@@ -6,16 +6,14 @@ import io.github.currenj.gelatinui.gui.IRenderContext;
 import io.github.currenj.gelatinui.gui.UIElement;
 import io.github.currenj.gelatinui.gui.minecraft.MinecraftRenderContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ResolvableProfile;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.util.function.Supplier;
 
@@ -59,12 +57,13 @@ public class PlayerAvatarRenderer extends UIElement<PlayerAvatarRenderer> {
     }
 
     /**
-     * Resolve and render the skin for {@code profile}. A profile with only a name or only a UUID
-     * works for a player who may not be online.
+     * Resolve and render the skin for {@code profile}. The profile must already carry a UUID (a
+     * player who may not be online still works, e.g. {@code new GameProfile(uuid, null)}) — see
+     * {@link PlayerSkinLookup} for why name-only resolution isn't supported on this version.
      */
-    public PlayerAvatarRenderer profile(ResolvableProfile profile) {
+    public PlayerAvatarRenderer profile(GameProfile profile) {
         this.skinLookup = PlayerSkinLookup.create(profile);
-        this.gameProfile = profile.gameProfile();
+        this.gameProfile = profile;
         this.puppet = null;
         markDirty(DirtyFlag.CONTENT);
         return self();
@@ -113,11 +112,18 @@ public class PlayerAvatarRenderer extends UIElement<PlayerAvatarRenderer> {
         mannequin.xRotO = xRot;
 
         // Centered in the element box, like InventoryScreen's preview centers in its rectangle.
+        // 1.20.1's renderEntityInInventory takes no separate offset param (that's a later
+        // addition) and int x/y/scale instead of float, so the vertical centering that offset
+        // provided is applied as an outer pose translate instead. Pixel placement not yet
+        // verified in-game.
         float scale = FIT_SCALE * size.y / MODEL_HEIGHT;
-        Vector3f translation = new Vector3f(0.0f, mannequin.getBbHeight() / 2.0f, 0.0f);
         Quaternionf rotation = new Quaternionf().rotateZ((float) Math.PI);
-        InventoryScreen.renderEntityInInventory(mcContext.getGraphics(), size.x / 2.0f, size.y / 2.0f, scale,
-                translation, rotation, null, mannequin);
+        GuiGraphics graphics = mcContext.getGraphics();
+        graphics.pose().pushPose();
+        graphics.pose().translate(0.0f, mannequin.getBbHeight() / 2.0f, 0.0f);
+        InventoryScreen.renderEntityInInventory(graphics, Math.round(size.x / 2.0f), Math.round(size.y / 2.0f), Math.round(scale),
+                rotation, null, mannequin);
+        graphics.pose().popPose();
     }
 
     private Puppet ensurePuppet() {
@@ -146,8 +152,13 @@ public class PlayerAvatarRenderer extends UIElement<PlayerAvatarRenderer> {
         }
 
         @Override
-        public PlayerSkin getSkin() {
-            return skin.get();
+        public net.minecraft.resources.ResourceLocation getSkinTextureLocation() {
+            return skin.get().texture();
+        }
+
+        @Override
+        public String getModelName() {
+            return skin.get().model() == PlayerSkin.Model.SLIM ? "slim" : "default";
         }
 
         @Override

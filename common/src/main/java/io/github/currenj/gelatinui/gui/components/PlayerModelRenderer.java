@@ -13,8 +13,7 @@ import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.PlayerSkin;
-import net.minecraft.world.item.component.ResolvableProfile;
+import com.mojang.authlib.GameProfile;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -49,12 +48,11 @@ public class PlayerModelRenderer extends UIElement<PlayerModelRenderer> {
     }
 
     /**
-     * Resolve and render the skin for {@code profile}. A profile with only a name or only a UUID
-     * (e.g. {@code new ResolvableProfile(Optional.empty(), Optional.of(uuid), new PropertyMap())})
-     * works for a player who may not be online — resolution happens the same way a player-head
-     * item resolves its texture.
+     * Resolve and render the skin for {@code profile}. The profile must already carry a UUID (a
+     * player who may not be online still works, e.g. {@code new GameProfile(uuid, null)}) — see
+     * {@link PlayerSkinLookup} for why name-only resolution isn't supported on this version.
      */
-    public PlayerModelRenderer profile(ResolvableProfile profile) {
+    public PlayerModelRenderer profile(GameProfile profile) {
         this.skinLookup = PlayerSkinLookup.create(profile);
         markDirty(DirtyFlag.CONTENT);
         return self();
@@ -110,12 +108,15 @@ public class PlayerModelRenderer extends UIElement<PlayerModelRenderer> {
         pose.rotateAround(Axis.XP.rotationDegrees(rotationX), 0.0f, -1.0625f, 0.0f);
         pose.mulPose(Axis.YP.rotationDegrees(rotationY));
         graphics.flush();
-        Lighting.setupForEntityInInventory(Axis.XP.rotationDegrees(rotationX));
+        // 1.20.1's Lighting.setupForEntityInInventory takes no rotation argument (that overload
+        // is a later addition); the fixed lighting setup still matches vanilla's own
+        // PlayerSkinWidget-equivalent usage on this version.
+        Lighting.setupForEntityInInventory();
 
         pose.pushPose();
         pose.scale(1.0f, 1.0f, -1.0f);
         pose.translate(0.0f, -1.5f, 0.0f);
-        model.renderToBuffer(pose, graphics.bufferSource().getBuffer(model.renderType(skin.texture())), FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+        model.renderToBuffer(pose, graphics.bufferSource().getBuffer(model.renderType(skin.texture())), FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 1.0f, 1.0f, 1.0f, 1.0f);
         pose.popPose();
 
         graphics.flush();
