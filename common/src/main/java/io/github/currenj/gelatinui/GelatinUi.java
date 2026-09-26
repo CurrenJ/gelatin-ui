@@ -14,7 +14,17 @@ public final class GelatinUi {
 
     public static void init() {
         registerExampleMenus();
+    }
 
+    /**
+     * Fires MenuRegistrationEvent to every registered listener. Must run after every mod's
+     * listener has registered (each mod registers its own listener from its own constructor -
+     * cross-mod construction order isn't guaranteed) but before this registry's RegisterEvent
+     * is done processing (registerDebugMenu(id) ultimately calls a DeferredRegister, which only
+     * accepts entries up to that point). See callers for the platform-specific hook that
+     * satisfies both.
+     */
+    public static void fireMenuRegistrationEvent() {
         MenuRegistration.fireRegistrationEvent();
     }
 

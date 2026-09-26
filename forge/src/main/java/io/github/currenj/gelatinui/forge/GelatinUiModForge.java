@@ -2,11 +2,13 @@ package io.github.currenj.gelatinui.forge;
 
 import io.github.currenj.gelatinui.registration.menu.MenuRegistration;
 import io.github.currenj.gelatinui.registration.menu.forge.MenuRegistrationHandlerForge;
+import net.minecraft.core.registries.Registries;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.RegisterEvent;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -25,10 +27,27 @@ import java.util.Map;
 @Mod(GelatinUi.MOD_ID)
 public final class GelatinUiModForge {
     public GelatinUiModForge() {
-        // Run our common setup.
+        // Run our common setup (registers GelatinUI's own example-menu listener).
         GelatinUi.init();
 
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        // Firing MenuRegistrationEvent straight from this constructor raced a dependent mod's
+        // (e.g. Fishtastic's) own constructor, which is where it registers its listener - FML
+        // doesn't guarantee construction order between mods, so the fire could run against zero
+        // listeners, silently skipping every one of that mod's registerDebugMenu(id) calls and
+        // later crashing MenuScreens.register with a null MenuType when its screens try to
+        // resolve them. Firing from this registry's own RegisterEvent instead is safe: FML always
+        // finishes constructing every mod before any RegisterEvent fires for any mod, regardless
+        // of construction order, and RegisterEvent still fires before MENU_TYPES' own listener
+        // (registered afterward on this same bus, so it runs after) closes the registry for new
+        // registerDebugMenu -> DeferredRegister entries. (ScreenRegistration doesn't need this:
+        // it just defers to FMLClientSetupEvent, since it isn't backed by a DeferredRegister.)
+        modEventBus.addListener((final RegisterEvent event) -> {
+            if (event.getRegistryKey().equals(Registries.MENU)) {
+                GelatinUi.fireMenuRegistrationEvent();
+            }
+        });
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);

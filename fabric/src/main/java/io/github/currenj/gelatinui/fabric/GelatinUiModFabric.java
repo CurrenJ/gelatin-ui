@@ -36,8 +36,12 @@ public final class GelatinUiModFabric implements ModInitializer {
             }
         }
 
-        // Initialize GelatinUI common code
+        // Initialize GelatinUI common code (registers GelatinUI's own example-menu listener)
         GelatinUi.init();
+
+        // Fire now that every dependent mod's entrypoint above, and GelatinUi.init() just above,
+        // have both registered their listeners.
+        GelatinUi.fireMenuRegistrationEvent();
 
         // Register commands
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
