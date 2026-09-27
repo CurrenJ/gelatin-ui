@@ -150,6 +150,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     fabricUpload.addGameVersion(minecraft_version)
     fabricUpload.addModLoader('Fabric')
     fabricUpload.addEnvironment('Client', 'Server')
+    fabricUpload.addJavaVersion('Java 17')
     fabricUpload.displayName = fabricJar.get().asFile.name.replace('.jar', '')
 
     // ── Forge ──
@@ -161,6 +162,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     forgeUpload.addGameVersion(minecraft_version)
     forgeUpload.addModLoader('Forge')
     forgeUpload.addEnvironment('Client', 'Server')
+    forgeUpload.addJavaVersion('Java 17')
     forgeUpload.displayName = forgeJar.get().asFile.name.replace('.jar', '')
 }
 
