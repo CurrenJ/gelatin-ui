@@ -125,6 +125,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     fabricUpload.addGameVersion(minecraft_version)
     fabricUpload.addModLoader('Fabric')
     fabricUpload.addEnvironment('Client', 'Server')
+    fabricUpload.addJavaVersion('Java 25')
     fabricUpload.displayName = fabricJar.get().asFile.name.replace('.jar', '')
 
     // ── NeoForge ──
@@ -136,6 +137,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     neoUpload.addGameVersion(minecraft_version)
     neoUpload.addModLoader('NeoForge')
     neoUpload.addEnvironment('Client', 'Server')
+    neoUpload.addJavaVersion('Java 25')
     neoUpload.displayName = neoJar.get().asFile.name.replace('.jar', '')
 }
 
