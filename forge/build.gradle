@@ -1,0 +1,94 @@
+plugins {
+    id 'com.gradleup.shadow'
+}
+
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+        exclude group: 'net.fabricmc', module: 'fabric-loader'
+        exclude group: 'net.fabricmc', module: 'sponge-mixin'
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    // developmentForge intentionally does not extend common: see F02 module-layer finding.
+
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+repositories {
+    maven {
+        name = 'MinecraftForge'
+        url = 'https://maven.minecraftforge.net/'
+    }
+}
+
+dependencies {
+    forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
+
+    common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
+    shadowBundle project(path: ':common', configuration: 'transformProductionForge')
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    inputs.property 'version', project.version
+
+    from project(":common").sourceSets.main.resources
+
+    filesMatching('META-INF/mods.toml') {
+        expand([
+            'version': project.version,
+            'mod_license': rootProject.mod_license,
+            'mod_id': rootProject.mod_id,
+            'mod_name': rootProject.mod_name,
+            'mod_authors': rootProject.mod_authors,
+            'mod_description': rootProject.mod_description,
+            'mod_icon': rootProject.mod_icon,
+            'mod_minecraft_version_range': rootProject.property('mod_minecraft_version_range'),
+            'mod_forge_version_range': "[${rootProject.forge_version},)"
+        ])
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = 'dev-shadow'
+}
+
+remapJar {
+    inputFile.set shadowJar.archiveFile
+}
+
+sourceSets.main.resources.srcDir("src/main/generated")
+
+tasks.named('sourcesJar').configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+loom {
+    accessWidenerPath = rootProject.file("common/src/main/resources/gelatinui.accesswidener")
+
+    forge {
+        mixinConfig "gelatinui-forge.mixins.json"
+        convertAccessWideners = true
+        extraAccessWideners.add "gelatinui.accesswidener"
+    }
+
+    runs {
+        data {
+            forgeTemplate("data")
+            programArgs "--mod", "gelatinui",
+                    "--all",
+                    "--output", file("src/main/generated").absolutePath
+        }
+    }
+}

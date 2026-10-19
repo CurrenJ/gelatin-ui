@@ -13,8 +13,24 @@ public final class GelatinUi {
 
 
     public static void init() {
-        registerExampleMenus();
+        initCommon();
+        fireMenuRegistrationEvent();
+    }
 
+    /**
+     * Registers GelatinUI's own listeners without firing the registration event. Forge must fire
+     * the event later, from its MENU registry callback, so that dependent mods constructed after
+     * GelatinUI still get their listeners invoked.
+     */
+    public static void initCommon() {
+        registerExampleMenus();
+    }
+
+    /**
+     * Fires MenuRegistrationEvent to every registered listener. Must run after every mod's
+     * listener has registered but before the MENU registry closes for new entries.
+     */
+    public static void fireMenuRegistrationEvent() {
         MenuRegistration.fireRegistrationEvent();
     }
 
