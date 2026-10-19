@@ -144,11 +144,23 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     neoUpload.addEnvironment('Client', 'Server')
     neoUpload.addJavaVersion('Java 25')
     neoUpload.displayName = neoJar.get().asFile.name.replace('.jar', '')
+
+    // Forge
+    def forgeJar = project(':forge').tasks.named('shadowJar').get().archiveFile
+    def forgeUpload = upload(projectId, forgeJar)
+    forgeUpload.changelog = changelogText
+    forgeUpload.changelogType = 'markdown'
+    forgeUpload.releaseType = releaseType
+    forgeUpload.addGameVersion(minecraft_version)
+    forgeUpload.addModLoader('Forge')
+    forgeUpload.addEnvironment('Client', 'Server')
+    forgeUpload.addJavaVersion('Java 25')
+    forgeUpload.displayName = forgeJar.get().asFile.name.replace('.jar', '')
 }
 
-// Ensure publish depends on both platforms being built.
+// Build every supported loader before publishing.
 tasks.named('publishCurseForge') {
-    dependsOn(':fabric:build', ':neoforge:build')
+    dependsOn(':fabric:build', ':neoforge:build', ':forge:build')
 }
 
 // Aggregate tasks to create and upload a Central bundle for all subprojects
