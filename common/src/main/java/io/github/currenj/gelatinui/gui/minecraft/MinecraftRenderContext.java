@@ -85,10 +85,19 @@ public class MinecraftRenderContext implements IRenderContext {
 
     @Override
     public void pushScissor(int x, int y, int width, int height) {
-        graphics.enableScissor(x, y, x + width, y + height);
+        // Callers pass coordinates local to the current pose (UIElement.render has already
+        // translated/scaled to the element), but 1.21.1's GuiGraphics#enableScissor clips to the
+        // raw rectangle without applying the pose -- so transform it here, as 26.1 does.
+        org.joml.Matrix4f pose = graphics.pose().last().pose();
+        org.joml.Vector3f min = pose.transformPosition(x, y, 0.0f, new org.joml.Vector3f());
+        org.joml.Vector3f max = pose.transformPosition(x + width, y + height, 0.0f, new org.joml.Vector3f());
+        int x1 = Math.round(Math.min(min.x, max.x));
+        int y1 = Math.round(Math.min(min.y, max.y));
+        int x2 = Math.round(Math.max(min.x, max.x));
+        int y2 = Math.round(Math.max(min.y, max.y));
+        graphics.enableScissor(x1, y1, x2, y2);
 
-        // 1.21.1 GuiGraphics#enableScissor clips to the rectangle as given (it does not apply the pose).
-        ScreenRectangle rectangle = new ScreenRectangle(x, y, width, height);
+        ScreenRectangle rectangle = new ScreenRectangle(x1, y1, x2 - x1, y2 - y1);
         ScreenRectangle previous = scissorMirror.peekLast();
         if (previous != null) {
             ScreenRectangle intersection = rectangle.intersection(previous);
