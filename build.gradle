@@ -1,6 +1,6 @@
 plugins {
-    id 'dev.architectury.loom' version '1.11-SNAPSHOT' apply false
-    id 'architectury-plugin' version '3.4-SNAPSHOT'
+    id 'dev.architectury.loom' version '1.17.493' apply false
+    id 'architectury-plugin' version '3.5.170'
     id 'com.gradleup.shadow' version '8.3.6' apply false
     id 'net.darkhax.curseforgegradle' version '1.1.26' apply false
 }
@@ -31,6 +31,10 @@ allprojects {
 }
 
 subprojects {
+    if (project.path == ':forge') {
+        project.extensions.extraProperties.set('loom.platform', 'forge')
+    }
+
     apply plugin: 'dev.architectury.loom'
     apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
@@ -51,6 +55,12 @@ subprojects {
 
     loom {
         silentMojangMappingsLicense()
+        mixin {
+            // 1.21.1 is obfuscated, so mixins need a refmap. Newer Architectury Loom turns the legacy
+            // mixin annotation processor off by default, which silently drops refmap generation:
+            // mixins work in dev and fail in production. Keep it on.
+            useLegacyMixinAp = true
+        }
     }
 
     dependencies {
@@ -116,7 +126,9 @@ subprojects {
 
     signing {
         useGpgCmd()
-        sign publishing.publications.mavenJava
+        if (!rootProject.hasProperty('skipSigning')) {
+            sign publishing.publications.mavenJava
+        }
     }
 }
 
@@ -158,11 +170,23 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     neoUpload.addEnvironment('Client', 'Server')
     neoUpload.addJavaVersion('Java 21')
     neoUpload.displayName = neoJar.get().asFile.name.replace('.jar', '')
+
+    // Forge
+    def forgeJar = project(':forge').tasks.named('remapJar').get().archiveFile
+    def forgeUpload = upload(projectId, forgeJar)
+    forgeUpload.changelog = changelogText
+    forgeUpload.changelogType = 'markdown'
+    forgeUpload.releaseType = releaseType
+    forgeUpload.addGameVersion(minecraft_version)
+    forgeUpload.addModLoader('Forge')
+    forgeUpload.addEnvironment('Client', 'Server')
+    forgeUpload.addJavaVersion('Java 21')
+    forgeUpload.displayName = forgeJar.get().asFile.name.replace('.jar', '')
 }
 
-// Ensure publish depends on both platforms being built.
+// Build every supported loader before publishing.
 tasks.named('publishCurseForge') {
-    dependsOn(':fabric:build', ':neoforge:build')
+    dependsOn(':fabric:build', ':neoforge:build', ':forge:build')
 }
 
 // Aggregate tasks to create and upload a Central bundle for all subprojects

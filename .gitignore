@@ -112,3 +112,13 @@ repo
 /debug/
 /.claude/settings.local.json
 CLAUDE.md
+
+# Local tooling and generated runtime files
+AGENTS.md
+.agents/
+.codex/
+.claude/
+*.log
+*.log.gz
+/common/logs/
+/.scratch/
