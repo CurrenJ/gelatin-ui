@@ -9,9 +9,15 @@ import java.util.List;
 import java.util.Objects;
 
 public class ItemStacksInfo {
-    public static final Codec<ItemStacksInfo> FULL_CODEC = Codec.list(ItemStack.CODEC).xmap(ItemStacksInfo::new, ItemStacksInfo::getItemStacks);
-    public static final Codec<ItemStacksInfo> SIMPLE_CODEC = Codec.list(ItemStack.SIMPLE_ITEM_CODEC).xmap(ItemStacksInfo::new, ItemStacksInfo::getItemStacks);
-    public static final Codec<ItemStacksInfo> CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
+    // Lazy codecs: ItemStack.CODEC resolves BuiltInRegistries at class-init/use time. HoverEvent's
+    // static Action codec is built during registry bootstrap, so eager codecs here would trigger
+    // "Not bootstrapped" on Forge. Deferring until first use keeps all loaders safe.
+    public static final Codec<ItemStacksInfo> FULL_CODEC = Codec.lazyInitialized(
+            () -> Codec.list(ItemStack.CODEC).xmap(ItemStacksInfo::new, ItemStacksInfo::getItemStacks));
+    public static final Codec<ItemStacksInfo> SIMPLE_CODEC = Codec.lazyInitialized(
+            () -> Codec.list(ItemStack.SIMPLE_ITEM_CODEC).xmap(ItemStacksInfo::new, ItemStacksInfo::getItemStacks));
+    public static final Codec<ItemStacksInfo> CODEC = Codec.lazyInitialized(
+            () -> Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC));
     private final List<ItemStack> itemStacks;
 
     public ItemStacksInfo(List<ItemStack> itemStacks) {
