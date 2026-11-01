@@ -1,0 +1,130 @@
+plugins {
+    id 'com.gradleup.shadow'
+}
+
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+        exclude group: 'net.fabricmc', module: 'fabric-loader'
+        exclude group: 'net.fabricmc', module: 'sponge-mixin'
+    }
+    compileClasspath.extendsFrom common
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+repositories {
+    maven {
+        name = 'MinecraftForge'
+        url = 'https://maven.minecraftforge.net/'
+    }
+}
+
+// Keep the transformed common classes in the main mod group; a second Forge mod file would also
+// become a competing data pack, and the raw common dev jar duplicates the module layer.
+def commonForgeTask = project(':common').tasks.named('transformProductionForge')
+def commonForgeArtifact = commonForgeTask.map { it.outputs.files.singleFile }
+def forgeCommonJar = tasks.register('forgeCommonJar', Jar) {
+    dependsOn commonForgeTask
+    archiveFileName = 'gelatinui-common-forge.jar'
+    destinationDirectory = layout.buildDirectory.dir('forge-common')
+    from({ zipTree(commonForgeArtifact.get()) }) {
+        exclude 'data/**'
+        exclude 'assets/**'
+    }
+}
+
+dependencies {
+    forge "net.minecraftforge:forge:${rootProject.minecraft_version}-${rootProject.forge_version}"
+
+    common(project(path: ':common')) { transitive = false }
+    shadowBundle files(forgeCommonJar)
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    inputs.property 'version', project.version
+    inputs.property 'forge_range', "[${rootProject.forge_version},)"
+    inputs.property 'minecraft_range', "[${rootProject.minecraft_version},)"
+
+    from project(':common').sourceSets.main.resources
+
+    filesMatching('META-INF/mods.toml') {
+        expand([
+            'version': project.version,
+            'mod_license': rootProject.mod_license,
+            'mod_id': rootProject.mod_id,
+            'mod_name': rootProject.mod_name,
+            'mod_authors': rootProject.mod_authors,
+            'mod_description': rootProject.mod_description,
+            'mod_icon': rootProject.mod_icon,
+            'mod_minecraft_version_range': rootProject.property('mod_minecraft_version_range'),
+            'mod_forge_version_range': "[${rootProject.forge_version},)"
+        ])
+    }
+}
+
+jar {
+    archiveClassifier = 'raw'
+}
+
+shadowJar {
+    dependsOn(jar, forgeCommonJar)
+    mainSpec.sourcePaths.clear()
+    from(zipTree(jar.archiveFile))
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = null
+}
+
+configurations {
+    apiElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
+    }
+    runtimeElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
+    }
+}
+
+tasks.named('sourcesJar').configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.matching { it.name in ['runClient', 'runServer'] }.configureEach {
+    dependsOn forgeCommonJar
+}
+
+loom {
+    accessWidenerPath = rootProject.file('common/src/main/resources/gelatinui.accesswidener')
+
+    forge {
+        mixinConfig 'gelatinui-forge.mixins.json'
+        convertAccessWideners = true
+        extraAccessWideners.add 'gelatinui.accesswidener'
+    }
+
+    mods {
+        main {
+            sourceSet sourceSets.main
+            modFiles.from(forgeCommonJar)
+        }
+    }
+
+    runs {
+        client {
+            runDir 'build/run/client'
+        }
+        server {
+            runDir 'build/run/server'
+        }
+    }
+}

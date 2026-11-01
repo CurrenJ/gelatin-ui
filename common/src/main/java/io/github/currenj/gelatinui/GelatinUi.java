@@ -13,8 +13,17 @@ public final class GelatinUi {
 
 
     public static void init() {
-        registerExampleMenus();
+        initCommon();
+        fireMenuRegistrationEvent();
+    }
 
+    /** Register example menu listeners without firing the registry-time event. */
+    public static void initCommon() {
+        registerExampleMenus();
+    }
+
+    /** Fire after every mod that may add a menu listener has been constructed. */
+    public static void fireMenuRegistrationEvent() {
         MenuRegistration.fireRegistrationEvent();
     }
 
