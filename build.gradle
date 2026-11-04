@@ -9,6 +9,7 @@ plugins {
     id 'architectury-plugin' version '3.5-SNAPSHOT'
     id 'com.gradleup.shadow' version '8.3.6' apply false
     id 'net.darkhax.curseforgegradle' version '1.1.26' apply false
+    id 'com.modrinth.minotaur' version '2.10.0' apply false
 }
 
 // Load local.properties so properties like sonartypeUsername/password and centralUsername/password are available at root
@@ -169,6 +170,79 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 // Ensure publish depends on both platforms being built.
 tasks.named('publishCurseForge') {
     dependsOn(':fabric:build', ':forge:build')
+}
+
+// ── Modrinth Publishing ──────────────────────────────────────────────────
+
+// ./gradlew publishModrinth uploads every enabled loader as its own Modrinth version.
+//   -Pmodrinth_loaders=fabric,forge   upload only these (re-running a partly finished release)
+//   -Prelease_type=alpha|beta|release version type (default: release)
+//   -Pchangelog_override=...          changelog text (default: all of CHANGELOG.md)
+//   -Pmodrinth_debug                  print each payload instead of uploading
+// Credentials: MODRINTH_TOKEN or modrinth_token, plus modrinth_project_id, in local.properties.
+
+// On this remapping Loom, remapJar is the distributable jar.
+def modrinthJarTask = 'remapJar'
+def modrinthDebug = hasProperty('modrinth_debug')
+def modrinthToken = System.getenv('MODRINTH_TOKEN') ?: findProperty('modrinth_token') ?: ''
+def modrinthProjectId = findProperty('modrinth_project_id') ?: ''
+def modrinthReleaseType = findProperty('release_type') ?: 'release'
+def modrinthChangelog = findProperty('changelog_override')
+        ?: (file('CHANGELOG.md').exists() ? file('CHANGELOG.md').text : 'No changelog provided.')
+def modrinthGameVersion = minecraft_version
+
+def modrinthPlatforms = enabled_platforms.split(',').collect { it.trim() }
+def modrinthSelected = (findProperty('modrinth_loaders') ?: enabled_platforms)
+        .toString().split(',').collect { it.trim().toLowerCase() }
+def modrinthUnknown = modrinthSelected - modrinthPlatforms
+if (!modrinthUnknown.isEmpty()) {
+    throw new GradleException("Unknown modrinth_loaders entries: ${modrinthUnknown}")
+}
+
+configure(modrinthPlatforms.collect { project(":${it}") }) { loaderProject ->
+    apply plugin: 'com.modrinth.minotaur'
+
+    modrinth {
+        token = modrinthToken.toString()
+        projectId = modrinthProjectId.toString()
+        // One version per loader, so each needs its own number.
+        versionNumber = "${loaderProject.version}-${loaderProject.name}".toString()
+        versionType = modrinthReleaseType.toString()
+        changelog = modrinthChangelog.toString()
+        gameVersions = [modrinthGameVersion.toString()]
+        loaders = [loaderProject.name]
+        detectLoaders = false
+        debugMode = modrinthDebug
+        if (loaderProject.name == 'fabric') {
+            dependencies {
+                required.project 'fabric-api'
+            }
+        }
+    }
+
+    afterEvaluate {
+        def jarTask = tasks.named(modrinthJarTask).get()
+        modrinth {
+            uploadFile = jarTask
+            versionName = jarTask.archiveFileName.get().replace('.jar', '')
+        }
+    }
+
+    tasks.named('modrinth') {
+        // Build every selected loader first, so a failed build can't leave a partial release.
+        dependsOn(modrinthSelected.collect { ":${it}:build" })
+        doFirst {
+            if (!modrinthDebug && (!modrinthToken || !modrinthProjectId)) {
+                throw new GradleException('Modrinth upload needs MODRINTH_TOKEN or modrinth_token, plus modrinth_project_id, in local.properties.')
+            }
+        }
+    }
+}
+
+tasks.register('publishModrinth') {
+    group = 'publishing'
+    description = 'Upload the selected loaders to Modrinth (see the options above).'
+    dependsOn(modrinthSelected.collect { ":${it}:modrinth" })
 }
 
 // Aggregate tasks to create and upload a Central bundle for all subprojects
