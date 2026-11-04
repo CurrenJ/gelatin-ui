@@ -212,6 +212,8 @@ configure(modrinthPlatforms.collect { project(":${it}") }) { loaderProject ->
         gameVersions = [modrinthGameVersion.toString()]
         loaders = [loaderProject.name]
         detectLoaders = false
+        // Required on both sides: Gelatin registers menu types on every loader.
+        environment = 'client_and_server'
         debugMode = modrinthDebug
         if (loaderProject.name == 'fabric') {
             dependencies {
