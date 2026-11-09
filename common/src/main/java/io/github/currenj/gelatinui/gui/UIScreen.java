@@ -249,7 +249,7 @@ public class UIScreen {
 
             root.render(context, viewport);
             // draw scrollbar on top
-            vscroll.render(context, viewport);
+            if (isScrollbarActive()) vscroll.render(context, viewport);
 
             // Render debug overlay for culled elements if enabled
             if (UIElement.isDebugCulledEnabled()) {
@@ -554,8 +554,20 @@ public class UIScreen {
         return draggedElement != null;
     }
 
+    /**
+     * True when the page scrollbar is live: page scrolling is enabled and the root is taller than
+     * the viewport. Otherwise the scrollbar is neither drawn nor hit-tested, so it cannot swallow
+     * clicks, hover or wheel input meant for content under its strip at the right screen edge.
+     */
+    public boolean isScrollbarActive() {
+        if (!scrollEnabled || root == null) return false;
+        float contentH = getContentHeight();
+        float viewH = getViewHeight();
+        return contentH > 0f && viewH > 0f && contentH > viewH;
+    }
+
     private boolean isPointInScrollbar(int mouseX, int mouseY) {
-        if (vscroll == null) return false;
+        if (vscroll == null || !isScrollbarActive()) return false;
         // Use scrollbar bounds in global coordinates
         java.awt.geom.Rectangle2D bounds = vscroll.getBounds();
         return bounds != null && bounds.contains(mouseX, mouseY);
