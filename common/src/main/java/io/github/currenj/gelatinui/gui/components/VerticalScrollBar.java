@@ -99,7 +99,8 @@ public class VerticalScrollBar extends UIElement<VerticalScrollBar> {
                 // Compute thumb position (same logic as renderSelf)
                 float contentH = screen.getContentHeight();
                 float viewH = screen.getViewHeight();
-                if (contentH <= 0f || viewH <= 0f || contentH <= viewH) return true; // nothing to do
+                // Nothing to scroll: leave the click for whatever is underneath.
+                if (contentH <= 0f || viewH <= 0f || contentH <= viewH) return false;
 
                 float visibleFraction = Math.min(1f, viewH / contentH);
                 int trackH = h - padding * 2;
